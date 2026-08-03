@@ -9,7 +9,6 @@ import { unitsHooks } from '../hooks/useUnitsData';
 import type { UnitFormValues, UnitItem } from '../types/referenceData.types';
 
 const columns: GridColDef<UnitItem>[] = [
-  { field: 'code', headerName: 'Kod', width: 140 },
   { field: 'name', headerName: 'Ad', flex: 1, minWidth: 180 },
   { field: 'symbol', headerName: 'Simvol', width: 120 },
   { field: 'decimalPrecision', headerName: 'Onluq dəqiqlik', width: 150, type: 'number' },
@@ -60,6 +59,7 @@ export function UnitsPage() {
         columns={columns}
         hooks={unitsHooks}
         canEdit={canEdit}
+        showCodeFilter={false}
         onAdd={() => setDialog({ open: true, mode: 'create', item: null })}
         onEdit={(item) => setDialog({ open: true, mode: 'edit', item })}
       />
@@ -72,7 +72,6 @@ export function UnitsPage() {
           editValues={
             dialog.item
               ? {
-                  code: dialog.item.code,
                   name: dialog.item.name,
                   symbol: dialog.item.symbol ?? '',
                   decimalPrecision: dialog.item.decimalPrecision ?? 2,

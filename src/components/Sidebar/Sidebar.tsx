@@ -12,7 +12,9 @@ import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 import { DRAWER_WIDTH } from '../../layouts/constants';
+import { isCentralAdmin, isOrganizationActor } from '../../shared/lib/permissions';
 import type { NavItem } from '../../types/navigation';
 import { navItems } from './navItems';
 
@@ -75,6 +77,18 @@ function NavItemGroup({
 export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
+  const canAccessAdmin = isCentralAdmin(user?.roles ?? []);
+  const canAccessOwnResources = isOrganizationActor(user);
+  const visibleNavItems = navItems.filter((item) => {
+    if (item.centralAdminOnly && !canAccessAdmin) {
+      return false;
+    }
+    if (item.organizationOnly && !canAccessOwnResources) {
+      return false;
+    }
+    return true;
+  });
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -90,7 +104,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
       </Toolbar>
       <Divider />
       <List sx={{ px: 1, py: 1 }}>
-        {navItems.map((item) => (
+        {visibleNavItems.map((item) => (
           <NavItemGroup
             key={item.label}
             item={item}

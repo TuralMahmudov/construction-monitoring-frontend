@@ -14,7 +14,7 @@ function parseStatus(value: string | null): CategoryStatusFilter {
 export type ResolvedCategorySearchParams = Required<
   Pick<CategorySearchParams, 'page' | 'size' | 'sortBy' | 'sortDirection' | 'status'>
 > &
-  Pick<CategorySearchParams, 'name' | 'code' | 'type'>;
+  Pick<CategorySearchParams, 'name' | 'type'>;
 
 export function useCategorySearchParams() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -22,7 +22,6 @@ export function useCategorySearchParams() {
   const params: ResolvedCategorySearchParams = useMemo(
     () => ({
       name: searchParams.get('name') ?? undefined,
-      code: searchParams.get('code') ?? undefined,
       status: parseStatus(searchParams.get('status')),
       type: searchParams.get('type') ? Number(searchParams.get('type')) : undefined,
       page: Number(searchParams.get('page') ?? DEFAULT_PAGE),

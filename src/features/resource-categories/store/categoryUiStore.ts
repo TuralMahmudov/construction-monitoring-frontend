@@ -10,21 +10,19 @@ interface CategoryDrawerState {
   category: ResourceCategory | null;
 }
 
-interface CategoryMoveDialogState {
-  open: boolean;
-  category: ResourceCategory | null;
-}
-
 interface CategoryUiStore {
+  /** Raw SimpleTreeView itemId — either a category UUID or a
+   *  `product::{uuid}` id (bax utils/treeItemId.ts). */
   selectedId: string | null;
   expandedIds: string[];
   /** Set by the search page's "view in tree" action; the tree page consumes
    *  and clears it to expand/select the matching node after navigation. */
   pendingFocusId: string | null;
+
+  // Create/edit/delete — central-admin only (bax CategoryTreeToolbar),
+  // reinstated on 2026-07-30 after briefly being fully hidden. Move and
+  // enable/disable stay hidden for now (not requested back).
   drawer: CategoryDrawerState;
-  moveDialog: CategoryMoveDialogState;
-  /** Shared by the toolbar's delete button and each node's context menu, so
-   *  both trigger the same single confirm dialog instance. */
   deleteTarget: ResourceCategory | null;
 
   selectNode: (id: string | null) => void;
@@ -37,9 +35,6 @@ interface CategoryUiStore {
   openEditDrawer: (category: ResourceCategory) => void;
   closeDrawer: () => void;
 
-  openMoveDialog: (category: ResourceCategory) => void;
-  closeMoveDialog: () => void;
-
   requestDelete: (category: ResourceCategory) => void;
   cancelDelete: () => void;
 }
@@ -51,17 +46,11 @@ const initialDrawerState: CategoryDrawerState = {
   category: null,
 };
 
-const initialMoveDialogState: CategoryMoveDialogState = {
-  open: false,
-  category: null,
-};
-
 export const useCategoryUiStore = create<CategoryUiStore>((set) => ({
   selectedId: null,
   expandedIds: [],
   pendingFocusId: null,
   drawer: initialDrawerState,
-  moveDialog: initialMoveDialogState,
   deleteTarget: null,
 
   selectNode: (id) => set({ selectedId: id }),
@@ -80,9 +69,6 @@ export const useCategoryUiStore = create<CategoryUiStore>((set) => ({
   openEditDrawer: (category) =>
     set({ drawer: { open: true, mode: 'edit', parentId: category.parentId, category } }),
   closeDrawer: () => set({ drawer: initialDrawerState }),
-
-  openMoveDialog: (category) => set({ moveDialog: { open: true, category } }),
-  closeMoveDialog: () => set({ moveDialog: initialMoveDialogState }),
 
   requestDelete: (category) => set({ deleteTarget: category }),
   cancelDelete: () => set({ deleteTarget: null }),

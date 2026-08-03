@@ -16,7 +16,9 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import { useRegionOptions, useSupplierOptions } from '../../../reference-data/hooks/useReferenceOptions';
 import { ApiError } from '../../../../services/httpClient';
+import { NumberField } from '../../../../shared/components';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
+import { ignoreBackdropClose } from '../../../../shared/lib/ignoreBackdropClose';
 import type { ResourcePriceFormValues } from '../types/resourcePrice.types';
 import { resourcePriceFormSchema } from '../utils/resourcePriceForm.schema';
 
@@ -104,7 +106,7 @@ export function PriceFormDialog({
   const suppliers = supplierOptions.data?.content ?? [];
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={ignoreBackdropClose(onClose)} maxWidth="sm" fullWidth>
       <DialogTitle>{mode === 'edit' ? 'Qiyməti redaktə et' : 'Yeni qiymət'}</DialogTitle>
       <DialogContent>
         <Stack spacing={2.5} sx={{ pt: 1 }}>
@@ -166,15 +168,14 @@ export function PriceFormDialog({
               name="price"
               control={control}
               render={({ field }) => (
-                <TextField
-                  {...field}
-                  type="number"
+                <NumberField
                   label="Qiymət"
                   fullWidth
+                  value={field.value}
                   error={!!errors.price}
                   helperText={errors.price?.message}
                   disabled={isSubmitting}
-                  onChange={(event) => field.onChange(Number(event.target.value))}
+                  onChange={field.onChange}
                 />
               )}
             />
@@ -182,15 +183,14 @@ export function PriceFormDialog({
               name="vat"
               control={control}
               render={({ field }) => (
-                <TextField
-                  {...field}
-                  type="number"
+                <NumberField
                   label="ƏDV (%)"
                   fullWidth
+                  value={field.value}
                   error={!!errors.vat}
                   helperText={errors.vat?.message}
                   disabled={isSubmitting}
-                  onChange={(event) => field.onChange(Number(event.target.value))}
+                  onChange={field.onChange}
                 />
               )}
             />

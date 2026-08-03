@@ -1,0 +1,156 @@
+import { useEffect, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Controller, useForm } from 'react-hook-form';
+import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Stack from '@mui/material/Stack';
+import Switch from '@mui/material/Switch';
+import TextField from '@mui/material/TextField';
+import { ApiError } from '../../../services/httpClient';
+import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
+import { ignoreBackdropClose } from '../../../shared/lib/ignoreBackdropClose';
+import type { SupplierFormValues } from '../types/referenceData.types';
+import { supplierFormSchema } from '../utils/referenceDataSchema';
+
+const DEFAULT_VALUES: SupplierFormValues = { code: '', name: '', active: true };
+
+export interface SupplierFormDialogProps {
+  open: boolean;
+  mode: 'create' | 'edit';
+  title: string;
+  editValues: SupplierFormValues | null;
+  isSubmitting: boolean;
+  onClose: () => void;
+  onSubmit: (values: SupplierFormValues, onError: (error: unknown) => void) => void;
+}
+
+// Used to be shared with Region (as SimpleReferenceFormDialog) — Region's
+// `code` column was dropped 2026-07-31 while Supplier's wasn't, so the two
+// no longer have the same form shape (bax RegionFormDialog.tsx for the
+// codeless counterpart).
+export function SupplierFormDialog({
+  open,
+  mode,
+  title,
+  editValues,
+  isSubmitting,
+  onClose,
+  onSubmit,
+}: SupplierFormDialogProps) {
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    setError,
+    formState: { errors },
+  } = useForm<SupplierFormValues>({
+    resolver: zodResolver(supplierFormSchema),
+    defaultValues: DEFAULT_VALUES,
+  });
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    setFormError(null);
+    reset(mode === 'edit' && editValues ? editValues : DEFAULT_VALUES);
+  }, [open, mode, editValues, reset]);
+
+  function handleApiError(error: unknown) {
+    if (error instanceof ApiError) {
+      if (error.status === 400 && error.validationErrors) {
+        const fieldEntries = Object.entries(error.validationErrors).filter(
+          ([field]) => field === 'code' || field === 'name' || field === 'active',
+        );
+        fieldEntries.forEach(([field, message]) => {
+          setError(field as keyof SupplierFormValues, { type: 'server', message });
+        });
+        setFormError(fieldEntries.length > 0 ? null : getApiErrorMessage(error));
+      } else if (error.status === 409) {
+        setError('code', { type: 'server', message: 'Bu kod artıq mövcuddur.' });
+      } else {
+        setFormError(getApiErrorMessage(error));
+      }
+    } else {
+      setFormError(getApiErrorMessage(error));
+    }
+  }
+
+  const submit = handleSubmit((values) => {
+    setFormError(null);
+    onSubmit(values, handleApiError);
+  });
+
+  return (
+    <Dialog open={open} onClose={ignoreBackdropClose(onClose)} maxWidth="xs" fullWidth>
+      <DialogTitle>{title}</DialogTitle>
+      <DialogContent>
+        <Stack spacing={2.5} sx={{ pt: 1 }}>
+          {formError && <Alert severity="error">{formError}</Alert>}
+
+          <Controller
+            name="code"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Kod"
+                fullWidth
+                error={!!errors.code}
+                helperText={errors.code?.message}
+                disabled={isSubmitting}
+              />
+            )}
+          />
+
+          <Controller
+            name="name"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Ad"
+                fullWidth
+                error={!!errors.name}
+                helperText={errors.name?.message}
+                disabled={isSubmitting}
+              />
+            )}
+          />
+
+          <Controller
+            name="active"
+            control={control}
+            render={({ field }) => (
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={field.value}
+                    onChange={(event) => field.onChange(event.target.checked)}
+                    disabled={isSubmitting}
+                  />
+                }
+                label="Aktiv"
+              />
+            )}
+          />
+        </Stack>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button onClick={onClose} disabled={isSubmitting}>
+          İmtina
+        </Button>
+        <Button variant="contained" onClick={submit} disabled={isSubmitting}>
+          {isSubmitting ? 'Yadda saxlanılır...' : 'Yadda saxla'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}

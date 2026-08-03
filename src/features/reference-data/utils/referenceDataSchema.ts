@@ -1,15 +1,19 @@
 import { z } from 'zod';
 
 export const regionFormSchema = z.object({
+  name: z.string().min(1, 'Ad daxil edin.').max(150, 'Ad 150 simvoldan çox ola bilməz.'),
+  active: z.boolean(),
+});
+
+// Supplier keeps its own code — no longer shares regionFormSchema (Region's
+// code column was dropped 2026-07-31, Supplier's wasn't).
+export const supplierFormSchema = z.object({
   code: z.string().min(1, 'Kod daxil edin.').max(20, 'Kod 20 simvoldan çox ola bilməz.'),
   name: z.string().min(1, 'Ad daxil edin.').max(150, 'Ad 150 simvoldan çox ola bilməz.'),
   active: z.boolean(),
 });
 
-export const supplierFormSchema = regionFormSchema;
-
 export const unitFormSchema = z.object({
-  code: z.string().min(1, 'Kod daxil edin.').max(20, 'Kod 20 simvoldan çox ola bilməz.'),
   name: z.string().min(1, 'Ad daxil edin.').max(100, 'Ad 100 simvoldan çox ola bilməz.'),
   symbol: z.string().max(20, 'Simvol 20 simvoldan çox ola bilməz.'),
   decimalPrecision: z

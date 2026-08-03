@@ -12,12 +12,13 @@ import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import { ApiError } from '../../../services/httpClient';
+import { NumberField } from '../../../shared/components';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
+import { ignoreBackdropClose } from '../../../shared/lib/ignoreBackdropClose';
 import type { UnitFormValues } from '../types/referenceData.types';
 import { unitFormSchema } from '../utils/referenceDataSchema';
 
 const DEFAULT_VALUES: UnitFormValues = {
-  code: '',
   name: '',
   symbol: '',
   decimalPrecision: 2,
@@ -74,8 +75,6 @@ export function UnitFormDialog({
           setError(field as keyof UnitFormValues, { type: 'server', message });
         });
         setFormError(fieldEntries.length > 0 ? null : getApiErrorMessage(error));
-      } else if (error.status === 409) {
-        setError('code', { type: 'server', message: 'Bu kod artıq mövcuddur.' });
       } else {
         setFormError(getApiErrorMessage(error));
       }
@@ -90,26 +89,11 @@ export function UnitFormDialog({
   });
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+    <Dialog open={open} onClose={ignoreBackdropClose(onClose)} maxWidth="xs" fullWidth>
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         <Stack spacing={2.5} sx={{ pt: 1 }}>
           {formError && <Alert severity="error">{formError}</Alert>}
-
-          <Controller
-            name="code"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Kod"
-                fullWidth
-                error={!!errors.code}
-                helperText={errors.code?.message}
-                disabled={isSubmitting}
-              />
-            )}
-          />
 
           <Controller
             name="name"
@@ -145,15 +129,14 @@ export function UnitFormDialog({
             name="decimalPrecision"
             control={control}
             render={({ field }) => (
-              <TextField
-                {...field}
-                type="number"
+              <NumberField
                 label="Onluq dəqiqlik"
                 fullWidth
+                value={field.value}
                 error={!!errors.decimalPrecision}
                 helperText={errors.decimalPrecision?.message}
                 disabled={isSubmitting}
-                onChange={(event) => field.onChange(Number(event.target.value))}
+                onChange={field.onChange}
               />
             )}
           />

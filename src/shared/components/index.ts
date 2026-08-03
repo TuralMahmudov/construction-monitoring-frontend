@@ -1,5 +1,7 @@
 export { ConfirmDialog } from './ConfirmDialog';
 export type { ConfirmDialogProps } from './ConfirmDialog';
+export { NumberField } from './NumberField';
+export type { NumberFieldProps } from './NumberField';
 export { StatusBadge } from './StatusBadge';
 export type { StatusBadgeProps } from './StatusBadge';
 export { PageContainer } from './PageContainer';

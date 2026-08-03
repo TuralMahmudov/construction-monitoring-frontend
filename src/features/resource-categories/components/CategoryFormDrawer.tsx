@@ -18,6 +18,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { ApiError } from '../../../services/httpClient';
 import { StatusBadge } from '../../../shared/components';
+import { ignoreBackdropClose } from '../../../shared/lib/ignoreBackdropClose';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
 import { useCategory } from '../hooks/useCategory';
 import { useCreateCategory } from '../hooks/useCreateCategory';
@@ -27,7 +28,7 @@ import { CATEGORY_TYPES, getCategoryTypeLabel } from '../types/resourceCategory.
 import { categoryFormSchema, type CategoryFormSchema } from '../utils/categoryForm.schema';
 import { CategoryParentPicker } from './CategoryParentPicker';
 
-const FORM_FIELD_NAMES = ['parentId', 'code', 'name', 'type', 'sortOrder', 'active'] as const;
+const FORM_FIELD_NAMES = ['parentId', 'name', 'type', 'sortOrder', 'active'] as const;
 type FormFieldName = (typeof FORM_FIELD_NAMES)[number];
 
 function isFormFieldName(value: string): value is FormFieldName {
@@ -36,7 +37,6 @@ function isFormFieldName(value: string): value is FormFieldName {
 
 const DEFAULT_VALUES: CategoryFormSchema = {
   parentId: null,
-  code: '',
   name: '',
   type: 0,
   sortOrder: 0,
@@ -77,7 +77,6 @@ export function CategoryFormDrawer() {
     if (drawer.mode === 'edit' && drawer.category) {
       reset({
         parentId: drawer.category.parentId,
-        code: drawer.category.code,
         name: drawer.category.name,
         type: drawer.category.type,
         sortOrder: drawer.category.sortOrder,
@@ -105,13 +104,13 @@ export function CategoryFormDrawer() {
   const onSubmit = handleSubmit((values) => {
     setFormError(null);
     if (isEdit && drawer.category) {
-      // PUT /{id} only accepts code/name/sortOrder — parent, type and active
-      // are not part of the update DTO on the backend.
+      // PUT /{id} only accepts name/sortOrder — parent, type and active are
+      // not part of the update DTO on the backend.
       updateMutation.mutate(
         {
           id: drawer.category.id,
           parentId: drawer.category.parentId,
-          payload: { code: values.code, name: values.name, sortOrder: values.sortOrder },
+          payload: { name: values.name, sortOrder: values.sortOrder },
         },
         { onSuccess: () => closeDrawer(), onError: handleApiError },
       );
@@ -124,7 +123,7 @@ export function CategoryFormDrawer() {
   });
 
   return (
-    <Drawer anchor="right" open={drawer.open} onClose={closeDrawer}>
+    <Drawer anchor="right" open={drawer.open} onClose={ignoreBackdropClose(closeDrawer)}>
       <Box
         sx={{
           width: { xs: '100vw', sm: 480 },
@@ -176,21 +175,6 @@ export function CategoryFormDrawer() {
                 {errors.parentId && <FormHelperText error>{errors.parentId.message}</FormHelperText>}
               </Box>
             )}
-
-            <Controller
-              name="code"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Kod"
-                  fullWidth
-                  error={!!errors.code}
-                  helperText={errors.code?.message}
-                  disabled={isSubmitting}
-                />
-              )}
-            />
 
             <Controller
               name="name"

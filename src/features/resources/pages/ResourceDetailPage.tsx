@@ -10,12 +10,12 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import { PageContainer, PageHeader } from '../../../shared/components';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
-import { ResourceAttributesTab } from '../attributes/components/ResourceAttributesTab';
+import { ResourceMarketAveragesTab } from '../prices/components/ResourceMarketAveragesTab';
 import { ResourcePricesTab } from '../prices/components/ResourcePricesTab';
 import { ResourceGeneralTab } from '../components/ResourceGeneralTab';
 import { useResource } from '../hooks/useResource';
 
-type TabKey = 'general' | 'attributes' | 'prices';
+type TabKey = 'general' | 'prices' | 'market';
 
 export function ResourceDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -25,8 +25,8 @@ export function ResourceDetailPage() {
   return (
     <PageContainer>
       <PageHeader
-        title="Resurs"
-        subtitle={resourceQuery.data?.code}
+        title="Elan"
+        subtitle={resourceQuery.data?.product.code}
         actions={
           <Button component={RouterLink} to="/resources" startIcon={<ArrowBackRoundedIcon />}>
             Siyahıya qayıt
@@ -48,13 +48,13 @@ export function ResourceDetailPage() {
         <Paper variant="outlined">
           <Tabs value={tab} onChange={(_event, value) => setTab(value)} sx={{ px: 2, pt: 1 }}>
             <Tab label="Ümumi" value="general" />
-            <Tab label="Xüsusiyyətlər" value="attributes" />
             <Tab label="Qiymətlər" value="prices" />
+            <Tab label="Bazar Qiyməti" value="market" />
           </Tabs>
           <Stack sx={{ p: 2 }}>
             {tab === 'general' && <ResourceGeneralTab resource={resourceQuery.data} />}
-            {tab === 'attributes' && <ResourceAttributesTab resourceId={resourceQuery.data.id} />}
             {tab === 'prices' && <ResourcePricesTab resourceId={resourceQuery.data.id} />}
+            {tab === 'market' && <ResourceMarketAveragesTab resource={resourceQuery.data} />}
           </Stack>
         </Paper>
       )}

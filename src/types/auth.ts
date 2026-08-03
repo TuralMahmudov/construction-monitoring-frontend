@@ -26,5 +26,7 @@ export interface AuthUser {
   firstName: string;
   lastName: string;
   enabled: boolean;
+  organizationId: string | null;
+  actorType: 1 | 2;
   roles: Role[];
 }

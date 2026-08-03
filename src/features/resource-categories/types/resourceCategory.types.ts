@@ -22,7 +22,6 @@ export function getCategoryTypeLabel(type: number): string {
 export interface ResourceCategory {
   id: string;
   parentId: string | null;
-  code: string;
   name: string;
   type: number;
   level: number;
@@ -41,19 +40,17 @@ export interface ResourceCategoryTreeNode extends ResourceCategory {
 
 export interface CreateCategoryRequest {
   parentId: string | null;
-  code: string;
   name: string;
   type: number;
   sortOrder: number;
   active: boolean;
 }
 
-// PUT /{id} (UpdateResourceCategoryRequest) only accepts these three fields
-// per the backend's OpenAPI schema — parent changes go through the
-// dedicated /move endpoint, active through /enable /disable, and type is
-// immutable after creation.
+// PUT /{id} (UpdateResourceCategoryRequest) only accepts these fields per
+// the backend's OpenAPI schema — parent changes go through the dedicated
+// /move endpoint, active through /enable /disable, and type is immutable
+// after creation. `code` was dropped from the table 2026-07-31.
 export interface UpdateCategoryRequest {
-  code: string;
   name: string;
   sortOrder: number;
 }
@@ -62,7 +59,6 @@ export type CategoryStatusFilter = 'ALL' | 'ACTIVE' | 'INACTIVE';
 
 export interface CategorySearchParams {
   name?: string;
-  code?: string;
   status?: CategoryStatusFilter;
   type?: number;
   page?: number;

@@ -1,5 +1,12 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { MainLayout } from '../layouts/MainLayout';
+import { AttributeDefinitionsPage } from '../features/admin/attribute-definitions/pages/AttributeDefinitionsPage';
+import { FlaggedPricesPage } from '../features/admin/flagged-prices/pages/FlaggedPricesPage';
+import { MarketAveragesPage } from '../features/admin/market-averages/pages/MarketAveragesPage';
+import { MatchGroupReviewPage } from '../features/admin/match-groups/pages/MatchGroupReviewPage';
+import { MyResourcesPage } from '../features/my-resources/pages/MyResourcesPage';
+import { ProductDetailPage } from '../features/products/pages/ProductDetailPage';
+import { ProductListPage } from '../features/products/pages/ProductListPage';
 import { CategorySearchPage } from '../features/resource-categories/pages/CategorySearchPage';
 import { CategoryTreePage } from '../features/resource-categories/pages/CategoryTreePage';
 import { RegionsPage } from '../features/reference-data/pages/RegionsPage';
@@ -35,11 +42,18 @@ export const router = createBrowserRouter([
       { path: 'dashboard', element: <Dashboard /> },
       { path: 'resource-categories', element: <CategoryTreePage /> },
       { path: 'resource-categories/search', element: <CategorySearchPage /> },
+      { path: 'my-resources', element: <MyResourcesPage /> },
+      { path: 'products', element: <ProductListPage /> },
+      { path: 'products/:id', element: <ProductDetailPage /> },
       { path: 'resources', element: <ResourceListPage /> },
       { path: 'resources/:id', element: <ResourceDetailPage /> },
       { path: 'reference-data/units', element: <UnitsPage /> },
       { path: 'reference-data/regions', element: <RegionsPage /> },
       { path: 'reference-data/suppliers', element: <SuppliersPage /> },
+      { path: 'admin/attribute-definitions', element: <AttributeDefinitionsPage /> },
+      { path: 'admin/flagged-prices', element: <FlaggedPricesPage /> },
+      { path: 'admin/match-groups', element: <MatchGroupReviewPage /> },
+      { path: 'admin/market-averages', element: <MarketAveragesPage /> },
       { path: '*', element: <NotFound /> },
     ],
   },

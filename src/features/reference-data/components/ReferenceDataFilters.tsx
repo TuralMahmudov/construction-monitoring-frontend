@@ -6,23 +6,34 @@ export interface ReferenceDataFiltersProps {
   code?: string;
   name?: string;
   active?: boolean;
+  /** Units/Regions dropped their `code` column (2026-07-31) — Suppliers kept
+   *  theirs, so this defaults to shown and only Units/Regions opt out. */
+  showCodeFilter?: boolean;
   onChange: (patch: { code?: string; name?: string; active?: boolean }) => void;
 }
 
-export function ReferenceDataFilters({ code, name, active, onChange }: ReferenceDataFiltersProps) {
+export function ReferenceDataFilters({
+  code,
+  name,
+  active,
+  showCodeFilter = true,
+  onChange,
+}: ReferenceDataFiltersProps) {
   const statusValue = active === undefined ? '' : active ? 'true' : 'false';
 
   return (
     <Grid container spacing={2} sx={{ pb: 1 }}>
-      <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-        <TextField
-          label="Kod"
-          fullWidth
-          size="small"
-          value={code ?? ''}
-          onChange={(event) => onChange({ code: event.target.value || undefined })}
-        />
-      </Grid>
+      {showCodeFilter && (
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+          <TextField
+            label="Kod"
+            fullWidth
+            size="small"
+            value={code ?? ''}
+            onChange={(event) => onChange({ code: event.target.value || undefined })}
+          />
+        </Grid>
+      )}
       <Grid size={{ xs: 12, sm: 6, md: 4 }}>
         <TextField
           label="Ad"

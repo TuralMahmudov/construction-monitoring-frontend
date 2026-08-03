@@ -19,6 +19,8 @@ export interface PriceHistoryTableProps {
   prices: ResourcePrice[];
   canEdit: boolean;
   canApprove: boolean;
+  currentUserId: string | null;
+  isCentralAdmin: boolean;
   onEdit: (price: ResourcePrice) => void;
   onApprove: (price: ResourcePrice) => void;
   onReject: (price: ResourcePrice) => void;
@@ -28,6 +30,8 @@ export function PriceHistoryTable({
   prices,
   canEdit,
   canApprove,
+  currentUserId,
+  isCentralAdmin,
   onEdit,
   onApprove,
   onReject,
@@ -62,7 +66,8 @@ export function PriceHistoryTable({
         </TableHead>
         <TableBody>
           {prices.map((price) => {
-            const isPending = price.status === PRICE_STATUS.PENDING;
+            const isActionable = price.status === PRICE_STATUS.PENDING || price.status === PRICE_STATUS.FLAGGED;
+            const canEditRow = isActionable && (price.createdBy === currentUserId || isCentralAdmin);
             return (
               <TableRow key={price.id} hover>
                 <TableCell>{supplierNames.get(price.supplierId) ?? '—'}</TableCell>
@@ -78,12 +83,18 @@ export function PriceHistoryTable({
                 {showActions && (
                   <TableCell align="right">
                     {canEdit &&
-                      (isPending ? (
+                      (canEditRow ? (
                         <IconButton size="small" onClick={() => onEdit(price)} aria-label="redaktə et">
                           <EditRoundedIcon fontSize="small" />
                         </IconButton>
                       ) : (
-                        <Tooltip title="Təsdiqlənmiş/rədd edilmiş qiymət redaktə oluna bilməz — yenisini yaradın.">
+                        <Tooltip
+                          title={
+                            isActionable
+                              ? 'Bu qiyməti yalnız onu göndərən istifadəçi və ya admin redaktə edə bilər.'
+                              : 'Təsdiqlənmiş/rədd edilmiş qiymət redaktə oluna bilməz — yenisini yaradın.'
+                          }
+                        >
                           <span>
                             <IconButton size="small" disabled aria-label="redaktə et">
                               <EditRoundedIcon fontSize="small" />
@@ -91,7 +102,7 @@ export function PriceHistoryTable({
                           </span>
                         </Tooltip>
                       ))}
-                    {canApprove && isPending && (
+                    {canApprove && isActionable && (
                       <>
                         <IconButton
                           size="small"

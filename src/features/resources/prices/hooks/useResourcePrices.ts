@@ -8,7 +8,7 @@ import {
   rejectResourcePrice,
   updateResourcePrice,
 } from '../api/resourcePricesApi';
-import type { ResourcePriceFormValues } from '../types/resourcePrice.types';
+import { PRICE_STATUS, type ResourcePrice, type ResourcePriceFormValues } from '../types/resourcePrice.types';
 
 const HISTORY_PAGE_SIZE = 100;
 
@@ -29,9 +29,14 @@ export function useCreateResourcePrice(resourceId: string) {
 
   return useMutation({
     mutationFn: (payload: ResourcePriceFormValues) => createResourcePrice(resourceId, payload),
-    onSuccess: () => {
+    onSuccess: (price: ResourcePrice) => {
       queryClient.invalidateQueries({ queryKey: priceKeys.history(resourceId) });
-      enqueueSnackbar('Qiymət yaradıldı, təsdiq gözləyir.', { variant: 'success' });
+      enqueueSnackbar(
+        price.status === PRICE_STATUS.FLAGGED
+          ? 'Qiymət yaradıldı, lakin bazar qiymətindən əhəmiyyətli dərəcədə fərqləndiyi üçün admin nəzərdənkeçirməsinə göndərildi.'
+          : 'Qiymət yaradıldı, təsdiq gözləyir.',
+        { variant: price.status === PRICE_STATUS.FLAGGED ? 'warning' : 'success' },
+      );
     },
   });
 }

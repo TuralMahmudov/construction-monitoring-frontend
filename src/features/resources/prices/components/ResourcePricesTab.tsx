@@ -9,7 +9,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useAuth } from '../../../../hooks/useAuth';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
-import { canApprovePrices, canWrite } from '../../../../shared/lib/permissions';
+import { canApprovePrices, canWrite, isCentralAdmin } from '../../../../shared/lib/permissions';
 import type { ResourcePrice, ResourcePriceFormValues } from '../types/resourcePrice.types';
 import { groupCurrentPrices } from '../utils/groupCurrentPrices';
 import {
@@ -31,6 +31,7 @@ export function ResourcePricesTab({ resourceId }: ResourcePricesTabProps) {
   const { user } = useAuth();
   const canEdit = canWrite(user?.roles ?? []);
   const canApprove = canApprovePrices(user?.roles ?? []);
+  const isAdmin = isCentralAdmin(user?.roles ?? []);
 
   const historyQuery = useResourcePriceHistory(resourceId);
   const createMutation = useCreateResourcePrice(resourceId);
@@ -106,6 +107,8 @@ export function ResourcePricesTab({ resourceId }: ResourcePricesTabProps) {
         prices={prices}
         canEdit={canEdit}
         canApprove={canApprove}
+        currentUserId={user?.id ?? null}
+        isCentralAdmin={isAdmin}
         onEdit={(price) => setDialog({ open: true, mode: 'edit', price })}
         onApprove={(price) => approveMutation.mutate(price.id)}
         onReject={(price) => rejectMutation.mutate(price.id)}

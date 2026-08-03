@@ -1,10 +1,17 @@
 import AccountTreeRoundedIcon from '@mui/icons-material/AccountTreeRounded';
+import AdminPanelSettingsRoundedIcon from '@mui/icons-material/AdminPanelSettingsRounded';
+import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
+import CompareArrowsRoundedIcon from '@mui/icons-material/CompareArrowsRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
 import LibraryBooksRoundedIcon from '@mui/icons-material/LibraryBooksRounded';
+import PersonPinCircleRoundedIcon from '@mui/icons-material/PersonPinCircleRounded';
 import PublicRoundedIcon from '@mui/icons-material/PublicRounded';
+import SellRoundedIcon from '@mui/icons-material/SellRounded';
+import QueryStatsRoundedIcon from '@mui/icons-material/QueryStatsRounded';
 import StraightenRoundedIcon from '@mui/icons-material/StraightenRounded';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
+import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import type { NavItem } from '../../types/navigation';
 
 export const navItems: NavItem[] = [
@@ -14,14 +21,25 @@ export const navItems: NavItem[] = [
     icon: <HomeRoundedIcon />,
   },
   {
-    label: 'Resurs Kateqoriyaları',
+    label: 'Resurs Kataloqu',
     path: '/resource-categories',
     icon: <AccountTreeRoundedIcon />,
   },
   {
-    label: 'Resurslar',
-    path: '/resources',
+    label: 'Mənim Resurslarım',
+    path: '/my-resources',
+    icon: <PersonPinCircleRoundedIcon />,
+    organizationOnly: true,
+  },
+  {
+    label: 'Məhsullar',
+    path: '/products',
     icon: <Inventory2RoundedIcon />,
+  },
+  {
+    label: 'Resurslar (Elanlar)',
+    path: '/resources',
+    icon: <SellRoundedIcon />,
   },
   {
     label: 'İstinad Məlumatları',
@@ -30,6 +48,17 @@ export const navItems: NavItem[] = [
       { label: 'Vahidlər', path: '/reference-data/units', icon: <StraightenRoundedIcon /> },
       { label: 'Regionlar', path: '/reference-data/regions', icon: <PublicRoundedIcon /> },
       { label: 'Təchizatçılar', path: '/reference-data/suppliers', icon: <StorefrontRoundedIcon /> },
+    ],
+  },
+  {
+    label: 'Admin Panel',
+    icon: <AdminPanelSettingsRoundedIcon />,
+    centralAdminOnly: true,
+    children: [
+      { label: 'Atribut Lüğəti', path: '/admin/attribute-definitions', icon: <CategoryRoundedIcon /> },
+      { label: 'Kənar Dəyər Qiymətlər', path: '/admin/flagged-prices', icon: <WarningAmberRoundedIcon /> },
+      { label: 'Uyğunlaşdırma Baxışı', path: '/admin/match-groups', icon: <CompareArrowsRoundedIcon /> },
+      { label: 'Bazar Qiymətləri Analitikası', path: '/admin/market-averages', icon: <QueryStatsRoundedIcon /> },
     ],
   },
 ];

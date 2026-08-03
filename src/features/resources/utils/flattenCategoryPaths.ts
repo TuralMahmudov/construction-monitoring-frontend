@@ -2,6 +2,7 @@ import type { ResourceCategory } from '../../resource-categories/types/resourceC
 
 export interface FlatCategoryOption {
   id: string;
+  name: string;
   path: string;
 }
 
@@ -33,6 +34,6 @@ export function flattenCategoryPaths(categories: ResourceCategory[]): FlatCatego
   }
 
   return categories
-    .map((category) => ({ id: category.id, path: buildPath(category) }))
+    .map((category) => ({ id: category.id, name: category.name, path: buildPath(category) }))
     .sort((a, b) => a.path.localeCompare(b.path, 'az'));
 }

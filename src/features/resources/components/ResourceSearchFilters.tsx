@@ -9,37 +9,31 @@ import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { useUnitOptions } from '../../reference-data/hooks/useReferenceOptions';
+import { useAuth } from '../../../hooks/useAuth';
+import { isCentralAdmin } from '../../../shared/lib/permissions';
+import { ProductAutocomplete } from '../../products/components/ProductAutocomplete';
+import type { Product } from '../../products/types/product.types';
 import type { ResourceSearchParams } from '../types/resource.types';
-import { CategoryPathAutocomplete } from './CategoryPathAutocomplete';
 
 export interface ResourceSearchFiltersProps {
-  name?: string;
-  code?: string;
-  category?: string;
-  manufacturer?: string;
-  brand?: string;
-  unit?: string;
-  status?: boolean;
+  organization?: string;
+  active?: boolean;
   onChange: (patch: Partial<ResourceSearchParams>) => void;
 }
 
-export function ResourceSearchFilters({
-  name,
-  code,
-  category,
-  manufacturer,
-  brand,
-  unit,
-  status,
-  onChange,
-}: ResourceSearchFiltersProps) {
+// § 3.4 — name/code/category/manufacturer/brand/unit/attribute filters moved
+// to GET /api/products (bax ProductSearchFilters); a resource listing is now
+// only filterable by which product it points to, which organization it
+// belongs to, and its active state.
+export function ResourceSearchFilters({ organization, active, onChange }: ResourceSearchFiltersProps) {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
   const [expanded, setExpanded] = useState(!isSmallScreen);
-  const unitOptions = useUnitOptions();
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const { user } = useAuth();
+  const canFilterByOrganization = isCentralAdmin(user?.roles ?? []);
 
-  const statusValue = status === undefined ? '' : status ? 'true' : 'false';
+  const activeValue = active === undefined ? '' : active ? 'true' : 'false';
 
   return (
     <Box>
@@ -59,74 +53,35 @@ export function ResourceSearchFilters({
       )}
       <Collapse in={expanded || !isSmallScreen}>
         <Grid container spacing={2} sx={{ pb: 1 }}>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <TextField
-              label="Ad"
-              fullWidth
-              size="small"
-              value={name ?? ''}
-              onChange={(event) => onChange({ name: event.target.value || undefined })}
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <ProductAutocomplete
+              value={selectedProduct}
+              onChange={(product) => {
+                setSelectedProduct(product);
+                onChange({ product: product?.id ?? undefined });
+              }}
             />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <TextField
-              label="Kod"
-              fullWidth
-              size="small"
-              value={code ?? ''}
-              onChange={(event) => onChange({ code: event.target.value || undefined })}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <CategoryPathAutocomplete
-              value={category ?? null}
-              onChange={(id) => onChange({ category: id ?? undefined })}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <TextField
-              select
-              label="Vahid"
-              fullWidth
-              size="small"
-              value={unit ?? ''}
-              onChange={(event) => onChange({ unit: event.target.value || undefined })}
-            >
-              <MenuItem value="">Hamısı</MenuItem>
-              {(unitOptions.data?.content ?? []).map((option) => (
-                <MenuItem key={option.id} value={option.id}>
-                  {option.symbol || option.name}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <TextField
-              label="İstehsalçı"
-              fullWidth
-              size="small"
-              value={manufacturer ?? ''}
-              onChange={(event) => onChange({ manufacturer: event.target.value || undefined })}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <TextField
-              label="Brend"
-              fullWidth
-              size="small"
-              value={brand ?? ''}
-              onChange={(event) => onChange({ brand: event.target.value || undefined })}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          {canFilterByOrganization && (
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <TextField
+                label="Təşkilat ID (UUID)"
+                fullWidth
+                size="small"
+                value={organization ?? ''}
+                onChange={(event) => onChange({ organization: event.target.value.trim() || undefined })}
+              />
+            </Grid>
+          )}
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <TextField
               select
               label="Status"
               fullWidth
               size="small"
-              value={statusValue}
+              value={activeValue}
               onChange={(event) =>
-                onChange({ status: event.target.value === '' ? undefined : event.target.value === 'true' })
+                onChange({ active: event.target.value === '' ? undefined : event.target.value === 'true' })
               }
             >
               <MenuItem value="">Hamısı</MenuItem>

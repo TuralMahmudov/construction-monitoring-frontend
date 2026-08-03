@@ -18,6 +18,8 @@ export interface ReferenceDataListPageProps<TItem extends BaseReferenceItem> {
   columns: GridColDef<TItem>[];
   hooks: Pick<ReferenceDataHooks<TItem, unknown>, 'useList' | 'useRemove'>;
   canEdit: boolean;
+  /** Forwarded to ReferenceDataFilters — see its doc comment. */
+  showCodeFilter?: boolean;
   onAdd: () => void;
   onEdit: (item: TItem) => void;
 }
@@ -36,6 +38,7 @@ export function ReferenceDataListPage<TItem extends BaseReferenceItem>({
   columns,
   hooks,
   canEdit,
+  showCodeFilter,
   onAdd,
   onEdit,
 }: ReferenceDataListPageProps<TItem>) {
@@ -103,6 +106,7 @@ export function ReferenceDataListPage<TItem extends BaseReferenceItem>({
         code={filters.code}
         name={filters.name}
         active={filters.active}
+        showCodeFilter={showCodeFilter}
         onChange={handleFilterChange}
       />
 

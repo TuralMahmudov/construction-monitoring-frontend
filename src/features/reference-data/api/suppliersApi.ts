@@ -1,6 +1,6 @@
 import { createReferenceDataApi } from './createReferenceDataApi';
-import type { BaseReferenceFormValues, SupplierItem } from '../types/referenceData.types';
+import type { SupplierFormValues, SupplierItem } from '../types/referenceData.types';
 
-export const suppliersApi = createReferenceDataApi<SupplierItem, BaseReferenceFormValues>(
+export const suppliersApi = createReferenceDataApi<SupplierItem, SupplierFormValues>(
   '/api/suppliers',
 );

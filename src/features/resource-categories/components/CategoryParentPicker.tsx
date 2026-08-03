@@ -73,7 +73,6 @@ export function CategoryParentPicker({ value, onChange, excludeCategoryId }: Cat
       return {
         id: category.id,
         label: category.name,
-        secondaryLabel: category.code,
         disabled,
         hasChildren: !category.leaf,
         children: fetchedChildren?.map(buildNode),

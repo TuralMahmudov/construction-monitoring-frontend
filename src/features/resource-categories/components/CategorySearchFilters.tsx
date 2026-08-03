@@ -14,7 +14,6 @@ import type { CategorySearchParams, CategoryStatusFilter } from '../types/resour
 
 export interface CategorySearchFiltersProps {
   name?: string;
-  code?: string;
   status: CategoryStatusFilter;
   type?: number;
   onChange: (patch: Partial<CategorySearchParams>) => void;
@@ -28,7 +27,6 @@ const STATUS_OPTIONS: { value: CategoryStatusFilter; label: string }[] = [
 
 export function CategorySearchFilters({
   name,
-  code,
   status,
   type,
   onChange,
@@ -62,15 +60,6 @@ export function CategorySearchFilters({
               size="small"
               value={name ?? ''}
               onChange={(event) => onChange({ name: event.target.value || undefined })}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <TextField
-              label="Kod"
-              fullWidth
-              size="small"
-              value={code ?? ''}
-              onChange={(event) => onChange({ code: event.target.value || undefined })}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>

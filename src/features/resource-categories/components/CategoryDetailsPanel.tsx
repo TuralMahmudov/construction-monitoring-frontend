@@ -1,15 +1,21 @@
 import type { ReactNode } from 'react';
-import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import { Link as RouterLink } from 'react-router-dom';
+import LaunchRoundedIcon from '@mui/icons-material/LaunchRounded';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { useAuth } from '../../../hooks/useAuth';
+import { ProductAttributesReadOnly } from '../../products/components/ProductAttributesReadOnly';
+import { useProduct } from '../../products/hooks/useProduct';
 import { StatusBadge } from '../../../shared/components';
+import { canWrite } from '../../../shared/lib/permissions';
+import { CategoryAttributesPanel } from './CategoryAttributesPanel';
 import { useCategory } from '../hooks/useCategory';
 import { useCategoryUiStore } from '../store/categoryUiStore';
-import { getCategoryTypeLabel } from '../types/resourceCategory.types';
+import { parseTreeItemId } from '../utils/treeItemId';
 
 function DetailRow({ label, value }: { label: string; value: ReactNode }) {
   return (
@@ -24,24 +30,31 @@ function DetailRow({ label, value }: { label: string; value: ReactNode }) {
   );
 }
 
-function formatAuditDate(value: string): string {
-  return new Date(value).toLocaleString('az-AZ');
-}
-
 export function CategoryDetailsPanel() {
   const selectedId = useCategoryUiStore((state) => state.selectedId);
-  const openEditDrawer = useCategoryUiStore((state) => state.openEditDrawer);
-  const query = useCategory(selectedId);
 
   if (!selectedId) {
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
         <Typography color="text.secondary">
-          Ətraflı məlumat üçün ağacdan bir kateqoriya seçin.
+          Ətraflı məlumat üçün ağacdan bir kateqoriya və ya məhsul seçin.
         </Typography>
       </Box>
     );
   }
+
+  const selection = parseTreeItemId(selectedId);
+  return selection.type === 'product' ? (
+    <ProductNodeDetails productId={selection.id} />
+  ) : (
+    <CategoryNodeDetails categoryId={selection.id} />
+  );
+}
+
+function CategoryNodeDetails({ categoryId }: { categoryId: string }) {
+  const { user } = useAuth();
+  const canEdit = canWrite(user?.roles ?? []);
+  const query = useCategory(categoryId);
 
   if (query.isLoading) {
     return (
@@ -63,34 +76,76 @@ export function CategoryDetailsPanel() {
 
   return (
     <Box sx={{ p: 2 }}>
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+        {category.name}
+      </Typography>
+      <StatusBadge active={category.active} />
+
+      {/* Attribute-linking only makes sense one level above products — a
+          non-leaf row (e.g. "Tikinti materialları") has no attribute schema
+          of its own, its leaf descendants do (bax CategoryAttributesPanel). */}
+      {category.leaf && (
+        <>
+          <Divider sx={{ my: 2 }} />
+          <CategoryAttributesPanel categoryId={category.id} canEdit={canEdit} />
+        </>
+      )}
+    </Box>
+  );
+}
+
+function ProductNodeDetails({ productId }: { productId: string }) {
+  const productQuery = useProduct(productId);
+
+  if (productQuery.isLoading) {
+    return (
+      <Stack sx={{ alignItems: 'center', py: 4 }}>
+        <CircularProgress size={28} />
+      </Stack>
+    );
+  }
+
+  if (productQuery.isError || !productQuery.data) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography color="error">Məhsul məlumatları yüklənə bilmədi.</Typography>
+      </Box>
+    );
+  }
+
+  const product = productQuery.data;
+
+  return (
+    <Box sx={{ p: 2 }}>
       <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
         <Typography variant="h6" sx={{ fontWeight: 700 }}>
-          {category.name}
+          {product.name}
         </Typography>
-        <Button size="small" startIcon={<EditRoundedIcon />} onClick={() => openEditDrawer(category)}>
-          Redaktə et
+        <Button
+          size="small"
+          component={RouterLink}
+          to={`/products/${product.id}`}
+          startIcon={<LaunchRoundedIcon />}
+        >
+          Məhsula bax
         </Button>
       </Stack>
 
-      <StatusBadge active={category.active} />
+      <StatusBadge active={product.active} />
 
       <Divider sx={{ my: 2 }} />
 
-      <DetailRow label="Kod" value={category.code} />
-      <DetailRow label="Növ" value={getCategoryTypeLabel(category.type)} />
-      <DetailRow label="Səviyyə" value={category.level} />
-      <DetailRow label="Sıra nömrəsi" value={category.sortOrder} />
-      <DetailRow label="Son element" value={category.leaf ? 'Bəli' : 'Xeyr'} />
+      <DetailRow label="Kod" value={product.code} />
 
       <Divider sx={{ my: 2 }} />
 
-      <DetailRow label="Yaradılıb" value={formatAuditDate(category.createdDate)} />
-      <DetailRow label="Yaradan" value={category.createdBy} />
-      <DetailRow
-        label="Dəyişdirilib"
-        value={category.modifiedDate ? formatAuditDate(category.modifiedDate) : '—'}
-      />
-      <DetailRow label="Dəyişdirən" value={category.modifiedBy ?? '—'} />
+      {/* Read-only by design — attribute linking is a category-level
+          configuration action (bax CategoryAttributesPanel), it doesn't
+          apply to an individual product's already-fixed attribute values. */}
+      <Typography variant="subtitle2" sx={{ mb: 1 }}>
+        Xüsusiyyətlər
+      </Typography>
+      <ProductAttributesReadOnly productId={product.id} />
     </Box>
   );
 }

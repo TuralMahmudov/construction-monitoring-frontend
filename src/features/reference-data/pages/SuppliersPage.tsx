@@ -4,9 +4,9 @@ import { useAuth } from '../../../hooks/useAuth';
 import { StatusBadge } from '../../../shared/components';
 import { canWrite } from '../../../shared/lib/permissions';
 import { ReferenceDataListPage } from '../components/ReferenceDataListPage';
-import { SimpleReferenceFormDialog } from '../components/SimpleReferenceFormDialog';
+import { SupplierFormDialog } from '../components/SupplierFormDialog';
 import { suppliersHooks } from '../hooks/useSuppliersData';
-import type { BaseReferenceFormValues, SupplierItem } from '../types/referenceData.types';
+import type { SupplierFormValues, SupplierItem } from '../types/referenceData.types';
 
 const columns: GridColDef<SupplierItem>[] = [
   { field: 'code', headerName: 'Kod', width: 160 },
@@ -38,7 +38,7 @@ export function SuppliersPage() {
     setDialog({ open: false, mode: 'create', item: null });
   }
 
-  function handleSubmit(values: BaseReferenceFormValues, onError: (error: unknown) => void) {
+  function handleSubmit(values: SupplierFormValues, onError: (error: unknown) => void) {
     if (dialog.mode === 'edit' && dialog.item) {
       updateMutation.mutate(
         { id: dialog.item.id, payload: values },
@@ -63,7 +63,7 @@ export function SuppliersPage() {
       />
 
       {canEdit && (
-        <SimpleReferenceFormDialog
+        <SupplierFormDialog
           open={dialog.open}
           mode={dialog.mode}
           title={dialog.mode === 'edit' ? 'Təchizatçını redaktə et' : 'Yeni təchizatçı'}

@@ -1,6 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
+import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
+import Accordion from '@mui/material/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import AccordionSummary from '@mui/material/AccordionSummary';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -8,100 +12,164 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import Divider from '@mui/material/Divider';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import MenuItem from '@mui/material/MenuItem';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
 import Stack from '@mui/material/Stack';
-import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import { useSnackbar } from 'notistack';
+import { ignoreBackdropClose } from '../../../shared/lib/ignoreBackdropClose';
 import { useUnitOptions } from '../../reference-data/hooks/useReferenceOptions';
+import { useAuth } from '../../../hooks/useAuth';
 import { ApiError } from '../../../services/httpClient';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
-import type { ResourceFormValues } from '../types/resource.types';
-import { resourceFormSchema } from '../utils/resourceForm.schema';
+import { isCentralAdmin } from '../../../shared/lib/permissions';
+import { useCategoryAttributes } from '../../resource-categories/hooks/useCategoryAttributeDefinitions';
+import { useCategoryOptions } from '../hooks/useCategoryOptions';
+import { useUnitLookup } from '../hooks/useLookups';
+import { ProductAttributesFields } from '../../products/components/ProductAttributesFields';
+import { ProductAttributesReadOnly } from '../../products/components/ProductAttributesReadOnly';
+import { ProductPicker } from '../../products/components/ProductPicker';
+import { useFindOrCreateProduct } from '../../products/hooks/useFindOrCreateProduct';
+import type { Product } from '../../products/types/product.types';
+import { productFormSchema, type ProductFormSchema } from '../../products/utils/productForm.schema';
+import { useBrandOptions, useManufacturerOptions, useModelOptions } from '../hooks/useResourceFieldOptions';
+import type { ResourceCreateRequest } from '../types/resource.types';
+import { resourceBrandFieldsSchema, type ResourceBrandFieldsSchema } from '../utils/resourceListingForm.schema';
 import { CategoryPathAutocomplete } from './CategoryPathAutocomplete';
+import { ResourceFieldAutocomplete } from './ResourceFieldAutocomplete';
 
-const FORM_FIELD_NAMES = [
-  'categoryId',
-  'code',
-  'name',
-  'description',
-  'unitId',
-  'specification',
-  'manufacturer',
-  'brand',
-  'model',
-  'active',
-] as const;
-type FormFieldName = (typeof FORM_FIELD_NAMES)[number];
+type SelectionMode = 'existing' | 'new';
 
-function isFormFieldName(value: string): value is FormFieldName {
-  return (FORM_FIELD_NAMES as readonly string[]).includes(value);
-}
-
-const DEFAULT_VALUES: ResourceFormValues = {
+const DEFAULT_PRODUCT_VALUES: ProductFormSchema = {
   categoryId: '',
-  code: '',
   name: '',
-  description: '',
   unitId: null,
-  specification: '',
+};
+
+const DEFAULT_LISTING_VALUES: ResourceBrandFieldsSchema = {
   manufacturer: '',
   brand: '',
   model: '',
-  active: true,
+  specification: '',
 };
 
 export interface ResourceFormDialogProps {
   open: boolean;
-  mode: 'create' | 'edit';
-  editValues: ResourceFormValues | null;
   isSubmitting: boolean;
   onClose: () => void;
-  onSubmit: (values: ResourceFormValues, onError: (error: unknown) => void) => void;
+  onSubmit: (values: ResourceCreateRequest, onError: (error: unknown) => void) => void;
 }
 
-export function ResourceFormDialog({
-  open,
-  mode,
-  editValues,
-  isSubmitting,
-  onClose,
-  onSubmit,
-}: ResourceFormDialogProps) {
+// § 6 "Elan Yarat" — two branches under one dialog: attach a listing to an
+// existing product (§ 6.1), or resolve/create one via find-or-create then
+// attach (§ 6.2). Manufacturer/brand/model/specification are always shown
+// and always go to POST /api/resources regardless of branch (2026-07-31 —
+// these are listing-specific, not product identity). Editing an existing
+// listing isn't handled here — bax ResourceEditDialog.
+export function ResourceFormDialog({ open, isSubmitting, onClose, onSubmit }: ResourceFormDialogProps) {
   const [formError, setFormError] = useState<string | null>(null);
+  const [selectionMode, setSelectionMode] = useState<SelectionMode>('existing');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [attributeValues, setAttributeValues] = useState<Record<string, string>>({});
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
+
+  const { user } = useAuth();
+  const canAssignOrganization = isCentralAdmin(user?.roles ?? []);
+  const { enqueueSnackbar } = useSnackbar();
   const unitOptions = useUnitOptions();
+  const findOrCreateMutation = useFindOrCreateProduct();
+
+  const { options: categoryOptions } = useCategoryOptions();
+  const unitSymbols = useUnitLookup();
 
   const {
-    control,
-    handleSubmit,
-    reset,
-    setError,
-    formState: { errors },
-  } = useForm<ResourceFormValues>({
-    resolver: zodResolver(resourceFormSchema),
-    defaultValues: DEFAULT_VALUES,
+    control: productControl,
+    reset: resetProduct,
+    setError: setProductError,
+    setValue: setProductValue,
+    watch: watchProduct,
+    trigger: triggerProduct,
+    getValues: getProductValues,
+    formState: { errors: productErrors },
+  } = useForm<ProductFormSchema>({
+    resolver: zodResolver(productFormSchema),
+    defaultValues: DEFAULT_PRODUCT_VALUES,
   });
+
+  const {
+    control: listingControl,
+    reset: resetListing,
+    setError: setListingError,
+    watch: watchListing,
+    trigger: triggerListing,
+    getValues: getListingValues,
+    formState: { errors: listingErrors },
+  } = useForm<ResourceBrandFieldsSchema>({
+    resolver: zodResolver(resourceBrandFieldsSchema),
+    defaultValues: DEFAULT_LISTING_VALUES,
+  });
+
+  const categoryId = watchProduct('categoryId');
+  const manufacturerInput = watchListing('manufacturer');
+  const brandInput = watchListing('brand');
+  const modelInput = watchListing('model');
+  const manufacturerOptions = useManufacturerOptions(manufacturerInput);
+  const brandOptions = useBrandOptions(brandInput);
+  const modelOptions = useModelOptions(modelInput);
+
+  const categoryAttributesQuery = useCategoryAttributes(categoryId || null);
+  const attributeLinks = useMemo(
+    () =>
+      (categoryAttributesQuery.data ?? [])
+        .filter((link) => link.visible)
+        .sort((a, b) => a.sortOrder - b.sortOrder),
+    [categoryAttributesQuery.data],
+  );
 
   useEffect(() => {
     if (!open) {
       return;
     }
     setFormError(null);
-    reset(mode === 'edit' && editValues ? editValues : DEFAULT_VALUES);
-  }, [open, mode, editValues, reset]);
+    setSelectionMode('existing');
+    setSelectedProduct(null);
+    setAttributeValues({});
+    setOrganizationId(null);
+    resetProduct(DEFAULT_PRODUCT_VALUES);
+    resetListing(DEFAULT_LISTING_VALUES);
+  }, [open, resetProduct, resetListing]);
+
+  // Switching category mid-fill invalidates whatever was picked/typed for
+  // the previous category's (different) product list and attribute set.
+  // Per § 6.2 step 1, "Ad" auto-fills from the selected category's own
+  // name (still editable afterwards).
+  useEffect(() => {
+    setAttributeValues({});
+    setSelectedProduct(null);
+    const categoryName = categoryOptions.find((option) => option.id === categoryId)?.name ?? '';
+    setProductValue('name', categoryName);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoryId]);
 
   function handleApiError(error: unknown) {
     if (error instanceof ApiError) {
       if (error.status === 400 && error.validationErrors) {
-        const fieldEntries = Object.entries(error.validationErrors).filter(([field]) =>
-          isFormFieldName(field),
-        );
+        const fieldEntries = Object.entries(error.validationErrors);
+        let matched = 0;
         fieldEntries.forEach(([field, message]) => {
-          setError(field as FormFieldName, { type: 'server', message });
+          if (field in DEFAULT_PRODUCT_VALUES) {
+            setProductError(field as keyof ProductFormSchema, { type: 'server', message });
+            matched += 1;
+          } else if (field in DEFAULT_LISTING_VALUES) {
+            setListingError(field as keyof ResourceBrandFieldsSchema, { type: 'server', message });
+            matched += 1;
+          }
         });
-        setFormError(fieldEntries.length > 0 ? null : getApiErrorMessage(error));
-      } else if (error.status === 409) {
-        setError('code', { type: 'server', message: 'Bu kod artıq mövcuddur.' });
+        setFormError(matched > 0 ? null : getApiErrorMessage(error));
       } else if (error.status === 404) {
         setFormError('Seçilmiş kateqoriya və ya vahid tapılmadı.');
       } else {
@@ -112,188 +180,266 @@ export function ResourceFormDialog({
     }
   }
 
-  const submit = handleSubmit((values) => {
+  async function handleSave() {
     setFormError(null);
-    onSubmit(values, handleApiError);
-  });
+
+    const listingValid = await triggerListing();
+    if (!listingValid) {
+      return;
+    }
+
+    if (selectionMode === 'existing') {
+      if (!categoryId) {
+        setFormError('Kateqoriya seçin.');
+        return;
+      }
+      if (!selectedProduct) {
+        setFormError('Məhsul seçin.');
+        return;
+      }
+      onSubmit({ productId: selectedProduct.id, organizationId, ...getListingValues() }, handleApiError);
+      return;
+    }
+
+    const productValid = await triggerProduct();
+    if (!productValid) {
+      return;
+    }
+
+    const missingRequired = attributeLinks.filter(
+      (link) => link.required && !(attributeValues[link.id] ?? '').trim(),
+    );
+    if (missingRequired.length > 0) {
+      setFormError(
+        `Məcburi xüsusiyyətlər doldurulmayıb: ${missingRequired.map((link) => link.attributeName).join(', ')}`,
+      );
+      return;
+    }
+
+    const attributes = attributeLinks
+      .filter((link) => (attributeValues[link.id] ?? '').trim() !== '')
+      .map((link) => ({ categoryAttributeDefinitionId: link.id, value: attributeValues[link.id] }));
+
+    try {
+      const result = await findOrCreateMutation.mutateAsync({ ...getProductValues(), attributes });
+      if (result.matched) {
+        enqueueSnackbar(
+          `Bu xüsusiyyətlərlə artıq mövcud bir məhsul var: ${result.product.code} — ${result.product.name}. Elanınız bu məhsul altında yaradılacaq.`,
+          { variant: 'info' },
+        );
+      } else {
+        enqueueSnackbar(`Yeni məhsul yaradıldı: ${result.product.code}.`, { variant: 'success' });
+      }
+      onSubmit({ productId: result.product.id, organizationId, ...getListingValues() }, handleApiError);
+    } catch (error) {
+      handleApiError(error);
+    }
+  }
+
+  const submitting = isSubmitting || findOrCreateMutation.isPending;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{mode === 'edit' ? 'Resursu redaktə et' : 'Yeni resurs'}</DialogTitle>
+    <Dialog open={open} onClose={ignoreBackdropClose(onClose)} maxWidth="sm" fullWidth>
+      <DialogTitle>Elan Yarat</DialogTitle>
       <DialogContent>
         <Stack spacing={2.5} sx={{ pt: 1 }}>
           {formError && <Alert severity="error">{formError}</Alert>}
 
           <Controller
             name="categoryId"
-            control={control}
+            control={productControl}
             render={({ field }) => (
               <CategoryPathAutocomplete
                 value={field.value || null}
                 onChange={(id) => field.onChange(id ?? '')}
-                error={!!errors.categoryId}
-                helperText={errors.categoryId?.message}
-                disabled={isSubmitting}
+                error={!!productErrors.categoryId}
+                helperText={productErrors.categoryId?.message}
+                disabled={submitting}
               />
             )}
           />
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <Controller
-              name="code"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Kod"
-                  fullWidth
-                  error={!!errors.code}
-                  helperText={errors.code?.message}
-                  disabled={isSubmitting}
-                />
+          <RadioGroup
+            row
+            value={selectionMode}
+            onChange={(event) => setSelectionMode(event.target.value as SelectionMode)}
+          >
+            <FormControlLabel value="existing" control={<Radio />} label="Mövcud məhsul seç" disabled={submitting} />
+            <FormControlLabel value="new" control={<Radio />} label="Yeni məhsul yarat" disabled={submitting} />
+          </RadioGroup>
+
+          {selectionMode === 'existing' && (
+            <>
+              <ProductPicker
+                categoryId={categoryId || null}
+                value={selectedProduct}
+                onChange={setSelectedProduct}
+                disabled={submitting}
+              />
+              {selectedProduct && (
+                <>
+                  <Divider />
+                  <Typography variant="body2" color="text.secondary">
+                    Təsvir: {selectedProduct.description || '—'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Vahid:{' '}
+                    {selectedProduct.unitId ? (unitSymbols.get(selectedProduct.unitId) ?? '—') : '—'}
+                  </Typography>
+                  <Typography variant="subtitle2">Xüsusiyyətlər (salt-oxunan)</Typography>
+                  <ProductAttributesReadOnly productId={selectedProduct.id} />
+                </>
               )}
-            />
-            <Controller
-              name="name"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Ad"
-                  fullWidth
-                  error={!!errors.name}
-                  helperText={errors.name?.message}
-                  disabled={isSubmitting}
-                />
-              )}
-            />
-          </Stack>
+            </>
+          )}
+
+          {selectionMode === 'new' && (
+            <>
+              <Controller
+                name="name"
+                control={productControl}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Ad"
+                    fullWidth
+                    error={!!productErrors.name}
+                    helperText={productErrors.name?.message}
+                    disabled={submitting}
+                  />
+                )}
+              />
+
+              <Controller
+                name="unitId"
+                control={productControl}
+                render={({ field }) => (
+                  <TextField
+                    select
+                    label="Vahid"
+                    fullWidth
+                    value={field.value ?? ''}
+                    onChange={(event) => field.onChange(event.target.value || null)}
+                    disabled={submitting || unitOptions.isLoading}
+                  >
+                    <MenuItem value="">Seçilməyib</MenuItem>
+                    {(unitOptions.data?.content ?? []).map((unit) => (
+                      <MenuItem key={unit.id} value={unit.id}>
+                        {unit.name} {unit.symbol ? `(${unit.symbol})` : ''}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+              />
+
+              <Divider />
+              <Typography variant="subtitle2">Xüsusiyyətlər</Typography>
+              <ProductAttributesFields
+                categoryId={categoryId || null}
+                attributeLinks={attributeLinks}
+                isLoading={categoryAttributesQuery.isLoading}
+                values={attributeValues}
+                onChange={(id, value) => setAttributeValues((prev) => ({ ...prev, [id]: value }))}
+                disabled={submitting}
+              />
+            </>
+          )}
+
+          <Divider />
+          <Typography variant="subtitle2">Elan məlumatları (hər zaman soruşulur)</Typography>
 
           <Controller
-            name="description"
-            control={control}
+            name="specification"
+            control={listingControl}
             render={({ field }) => (
               <TextField
                 {...field}
-                label="Təsvir"
+                label="Spesifikasiya"
                 fullWidth
-                multiline
-                minRows={2}
-                error={!!errors.description}
-                helperText={errors.description?.message}
-                disabled={isSubmitting}
+                error={!!listingErrors.specification}
+                helperText={listingErrors.specification?.message}
+                disabled={submitting}
               />
             )}
           />
-
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <Controller
-              name="unitId"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  select
-                  label="Vahid"
-                  fullWidth
-                  value={field.value ?? ''}
-                  onChange={(event) => field.onChange(event.target.value || null)}
-                  disabled={isSubmitting || unitOptions.isLoading}
-                >
-                  <MenuItem value="">Seçilməyib</MenuItem>
-                  {(unitOptions.data?.content ?? []).map((unit) => (
-                    <MenuItem key={unit.id} value={unit.id}>
-                      {unit.name} {unit.symbol ? `(${unit.symbol})` : ''}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
-            />
-            <Controller
-              name="specification"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Spesifikasiya"
-                  fullWidth
-                  error={!!errors.specification}
-                  helperText={errors.specification?.message}
-                  disabled={isSubmitting}
-                />
-              )}
-            />
-          </Stack>
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <Controller
               name="manufacturer"
-              control={control}
+              control={listingControl}
               render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="İstehsalçı"
-                  fullWidth
-                  error={!!errors.manufacturer}
-                  helperText={errors.manufacturer?.message}
-                  disabled={isSubmitting}
+                <ResourceFieldAutocomplete
+                  label="İstehsalçı *"
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={manufacturerOptions.data ?? []}
+                  loading={manufacturerOptions.isFetching}
+                  error={!!listingErrors.manufacturer}
+                  helperText={listingErrors.manufacturer?.message}
+                  disabled={submitting}
                 />
               )}
             />
             <Controller
               name="brand"
-              control={control}
+              control={listingControl}
               render={({ field }) => (
-                <TextField
-                  {...field}
+                <ResourceFieldAutocomplete
                   label="Brend"
-                  fullWidth
-                  error={!!errors.brand}
-                  helperText={errors.brand?.message}
-                  disabled={isSubmitting}
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={brandOptions.data ?? []}
+                  loading={brandOptions.isFetching}
+                  error={!!listingErrors.brand}
+                  helperText={listingErrors.brand?.message}
+                  disabled={submitting}
                 />
               )}
             />
             <Controller
               name="model"
-              control={control}
+              control={listingControl}
               render={({ field }) => (
-                <TextField
-                  {...field}
+                <ResourceFieldAutocomplete
                   label="Model"
-                  fullWidth
-                  error={!!errors.model}
-                  helperText={errors.model?.message}
-                  disabled={isSubmitting}
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={modelOptions.data ?? []}
+                  loading={modelOptions.isFetching}
+                  error={!!listingErrors.model}
+                  helperText={listingErrors.model?.message}
+                  disabled={submitting}
                 />
               )}
             />
           </Stack>
 
-          <Controller
-            name="active"
-            control={control}
-            render={({ field }) => (
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={field.value}
-                    onChange={(event) => field.onChange(event.target.checked)}
-                    disabled={isSubmitting}
-                  />
-                }
-                label="Aktiv"
-              />
-            )}
-          />
+          {canAssignOrganization && (
+            <Accordion disableGutters>
+              <AccordionSummary expandIcon={<ExpandMoreRoundedIcon />}>
+                <Typography variant="body2">Təşkilata təyin et (advanced)</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <TextField
+                  label="Təşkilat ID (UUID)"
+                  fullWidth
+                  value={organizationId ?? ''}
+                  onChange={(event) => setOrganizationId(event.target.value.trim() || null)}
+                  helperText="Boş buraxılsa elan ümumi/mərkəzi kimi yaranır."
+                  disabled={submitting}
+                />
+              </AccordionDetails>
+            </Accordion>
+          )}
         </Stack>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Box sx={{ flexGrow: 1 }} />
-        <Button onClick={onClose} disabled={isSubmitting}>
+        <Button onClick={onClose} disabled={submitting}>
           İmtina
         </Button>
-        <Button variant="contained" onClick={submit} disabled={isSubmitting}>
-          {isSubmitting ? 'Yadda saxlanılır...' : 'Yadda saxla'}
+        <Button variant="contained" onClick={handleSave} disabled={submitting}>
+          {submitting ? 'Yadda saxlanılır...' : 'Yadda saxla'}
         </Button>
       </DialogActions>
     </Dialog>

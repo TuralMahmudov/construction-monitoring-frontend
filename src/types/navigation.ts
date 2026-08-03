@@ -5,4 +5,6 @@ export interface NavItem {
   path?: string;
   icon: ReactNode;
   children?: NavItem[];
+  centralAdminOnly?: boolean;
+  organizationOnly?: boolean;
 }

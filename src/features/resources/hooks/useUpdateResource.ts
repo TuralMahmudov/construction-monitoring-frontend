@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSnackbar } from 'notistack';
 import { updateResource } from '../api/resourcesApi';
-import type { ResourceFormValues } from '../types/resource.types';
+import type { ResourceUpdateRequest } from '../types/resource.types';
 import { resourceKeys } from './queryKeys';
 
 export function useUpdateResource() {
@@ -9,7 +9,7 @@ export function useUpdateResource() {
   const { enqueueSnackbar } = useSnackbar();
 
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: ResourceFormValues }) =>
+    mutationFn: ({ id, payload }: { id: string; payload: ResourceUpdateRequest }) =>
       updateResource(id, payload),
     onSuccess: (_updated, { id }) => {
       queryClient.invalidateQueries({ queryKey: resourceKeys.all });

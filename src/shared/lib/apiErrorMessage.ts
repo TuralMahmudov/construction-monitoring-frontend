@@ -4,7 +4,7 @@ const STATUS_MESSAGES: Record<number, string> = {
   400: 'Daxil edilən məlumatlarda xəta var.',
   401: 'Sessiyanızın müddəti bitib. Yenidən daxil olun.',
   403: 'Bu əməliyyat üçün icazəniz yoxdur.',
-  404: 'Axtarılan məlumat tapılmadı.',
+  404: 'Tapılmadı və ya bu qeydə girişiniz yoxdur.',
   409: 'Bu əməliyyat mövcud məlumatla konflikt yaradır.',
   500: 'Serverdə xəta baş verdi. Yenidən cəhd edin.',
 };

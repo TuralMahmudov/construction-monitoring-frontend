@@ -1,26 +1,28 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
-import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import Alert from '@mui/material/Alert';
-import { DataGrid, GridActionsCellItem, type GridColDef, type GridSortModel } from '@mui/x-data-grid';
+import { DataGrid, GridActionsCellItem, type GridColDef } from '@mui/x-data-grid';
 import { ConfirmDialog, StatusBadge } from '../../../shared/components';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
-import { useDeleteResource } from '../hooks/useDeleteResource';
 import { useCategoryNameLookup, useUnitLookup } from '../hooks/useLookups';
+import { useDeleteResource } from '../hooks/useDeleteResource';
 import type { ResolvedResourceSearchParams } from '../hooks/useResourceSearchParams';
 import { useResourceSearch } from '../hooks/useResourceSearch';
 import type { Resource, ResourceSearchParams } from '../types/resource.types';
+import { OrganizationChip } from './OrganizationChip';
 
 export interface ResourceSearchGridProps {
   params: ResolvedResourceSearchParams;
   onParamsChange: (patch: Partial<ResourceSearchParams>) => void;
-  onEdit: (resource: Resource) => void;
   canEdit: boolean;
 }
 
-export function ResourceSearchGrid({ params, onParamsChange, onEdit, canEdit }: ResourceSearchGridProps) {
+// § 3.2 — code/name/category/unit read from resource.product.*, but
+// manufacturer/brand read directly from resource.* (2026-07-31 — these are
+// listing-specific, not product identity).
+export function ResourceSearchGrid({ params, onParamsChange, canEdit }: ResourceSearchGridProps) {
   const navigate = useNavigate();
   const searchQuery = useResourceSearch(params);
   const deleteMutation = useDeleteResource();
@@ -29,24 +31,24 @@ export function ResourceSearchGrid({ params, onParamsChange, onEdit, canEdit }: 
   const [deleteTarget, setDeleteTarget] = useState<Resource | null>(null);
 
   const columns: GridColDef<Resource>[] = [
-    { field: 'code', headerName: 'Kod', width: 140 },
-    { field: 'name', headerName: 'Ad', flex: 1, minWidth: 200 },
+    { field: 'code', headerName: 'Kod', width: 140, sortable: false, valueGetter: (_v, row) => row.product.code },
+    { field: 'name', headerName: 'Ad', flex: 1, minWidth: 200, sortable: false, valueGetter: (_v, row) => row.product.name },
     {
       field: 'categoryId',
       headerName: 'Kateqoriya',
       width: 200,
       sortable: false,
-      valueGetter: (_value, row) => categoryNames.get(row.categoryId) ?? '—',
+      valueGetter: (_value, row) => categoryNames.get(row.product.categoryId) ?? '—',
     },
     {
       field: 'unitId',
       headerName: 'Vahid',
       width: 100,
       sortable: false,
-      valueGetter: (_value, row) => (row.unitId ? (unitSymbols.get(row.unitId) ?? '—') : '—'),
+      valueGetter: (_value, row) => (row.product.unitId ? (unitSymbols.get(row.product.unitId) ?? '—') : '—'),
     },
-    { field: 'manufacturer', headerName: 'İstehsalçı', width: 160 },
-    { field: 'brand', headerName: 'Brend', width: 140 },
+    { field: 'manufacturer', headerName: 'İstehsalçı', width: 160, sortable: false, valueGetter: (_v, row) => row.manufacturer ?? '—' },
+    { field: 'brand', headerName: 'Brend', width: 140, sortable: false, valueGetter: (_v, row) => row.brand ?? '—' },
     {
       field: 'active',
       headerName: 'Status',
@@ -55,10 +57,17 @@ export function ResourceSearchGrid({ params, onParamsChange, onEdit, canEdit }: 
       renderCell: (cellParams) => <StatusBadge active={cellParams.row.active} />,
     },
     {
+      field: 'organizationId',
+      headerName: 'Təşkilat',
+      width: 150,
+      sortable: false,
+      renderCell: (cellParams) => <OrganizationChip organizationId={cellParams.row.organizationId} />,
+    },
+    {
       field: 'actions',
       type: 'actions',
       headerName: 'Əməliyyatlar',
-      width: canEdit ? 150 : 90,
+      width: canEdit ? 110 : 90,
       getActions: (cellParams) => {
         const actions = [
           <GridActionsCellItem
@@ -70,12 +79,6 @@ export function ResourceSearchGrid({ params, onParamsChange, onEdit, canEdit }: 
         ];
         if (canEdit) {
           actions.push(
-            <GridActionsCellItem
-              key="edit"
-              icon={<EditRoundedIcon />}
-              label="Redaktə et"
-              onClick={() => onEdit(cellParams.row)}
-            />,
             <GridActionsCellItem
               key="delete"
               icon={<DeleteRoundedIcon color="error" />}
@@ -90,15 +93,6 @@ export function ResourceSearchGrid({ params, onParamsChange, onEdit, canEdit }: 
     },
   ];
 
-  const sortModel: GridSortModel = params.sort
-    ? [
-        {
-          field: params.sort.split(',')[0],
-          sort: params.sort.split(',')[1] === 'desc' ? 'desc' : 'asc',
-        },
-      ]
-    : [];
-
   if (searchQuery.isError) {
     return <Alert severity="error">{getApiErrorMessage(searchQuery.error)}</Alert>;
   }
@@ -112,17 +106,8 @@ export function ResourceSearchGrid({ params, onParamsChange, onEdit, canEdit }: 
         loading={searchQuery.isFetching}
         columns={columns}
         paginationMode="server"
-        sortingMode="server"
         paginationModel={{ page: params.page, pageSize: params.size }}
         onPaginationModelChange={(model) => onParamsChange({ page: model.page, size: model.pageSize })}
-        sortModel={sortModel}
-        onSortModelChange={(model) => {
-          if (model.length === 0) {
-            onParamsChange({ sort: undefined });
-            return;
-          }
-          onParamsChange({ sort: `${model[0].field},${model[0].sort ?? 'asc'}` });
-        }}
         pageSizeOptions={[10, 25, 50]}
         disableRowSelectionOnClick
         localeText={{ noRowsLabel: 'Nəticə tapılmadı' }}
@@ -131,8 +116,8 @@ export function ResourceSearchGrid({ params, onParamsChange, onEdit, canEdit }: 
       {canEdit && (
         <ConfirmDialog
           open={Boolean(deleteTarget)}
-          title="Resursu sil"
-          description={`"${deleteTarget?.name ?? ''}" resursunu silmək istədiyinizə əminsiniz?`}
+          title="Elanı sil"
+          description={`"${deleteTarget?.product.code ?? ''} — ${deleteTarget?.product.name ?? ''}" elanını silmək istədiyinizə əminsiniz?`}
           confirmLabel="Sil"
           confirmColor="error"
           loading={deleteMutation.isPending}

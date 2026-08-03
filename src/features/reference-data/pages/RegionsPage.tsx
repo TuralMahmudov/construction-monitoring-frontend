@@ -4,12 +4,11 @@ import { useAuth } from '../../../hooks/useAuth';
 import { StatusBadge } from '../../../shared/components';
 import { canWrite } from '../../../shared/lib/permissions';
 import { ReferenceDataListPage } from '../components/ReferenceDataListPage';
-import { SimpleReferenceFormDialog } from '../components/SimpleReferenceFormDialog';
+import { RegionFormDialog } from '../components/RegionFormDialog';
 import { regionsHooks } from '../hooks/useRegionsData';
 import type { BaseReferenceFormValues, RegionItem } from '../types/referenceData.types';
 
 const columns: GridColDef<RegionItem>[] = [
-  { field: 'code', headerName: 'Kod', width: 160 },
   { field: 'name', headerName: 'Ad', flex: 1, minWidth: 200 },
   {
     field: 'active',
@@ -58,19 +57,18 @@ export function RegionsPage() {
         columns={columns}
         hooks={regionsHooks}
         canEdit={canEdit}
+        showCodeFilter={false}
         onAdd={() => setDialog({ open: true, mode: 'create', item: null })}
         onEdit={(item) => setDialog({ open: true, mode: 'edit', item })}
       />
 
       {canEdit && (
-        <SimpleReferenceFormDialog
+        <RegionFormDialog
           open={dialog.open}
           mode={dialog.mode}
           title={dialog.mode === 'edit' ? 'Regionu redaktə et' : 'Yeni region'}
           editValues={
-            dialog.item
-              ? { code: dialog.item.code, name: dialog.item.name, active: dialog.item.active }
-              : null
+            dialog.item ? { name: dialog.item.name, active: dialog.item.active } : null
           }
           isSubmitting={isSubmitting}
           onClose={closeDialog}
