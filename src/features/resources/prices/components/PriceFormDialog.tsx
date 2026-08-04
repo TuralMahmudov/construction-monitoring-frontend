@@ -14,7 +14,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
-import { useRegionOptions, useSupplierOptions } from '../../../reference-data/hooks/useReferenceOptions';
+import { useRegionOptions } from '../../../reference-data/hooks/useReferenceOptions';
 import { ApiError } from '../../../../services/httpClient';
 import { NumberField } from '../../../../shared/components';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
@@ -26,12 +26,12 @@ const CURRENCY_OPTIONS = ['AZN', 'USD', 'EUR', 'TRY', 'GBP', 'RUB'];
 
 const DEFAULT_VALUES: ResourcePriceFormValues = {
   regionId: '',
-  supplierId: '',
   price: 0,
   vat: 0,
   currency: 'AZN',
   effectiveDate: dayjs().format('YYYY-MM-DD'),
   expireDate: null,
+  comment: '',
 };
 
 export interface PriceFormDialogProps {
@@ -54,7 +54,6 @@ export function PriceFormDialog({
   const [formError, setFormError] = useState<string | null>(null);
   const [noExpiry, setNoExpiry] = useState(true);
   const regionOptions = useRegionOptions();
-  const supplierOptions = useSupplierOptions();
 
   const {
     control,
@@ -103,7 +102,6 @@ export function PriceFormDialog({
   });
 
   const regions = regionOptions.data?.content ?? [];
-  const suppliers = supplierOptions.data?.content ?? [];
 
   return (
     <Dialog open={open} onClose={ignoreBackdropClose(onClose)} maxWidth="sm" fullWidth>
@@ -112,56 +110,29 @@ export function PriceFormDialog({
         <Stack spacing={2.5} sx={{ pt: 1 }}>
           {formError && <Alert severity="error">{formError}</Alert>}
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <Controller
-              name="regionId"
-              control={control}
-              render={({ field }) => (
-                <Autocomplete
-                  options={regions}
-                  getOptionLabel={(option) => option.name}
-                  isOptionEqualToValue={(option, val) => option.id === val.id}
-                  value={regions.find((r) => r.id === field.value) ?? null}
-                  onChange={(_event, newValue) => field.onChange(newValue?.id ?? '')}
-                  loading={regionOptions.isLoading}
-                  disabled={isSubmitting}
-                  sx={{ flex: 1 }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Region"
-                      error={!!errors.regionId}
-                      helperText={errors.regionId?.message}
-                    />
-                  )}
-                />
-              )}
-            />
-            <Controller
-              name="supplierId"
-              control={control}
-              render={({ field }) => (
-                <Autocomplete
-                  options={suppliers}
-                  getOptionLabel={(option) => option.name}
-                  isOptionEqualToValue={(option, val) => option.id === val.id}
-                  value={suppliers.find((s) => s.id === field.value) ?? null}
-                  onChange={(_event, newValue) => field.onChange(newValue?.id ?? '')}
-                  loading={supplierOptions.isLoading}
-                  disabled={isSubmitting}
-                  sx={{ flex: 1 }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Təchizatçı"
-                      error={!!errors.supplierId}
-                      helperText={errors.supplierId?.message}
-                    />
-                  )}
-                />
-              )}
-            />
-          </Stack>
+          <Controller
+            name="regionId"
+            control={control}
+            render={({ field }) => (
+              <Autocomplete
+                options={regions}
+                getOptionLabel={(option) => option.name}
+                isOptionEqualToValue={(option, val) => option.id === val.id}
+                value={regions.find((r) => r.id === field.value) ?? null}
+                onChange={(_event, newValue) => field.onChange(newValue?.id ?? '')}
+                loading={regionOptions.isLoading}
+                disabled={isSubmitting}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Region"
+                    error={!!errors.regionId}
+                    helperText={errors.regionId?.message}
+                  />
+                )}
+              />
+            )}
+          />
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <Controller
@@ -272,6 +243,23 @@ export function PriceFormDialog({
               />
             }
             label="Naməlum müddətə qədər"
+          />
+
+          <Controller
+            name="comment"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Şərh"
+                fullWidth
+                multiline
+                minRows={2}
+                error={!!errors.comment}
+                helperText={errors.comment?.message}
+                disabled={isSubmitting}
+              />
+            )}
           />
         </Stack>
       </DialogContent>

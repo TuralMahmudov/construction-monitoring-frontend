@@ -32,6 +32,11 @@ export function ResourcePricesTab({ resourceId }: ResourcePricesTabProps) {
   const canEdit = canWrite(user?.roles ?? []);
   const canApprove = canApprovePrices(user?.roles ?? []);
   const isAdmin = isCentralAdmin(user?.roles ?? []);
+  // FRONTEND_AI_PROMPT_ORG_TYPE_AND_PRICE_OWNERSHIP.md § 3 — the server
+  // hard-rejects a price submission from a CENTRAL (organizationId=null)
+  // account with 400, so the create button/form must not be offered to them
+  // in the first place, not just rely on the 400 surfacing.
+  const canCreatePrice = canEdit && Boolean(user?.organizationId);
 
   const historyQuery = useResourcePriceHistory(resourceId);
   const createMutation = useCreateResourcePrice(resourceId);
@@ -83,9 +88,9 @@ export function ResourcePricesTab({ resourceId }: ResourcePricesTabProps) {
     <Box>
       <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-          Cari Qiymətlər (təchizatçı/region üzrə)
+          Cari Qiymətlər (təşkilat/region üzrə)
         </Typography>
-        {canEdit && (
+        {canCreatePrice && (
           <Button
             startIcon={<AddRoundedIcon />}
             variant="contained"
@@ -122,12 +127,12 @@ export function ResourcePricesTab({ resourceId }: ResourcePricesTabProps) {
             dialog.price
               ? {
                   regionId: dialog.price.regionId,
-                  supplierId: dialog.price.supplierId,
                   price: dialog.price.price,
                   vat: dialog.price.vat,
                   currency: dialog.price.currency,
                   effectiveDate: dialog.price.effectiveDate,
                   expireDate: dialog.price.expireDate,
+                  comment: dialog.price.comment ?? '',
                 }
               : null
           }

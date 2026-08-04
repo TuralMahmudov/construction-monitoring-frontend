@@ -18,12 +18,13 @@ export interface ResourcePrice {
   id: string;
   resourceId: string;
   regionId: string;
-  supplierId: string;
+  organizationId: string;
   price: number;
   vat: number;
   currency: string;
   effectiveDate: string;
   expireDate: string | null;
+  comment: string | null;
   status: PriceStatus;
   createdBy: string;
   createdDate: string;
@@ -31,12 +32,16 @@ export interface ResourcePrice {
   approvedDate: string | null;
 }
 
+// No `organizationId` here — FRONTEND_AI_PROMPT_ORG_TYPE_AND_PRICE_OWNERSHIP.md
+// § 3: the server always derives it from the submitting user's own
+// organization, the field was removed from the API entirely (not just
+// auto-filled client-side).
 export interface ResourcePriceFormValues {
   regionId: string;
-  supplierId: string;
   price: number;
   vat: number;
   currency: string;
   effectiveDate: string;
   expireDate: string | null;
+  comment: string;
 }

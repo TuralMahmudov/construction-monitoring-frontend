@@ -2,20 +2,20 @@ import dayjs from 'dayjs';
 import { PRICE_STATUS, type ResourcePrice } from '../types/resourcePrice.types';
 
 export interface CurrentPriceEntry {
-  supplierId: string;
+  organizationId: string;
   regionId: string;
   price: ResourcePrice;
 }
 
 /**
- * Derives "the current price per supplier/region" client-side from the full
- * history, since the backend only exposes a lookup for one exact
- * resource+supplier+region triple at a time (GET /resource-prices/current),
+ * Derives "the current price per organization/region" client-side from the
+ * full history, since the backend only exposes a lookup for one exact
+ * resource+organization+region triple at a time (GET /resource-prices/current),
  * not "all current prices for this resource".
  */
 export function groupCurrentPrices(prices: ResourcePrice[]): CurrentPriceEntry[] {
   const today = dayjs().startOf('day');
-  const currentBySupplierRegion = new Map<string, ResourcePrice>();
+  const currentByOrgRegion = new Map<string, ResourcePrice>();
 
   prices.forEach((price) => {
     if (price.status !== PRICE_STATUS.APPROVED) {
@@ -28,15 +28,15 @@ export function groupCurrentPrices(prices: ResourcePrice[]): CurrentPriceEntry[]
       return;
     }
 
-    const key = `${price.supplierId}:${price.regionId}`;
-    const existing = currentBySupplierRegion.get(key);
+    const key = `${price.organizationId}:${price.regionId}`;
+    const existing = currentByOrgRegion.get(key);
     if (!existing || dayjs(price.effectiveDate).isAfter(dayjs(existing.effectiveDate))) {
-      currentBySupplierRegion.set(key, price);
+      currentByOrgRegion.set(key, price);
     }
   });
 
-  return Array.from(currentBySupplierRegion.values()).map((price) => ({
-    supplierId: price.supplierId,
+  return Array.from(currentByOrgRegion.values()).map((price) => ({
+    organizationId: price.organizationId,
     regionId: price.regionId,
     price,
   }));

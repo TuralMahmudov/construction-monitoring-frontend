@@ -12,7 +12,7 @@ import TableRow from '@mui/material/TableRow';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { PRICE_STATUS, type ResourcePrice } from '../types/resourcePrice.types';
-import { useRegionSupplierLookup } from '../hooks/useRegionSupplierLookup';
+import { useRegionOrganizationLookup } from '../hooks/useRegionOrganizationLookup';
 import { PriceStatusChip } from './PriceStatusChip';
 
 export interface PriceHistoryTableProps {
@@ -36,7 +36,7 @@ export function PriceHistoryTable({
   onApprove,
   onReject,
 }: PriceHistoryTableProps) {
-  const { regionNames, supplierNames } = useRegionSupplierLookup();
+  const { regionNames, organizationNames } = useRegionOrganizationLookup(isCentralAdmin);
 
   if (prices.length === 0) {
     return (
@@ -53,7 +53,7 @@ export function PriceHistoryTable({
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>Təchizatçı</TableCell>
+            <TableCell>Təşkilat</TableCell>
             <TableCell>Region</TableCell>
             <TableCell align="right">Qiymət</TableCell>
             <TableCell align="right">ƏDV</TableCell>
@@ -70,7 +70,7 @@ export function PriceHistoryTable({
             const canEditRow = isActionable && (price.createdBy === currentUserId || isCentralAdmin);
             return (
               <TableRow key={price.id} hover>
-                <TableCell>{supplierNames.get(price.supplierId) ?? '—'}</TableCell>
+                <TableCell>{organizationNames.get(price.organizationId) ?? '—'}</TableCell>
                 <TableCell>{regionNames.get(price.regionId) ?? '—'}</TableCell>
                 <TableCell align="right">{price.price.toFixed(2)}</TableCell>
                 <TableCell align="right">{price.vat.toFixed(2)}%</TableCell>

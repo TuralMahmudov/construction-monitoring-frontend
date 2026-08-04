@@ -1,7 +1,5 @@
-// No `supplierId`/`vat` here (unlike the general resource-prices module) —
-// the supplier is implicit: the current user's own organization. Otherwise
-// mirrors the shape of the existing price form (effectiveDate + optional
-// open-ended expireDate), just with `comment` added.
+// No `vat` here (unlike the general resource-prices module). Organization
+// ownership is implicit (the current user's own org) in both flows now.
 export interface MyResourcePrice {
   id: string;
   resourceId: string;

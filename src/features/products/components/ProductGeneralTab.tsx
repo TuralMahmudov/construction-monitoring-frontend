@@ -33,6 +33,14 @@ function formatAuditDate(value: string): string {
   return new Date(value).toLocaleString('az-AZ');
 }
 
+// FRONTEND_AI_PROMPT_ORG_TYPE_AND_PRICE_OWNERSHIP.md § 4 — user IDs have no
+// general-purpose name lookup (GET /api/users/{id} 404s for vendor ids). A
+// Product (unlike a Resource) has no organizationId to fall back on either —
+// it's shared catalog identity, not owned by one org — so there's no
+// meaningful name to show here at all; never print the raw UUID, just admit
+// it's unknown.
+const UNKNOWN_ACTOR = '—';
+
 export interface ProductGeneralTabProps {
   product: Product;
 }
@@ -76,12 +84,12 @@ export function ProductGeneralTab({ product }: ProductGeneralTabProps) {
       <Divider sx={{ my: 2 }} />
 
       <DetailRow label="Yaradılıb" value={formatAuditDate(product.createdDate)} />
-      <DetailRow label="Yaradan" value={product.createdBy} />
+      <DetailRow label="Yaradan" value={UNKNOWN_ACTOR} />
       <DetailRow
         label="Dəyişdirilib"
         value={product.modifiedDate ? formatAuditDate(product.modifiedDate) : '—'}
       />
-      <DetailRow label="Dəyişdirən" value={product.modifiedBy ?? '—'} />
+      <DetailRow label="Dəyişdirən" value={UNKNOWN_ACTOR} />
 
       {canEdit && (
         <>

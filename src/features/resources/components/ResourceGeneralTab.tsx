@@ -10,7 +10,9 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useAuth } from '../../../hooks/useAuth';
 import { StatusBadge } from '../../../shared/components';
-import { canWrite } from '../../../shared/lib/permissions';
+import { canWrite, isCentralAdmin } from '../../../shared/lib/permissions';
+import { useOrganizationLookup } from '../../admin/organizations/hooks/useOrganizations';
+import { ORGANIZATION_TYPE_ICONS, ORGANIZATION_TYPE_LABELS } from '../../admin/organizations/types/organization.types';
 import { useCategoryNameLookup, useUnitLookup } from '../hooks/useLookups';
 import { useUpdateResource } from '../hooks/useUpdateResource';
 import type { Resource } from '../types/resource.types';
@@ -34,6 +36,7 @@ function formatAuditDate(value: string): string {
   return new Date(value).toLocaleString('az-AZ');
 }
 
+
 export interface ResourceGeneralTabProps {
   resource: Resource;
 }
@@ -48,6 +51,23 @@ export function ResourceGeneralTab({ resource }: ResourceGeneralTabProps) {
   const updateMutation = useUpdateResource();
   const [active, setActive] = useState(resource.active);
   const [editOpen, setEditOpen] = useState(false);
+
+  // "Yaradan"/"Dəyişdirən" show the resource's owning organization, not the
+  // individual user — there's no general-purpose user-id -> name lookup
+  // (FRONTEND_AI_PROMPT_ORG_TYPE_AND_PRICE_OWNERSHIP.md § 4), but the
+  // organization that owns this listing is a meaningful, always-correct
+  // stand-in for "who created/maintains this". Same ORGANIZATION_READ gating
+  // as OrganizationChip — resolves to a real name for central admins only
+  // until that permission is broadened (bax memory).
+  const organizations = useOrganizationLookup(isCentralAdmin(user?.roles ?? []));
+  const ownerOrgName = resource.organizationId
+    ? (() => {
+        const org = organizations.get(resource.organizationId);
+        return org
+          ? `${org.name} ${ORGANIZATION_TYPE_ICONS[org.type]} ${ORGANIZATION_TYPE_LABELS[org.type]}`
+          : 'Təşkilata məxsus';
+      })()
+    : 'Ümumi/Mərkəzi';
 
   function handleToggleActive() {
     const nextActive = !active;
@@ -101,12 +121,12 @@ export function ResourceGeneralTab({ resource }: ResourceGeneralTabProps) {
       <Divider sx={{ my: 2 }} />
 
       <DetailRow label="Yaradılıb" value={formatAuditDate(resource.createdDate)} />
-      <DetailRow label="Yaradan" value={resource.createdBy} />
+      <DetailRow label="Yaradan (təşkilat)" value={ownerOrgName} />
       <DetailRow
         label="Dəyişdirilib"
         value={resource.modifiedDate ? formatAuditDate(resource.modifiedDate) : '—'}
       />
-      <DetailRow label="Dəyişdirən" value={resource.modifiedBy ?? '—'} />
+      <DetailRow label="Dəyişdirən (təşkilat)" value={resource.modifiedBy ? ownerOrgName : '—'} />
 
       {canEdit && (
         <>

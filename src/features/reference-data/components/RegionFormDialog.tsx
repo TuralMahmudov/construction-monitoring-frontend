@@ -29,10 +29,6 @@ export interface RegionFormDialogProps {
   onSubmit: (values: BaseReferenceFormValues, onError: (error: unknown) => void) => void;
 }
 
-// Region's own dialog — used to share SimpleReferenceFormDialog with
-// Supplier, but Region's `code` column was dropped 2026-07-31 while
-// Supplier's wasn't, so the two no longer have the same form shape (bax
-// SupplierFormDialog.tsx for the code-carrying counterpart).
 export function RegionFormDialog({
   open,
   mode,

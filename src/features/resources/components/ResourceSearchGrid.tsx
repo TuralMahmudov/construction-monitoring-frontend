@@ -31,6 +31,13 @@ export function ResourceSearchGrid({ params, onParamsChange, canEdit }: Resource
   const [deleteTarget, setDeleteTarget] = useState<Resource | null>(null);
 
   const columns: GridColDef<Resource>[] = [
+    {
+      field: 'active',
+      headerName: 'Status',
+      width: 120,
+      sortable: false,
+      renderCell: (cellParams) => <StatusBadge active={cellParams.row.active} />,
+    },
     { field: 'code', headerName: 'Kod', width: 140, sortable: false, valueGetter: (_v, row) => row.product.code },
     { field: 'name', headerName: 'Ad', flex: 1, minWidth: 200, sortable: false, valueGetter: (_v, row) => row.product.name },
     {
@@ -49,13 +56,6 @@ export function ResourceSearchGrid({ params, onParamsChange, canEdit }: Resource
     },
     { field: 'manufacturer', headerName: 'İstehsalçı', width: 160, sortable: false, valueGetter: (_v, row) => row.manufacturer ?? '—' },
     { field: 'brand', headerName: 'Brend', width: 140, sortable: false, valueGetter: (_v, row) => row.brand ?? '—' },
-    {
-      field: 'active',
-      headerName: 'Status',
-      width: 120,
-      sortable: false,
-      renderCell: (cellParams) => <StatusBadge active={cellParams.row.active} />,
-    },
     {
       field: 'organizationId',
       headerName: 'Təşkilat',

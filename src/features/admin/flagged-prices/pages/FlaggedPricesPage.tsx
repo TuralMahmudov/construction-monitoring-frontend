@@ -10,7 +10,7 @@ import { PageContainer, PageHeader } from '../../../../shared/components';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
 import { isCentralAdmin } from '../../../../shared/lib/permissions';
 import { useResourceLookup } from '../../../resources/hooks/useResourceLookup';
-import { useRegionSupplierLookup } from '../../../resources/prices/hooks/useRegionSupplierLookup';
+import { useRegionOrganizationLookup } from '../../../resources/prices/hooks/useRegionOrganizationLookup';
 import { useApproveFlaggedPrice, useFlaggedPrices, useRejectFlaggedPrice } from '../hooks/useFlaggedPrices';
 import type { FlaggedPriceReviewResponse } from '../types/flaggedPrice.types';
 
@@ -33,7 +33,9 @@ export function FlaggedPricesPage() {
     [listQuery.data],
   );
   const resourceLookup = useResourceLookup(resourceIds);
-  const { regionNames, supplierNames } = useRegionSupplierLookup();
+  // This whole page is already canAccess-gated to isCentralAdmin below, so
+  // the organization lookup can always fetch here.
+  const { regionNames, organizationNames } = useRegionOrganizationLookup(true);
 
   if (!canAccess) {
     return (
@@ -63,11 +65,11 @@ export function FlaggedPricesPage() {
       valueGetter: (_value, row) => regionNames.get(row.regionId) ?? '—',
     },
     {
-      field: 'supplierId',
-      headerName: 'Təchizatçı',
-      width: 160,
+      field: 'organizationId',
+      headerName: 'Təşkilat',
+      width: 200,
       sortable: false,
-      valueGetter: (_value, row) => supplierNames.get(row.supplierId) ?? '—',
+      valueGetter: (_value, row) => organizationNames.get(row.organizationId) ?? '—',
     },
     {
       field: 'price',

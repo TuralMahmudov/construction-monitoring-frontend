@@ -2,7 +2,7 @@ export interface FlaggedPriceReviewResponse {
   id: string;
   resourceId: string;
   regionId: string;
-  supplierId: string;
+  organizationId: string;
   price: number;
   vat: number;
   currency: string;

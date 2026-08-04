@@ -1,7 +1,9 @@
 import AccountTreeRoundedIcon from '@mui/icons-material/AccountTreeRounded';
 import AdminPanelSettingsRoundedIcon from '@mui/icons-material/AdminPanelSettingsRounded';
+import ApartmentRoundedIcon from '@mui/icons-material/ApartmentRounded';
 import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
 import CompareArrowsRoundedIcon from '@mui/icons-material/CompareArrowsRounded';
+import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
 import LibraryBooksRoundedIcon from '@mui/icons-material/LibraryBooksRounded';
@@ -10,7 +12,6 @@ import PublicRoundedIcon from '@mui/icons-material/PublicRounded';
 import SellRoundedIcon from '@mui/icons-material/SellRounded';
 import QueryStatsRoundedIcon from '@mui/icons-material/QueryStatsRounded';
 import StraightenRoundedIcon from '@mui/icons-material/StraightenRounded';
-import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import type { NavItem } from '../../types/navigation';
 
@@ -47,7 +48,6 @@ export const navItems: NavItem[] = [
     children: [
       { label: 'Vahidlər', path: '/reference-data/units', icon: <StraightenRoundedIcon /> },
       { label: 'Regionlar', path: '/reference-data/regions', icon: <PublicRoundedIcon /> },
-      { label: 'Təchizatçılar', path: '/reference-data/suppliers', icon: <StorefrontRoundedIcon /> },
     ],
   },
   {
@@ -55,6 +55,8 @@ export const navItems: NavItem[] = [
     icon: <AdminPanelSettingsRoundedIcon />,
     centralAdminOnly: true,
     children: [
+      { label: 'Təşkilatlar', path: '/admin/organizations', icon: <ApartmentRoundedIcon /> },
+      { label: 'İstifadəçilər', path: '/admin/users', icon: <GroupRoundedIcon /> },
       { label: 'Atribut Lüğəti', path: '/admin/attribute-definitions', icon: <CategoryRoundedIcon /> },
       { label: 'Kənar Dəyər Qiymətlər', path: '/admin/flagged-prices', icon: <WarningAmberRoundedIcon /> },
       { label: 'Uyğunlaşdırma Baxışı', path: '/admin/match-groups', icon: <CompareArrowsRoundedIcon /> },

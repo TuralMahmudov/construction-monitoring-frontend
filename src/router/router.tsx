@@ -4,13 +4,14 @@ import { AttributeDefinitionsPage } from '../features/admin/attribute-definition
 import { FlaggedPricesPage } from '../features/admin/flagged-prices/pages/FlaggedPricesPage';
 import { MarketAveragesPage } from '../features/admin/market-averages/pages/MarketAveragesPage';
 import { MatchGroupReviewPage } from '../features/admin/match-groups/pages/MatchGroupReviewPage';
+import { OrganizationsPage } from '../features/admin/organizations/pages/OrganizationsPage';
+import { UsersPage } from '../features/admin/users/pages/UsersPage';
 import { MyResourcesPage } from '../features/my-resources/pages/MyResourcesPage';
 import { ProductDetailPage } from '../features/products/pages/ProductDetailPage';
 import { ProductListPage } from '../features/products/pages/ProductListPage';
 import { CategorySearchPage } from '../features/resource-categories/pages/CategorySearchPage';
 import { CategoryTreePage } from '../features/resource-categories/pages/CategoryTreePage';
 import { RegionsPage } from '../features/reference-data/pages/RegionsPage';
-import { SuppliersPage } from '../features/reference-data/pages/SuppliersPage';
 import { UnitsPage } from '../features/reference-data/pages/UnitsPage';
 import { ResourceDetailPage } from '../features/resources/pages/ResourceDetailPage';
 import { ResourceListPage } from '../features/resources/pages/ResourceListPage';
@@ -49,7 +50,8 @@ export const router = createBrowserRouter([
       { path: 'resources/:id', element: <ResourceDetailPage /> },
       { path: 'reference-data/units', element: <UnitsPage /> },
       { path: 'reference-data/regions', element: <RegionsPage /> },
-      { path: 'reference-data/suppliers', element: <SuppliersPage /> },
+      { path: 'admin/organizations', element: <OrganizationsPage /> },
+      { path: 'admin/users', element: <UsersPage /> },
       { path: 'admin/attribute-definitions', element: <AttributeDefinitionsPage /> },
       { path: 'admin/flagged-prices', element: <FlaggedPricesPage /> },
       { path: 'admin/match-groups', element: <MatchGroupReviewPage /> },
