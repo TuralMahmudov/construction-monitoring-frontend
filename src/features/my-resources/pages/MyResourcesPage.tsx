@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
 import { useSnackbar } from 'notistack';
 import { PageContainer, PageHeader } from '../../../shared/components';
 import { createMyResourcePrice } from '../api/myResourcePricesApi';
@@ -75,12 +76,14 @@ export function MyResourcesPage() {
         }
       />
 
-      <MyResourceTable
-        params={{ page: params.page ?? 0, size: params.size ?? 10, ...params }}
-        onParamsChange={updateParams}
-        onView={(resource) => setViewTarget(resource)}
-        onManagePrice={(resource) => setPriceTarget(resource)}
-      />
+      <Card>
+        <MyResourceTable
+          params={{ page: params.page ?? 0, size: params.size ?? 10, ...params }}
+          onParamsChange={updateParams}
+          onView={(resource) => setViewTarget(resource)}
+          onManagePrice={(resource) => setPriceTarget(resource)}
+        />
+      </Card>
 
       <MyResourceFormDialog
         open={createOpen}

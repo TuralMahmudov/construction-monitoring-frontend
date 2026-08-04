@@ -18,6 +18,7 @@ export const lightPalette: PaletteOptions = {
     default: '#f4f6f8',
     paper: '#ffffff',
   },
+  divider: '#e0e0e0',
 };
 
 export const darkPalette: PaletteOptions = {
@@ -38,4 +39,5 @@ export const darkPalette: PaletteOptions = {
     default: '#0f1620',
     paper: '#161f2c',
   },
+  divider: '#263241',
 };

@@ -3,6 +3,7 @@ import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
 import dayjs from 'dayjs';
 import { DataGrid, GridActionsCellItem, type GridColDef } from '@mui/x-data-grid';
 import { useAuth } from '../../../../hooks/useAuth';
@@ -150,19 +151,21 @@ export function FlaggedPricesPage() {
         subtitle="Bazar medianından əhəmiyyətli dərəcədə fərqləndiyi üçün avtomatik işarələnmiş qiymətlər"
       />
 
-      <DataGrid
-        autoHeight
-        rows={rows}
-        rowCount={listQuery.data?.totalElements ?? 0}
-        loading={listQuery.isFetching}
-        columns={columns}
-        paginationMode="server"
-        paginationModel={paginationModel}
-        onPaginationModelChange={setPaginationModel}
-        pageSizeOptions={[10, 25, 50]}
-        disableRowSelectionOnClick
-        localeText={{ noRowsLabel: 'Hazırda kənar dəyər kimi işarələnmiş qiymət yoxdur.' }}
-      />
+      <Card>
+        <DataGrid
+          autoHeight
+          rows={rows}
+          rowCount={listQuery.data?.totalElements ?? 0}
+          loading={listQuery.isFetching}
+          columns={columns}
+          paginationMode="server"
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
+          pageSizeOptions={[10, 25, 50]}
+          disableRowSelectionOnClick
+          localeText={{ noRowsLabel: 'Hazırda kənar dəyər kimi işarələnmiş qiymət yoxdur.' }}
+        />
+      </Card>
     </PageContainer>
   );
 }

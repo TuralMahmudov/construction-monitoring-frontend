@@ -4,6 +4,8 @@ import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
 import { DataGrid, GridActionsCellItem, type GridColDef } from '@mui/x-data-grid';
 import { ConfirmDialog, PageContainer, PageHeader } from '../../../shared/components';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
@@ -102,38 +104,44 @@ export function ReferenceDataListPage<TItem extends BaseReferenceItem>({
         }
       />
 
-      <ReferenceDataFilters
-        code={filters.code}
-        name={filters.name}
-        active={filters.active}
-        showCodeFilter={showCodeFilter}
-        onChange={handleFilterChange}
-      />
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <ReferenceDataFilters
+            code={filters.code}
+            name={filters.name}
+            active={filters.active}
+            showCodeFilter={showCodeFilter}
+            onChange={handleFilterChange}
+          />
+        </CardContent>
+      </Card>
 
-      <DataGrid
-        autoHeight
-        rows={listQuery.data?.content ?? []}
-        rowCount={listQuery.data?.totalElements ?? 0}
-        loading={listQuery.isFetching}
-        columns={canEdit ? [...columns, actionColumn] : columns}
-        paginationMode="server"
-        sortingMode="server"
-        paginationModel={paginationModel}
-        onPaginationModelChange={setPaginationModel}
-        sortModel={sortField ? [{ field: sortField, sort: sortDirection }] : []}
-        onSortModelChange={(model) => {
-          if (model.length === 0) {
-            return;
-          }
-          setSortField(model[0].field);
-          setSortDirection(model[0].sort ?? 'asc');
-        }}
-        pageSizeOptions={[10, 25, 50]}
-        disableRowSelectionOnClick
-        localeText={{
-          noRowsLabel: `Hələ heç bir ${entityLabelSingular} yoxdur — "Yeni" düyməsi ilə əlavə edin.`,
-        }}
-      />
+      <Card>
+        <DataGrid
+          autoHeight
+          rows={listQuery.data?.content ?? []}
+          rowCount={listQuery.data?.totalElements ?? 0}
+          loading={listQuery.isFetching}
+          columns={canEdit ? [...columns, actionColumn] : columns}
+          paginationMode="server"
+          sortingMode="server"
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
+          sortModel={sortField ? [{ field: sortField, sort: sortDirection }] : []}
+          onSortModelChange={(model) => {
+            if (model.length === 0) {
+              return;
+            }
+            setSortField(model[0].field);
+            setSortDirection(model[0].sort ?? 'asc');
+          }}
+          pageSizeOptions={[10, 25, 50]}
+          disableRowSelectionOnClick
+          localeText={{
+            noRowsLabel: `Hələ heç bir ${entityLabelSingular} yoxdur — "Yeni" düyməsi ilə əlavə edin.`,
+          }}
+        />
+      </Card>
 
       {canEdit && (
         <ConfirmDialog

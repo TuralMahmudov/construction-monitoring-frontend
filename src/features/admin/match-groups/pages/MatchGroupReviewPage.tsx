@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import Alert from '@mui/material/Alert';
+import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
 import dayjs from 'dayjs';
 import { DataGrid, GridActionsCellItem, type GridColDef } from '@mui/x-data-grid';
@@ -110,20 +111,22 @@ export function MatchGroupReviewPage() {
         subtitle="Az məlumatla avtomatik yaradılmış 'eyni məhsul' qruplaşdırmaları — nəzərdən keçirib təsdiqləyin"
       />
 
-      <DataGrid
-        autoHeight
-        getRowHeight={() => 'auto'}
-        rows={listQuery.data?.content ?? []}
-        rowCount={listQuery.data?.totalElements ?? 0}
-        loading={listQuery.isFetching}
-        columns={columns}
-        paginationMode="server"
-        paginationModel={paginationModel}
-        onPaginationModelChange={setPaginationModel}
-        pageSizeOptions={[10, 25, 50]}
-        disableRowSelectionOnClick
-        localeText={{ noRowsLabel: 'Nəzərdən keçirilməli yeni qruplaşdırma yoxdur.' }}
-      />
+      <Card>
+        <DataGrid
+          autoHeight
+          getRowHeight={() => 'auto'}
+          rows={listQuery.data?.content ?? []}
+          rowCount={listQuery.data?.totalElements ?? 0}
+          loading={listQuery.isFetching}
+          columns={columns}
+          paginationMode="server"
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
+          pageSizeOptions={[10, 25, 50]}
+          disableRowSelectionOnClick
+          localeText={{ noRowsLabel: 'Nəzərdən keçirilməli yeni qruplaşdırma yoxdur.' }}
+        />
+      </Card>
     </PageContainer>
   );
 }

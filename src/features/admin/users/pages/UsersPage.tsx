@@ -3,6 +3,8 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
@@ -104,7 +106,9 @@ export function UsersPage() {
         }
       />
 
-      <Grid container spacing={2} sx={{ pb: 2 }}>
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+      <Grid container spacing={2}>
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <TextField
             label="İstifadəçi adı"
@@ -136,20 +140,24 @@ export function UsersPage() {
           </TextField>
         </Grid>
       </Grid>
+        </CardContent>
+      </Card>
 
-      <DataGrid
-        autoHeight
-        rows={listQuery.data?.content ?? []}
-        rowCount={listQuery.data?.totalElements ?? 0}
-        loading={listQuery.isFetching}
-        columns={columns}
-        paginationMode="server"
-        paginationModel={paginationModel}
-        onPaginationModelChange={setPaginationModel}
-        pageSizeOptions={[10, 25, 50]}
-        disableRowSelectionOnClick
-        localeText={{ noRowsLabel: 'Hələ heç bir mərkəzi istifadəçi yoxdur — "Yeni istifadəçi" ilə əlavə edin.' }}
-      />
+      <Card>
+        <DataGrid
+          autoHeight
+          rows={listQuery.data?.content ?? []}
+          rowCount={listQuery.data?.totalElements ?? 0}
+          loading={listQuery.isFetching}
+          columns={columns}
+          paginationMode="server"
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
+          pageSizeOptions={[10, 25, 50]}
+          disableRowSelectionOnClick
+          localeText={{ noRowsLabel: 'Hələ heç bir mərkəzi istifadəçi yoxdur — "Yeni istifadəçi" ilə əlavə edin.' }}
+        />
+      </Card>
 
       <UserCreateDialog
         open={createOpen}

@@ -3,6 +3,8 @@ import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
@@ -157,68 +159,69 @@ export function MarketAveragesPage() {
         <StatTile label="Yüksək dəyişkənlik (bu səhifədə)" value={stats.high} color="error.main" />
       </Stack>
 
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
-        <Autocomplete
-          freeSolo
-          options={nameSuggestions}
-          inputValue={nameInput}
-          onInputChange={(_event, newValue) => setNameInput(newValue)}
-          sx={{ flex: 1, maxWidth: 360 }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="Resurs adı ilə axtarış"
-              placeholder="Məs: Armatur"
-              slotProps={{
-                ...params.slotProps,
-                input: {
-                  ...params.slotProps.input,
-                  startAdornment: <SearchRoundedIcon color="action" sx={{ mr: 1 }} />,
-                },
-              }}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <Autocomplete
+              freeSolo
+              options={nameSuggestions}
+              inputValue={nameInput}
+              onInputChange={(_event, newValue) => setNameInput(newValue)}
+              sx={{ flex: 1, maxWidth: 360 }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Resurs adı ilə axtarış"
+                  placeholder="Məs: Armatur"
+                  slotProps={{
+                    ...params.slotProps,
+                    input: {
+                      ...params.slotProps.input,
+                      startAdornment: <SearchRoundedIcon color="action" sx={{ mr: 1 }} />,
+                    },
+                  }}
+                />
+              )}
             />
-          )}
-        />
-        <TextField
-          select
-          label="Region"
-          value={regionId}
-          onChange={(event) => setRegionId(event.target.value)}
-          disabled={regionsQuery.isLoading}
-          sx={{ minWidth: 220 }}
-        >
-          <MenuItem value="">Bütün regionlar</MenuItem>
-          {(regionsQuery.data?.content ?? []).map((region) => (
-            <MenuItem key={region.id} value={region.id}>
-              {region.name}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Stack>
+            <TextField
+              select
+              label="Region"
+              value={regionId}
+              onChange={(event) => setRegionId(event.target.value)}
+              disabled={regionsQuery.isLoading}
+              sx={{ minWidth: 220 }}
+            >
+              <MenuItem value="">Bütün regionlar</MenuItem>
+              {(regionsQuery.data?.content ?? []).map((region) => (
+                <MenuItem key={region.id} value={region.id}>
+                  {region.name}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Stack>
+        </CardContent>
+      </Card>
 
       {averagesQuery.isError && <Alert severity="error">{getApiErrorMessage(averagesQuery.error)}</Alert>}
 
       {!averagesQuery.isError && (
-        <DataGrid
-          autoHeight
-          rows={rows}
-          rowCount={averagesQuery.data?.totalElements ?? 0}
-          getRowId={(row) => `${row.productId}:${row.regionId}`}
-          loading={averagesQuery.isFetching}
-          columns={columns}
-          paginationMode="server"
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          pageSizeOptions={[10, 25, 50]}
-          getRowHeight={() => 56}
-          disableRowSelectionOnClick
-          localeText={{ noRowsLabel: 'Uyğun bazar statistikası tapılmadı.' }}
-          sx={{
-            borderRadius: 2,
-            bgcolor: 'background.paper',
-            '& .MuiDataGrid-columnHeaders': { bgcolor: 'grey.50' },
-          }}
-        />
+        <Card>
+          <DataGrid
+            autoHeight
+            rows={rows}
+            rowCount={averagesQuery.data?.totalElements ?? 0}
+            getRowId={(row) => `${row.productId}:${row.regionId}`}
+            loading={averagesQuery.isFetching}
+            columns={columns}
+            paginationMode="server"
+            paginationModel={paginationModel}
+            onPaginationModelChange={setPaginationModel}
+            pageSizeOptions={[10, 25, 50]}
+            getRowHeight={() => 56}
+            disableRowSelectionOnClick
+            localeText={{ noRowsLabel: 'Uyğun bazar statistikası tapılmadı.' }}
+          />
+        </Card>
       )}
 
       <MarketAverageDetailDialog

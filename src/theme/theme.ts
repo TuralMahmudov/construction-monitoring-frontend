@@ -1,4 +1,8 @@
 import { createTheme, responsiveFontSizes, type Theme } from '@mui/material/styles';
+// Type-only import so @mui/x-data-grid's `Components` module augmentation
+// (which adds the `MuiDataGrid` key) is loaded — without it, TS doesn't know
+// about that key here even though DataGrid is used throughout the app.
+import type {} from '@mui/x-data-grid/themeAugmentation';
 import { darkPalette, lightPalette } from './palette';
 
 export type ThemeMode = 'light' | 'dark';
@@ -7,7 +11,7 @@ export function createAppTheme(mode: ThemeMode): Theme {
   const theme = createTheme({
     palette: mode === 'light' ? lightPalette : darkPalette,
     shape: {
-      borderRadius: 8,
+      borderRadius: 12,
     },
     typography: {
       fontFamily: [
@@ -57,6 +61,39 @@ export function createAppTheme(mode: ThemeMode): Theme {
         styleOverrides: {
           root: {
             backgroundImage: 'none',
+          },
+        },
+      },
+      MuiCard: {
+        defaultProps: {
+          elevation: 0,
+        },
+        styleOverrides: {
+          root: {
+            border: '1px solid',
+            borderColor: mode === 'light' ? '#d0d5dd' : '#324459',
+            boxShadow:
+              mode === 'light'
+                ? '0 1px 2px rgba(16,24,40,0.06), 0 4px 12px rgba(16,24,40,0.05)'
+                : '0 1px 2px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.25)',
+          },
+        },
+      },
+      MuiDataGrid: {
+        styleOverrides: {
+          root: {
+            border: 'none',
+          },
+          columnHeaders: {
+            backgroundColor: mode === 'light' ? '#f4f6f8' : '#0f1620',
+          },
+          columnHeaderTitle: {
+            fontWeight: 600,
+          },
+          row: {
+            '&:hover': {
+              backgroundColor: mode === 'light' ? 'rgba(21,101,192,0.04)' : 'rgba(94,146,243,0.08)',
+            },
           },
         },
       },

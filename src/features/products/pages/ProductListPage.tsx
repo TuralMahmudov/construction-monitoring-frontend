@@ -1,3 +1,5 @@
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
 import { PageContainer, PageHeader } from '../../../shared/components';
 import { ProductSearchFilters } from '../components/ProductSearchFilters';
 import { ProductSearchGrid } from '../components/ProductSearchGrid';
@@ -13,16 +15,22 @@ export function ProductListPage() {
     <PageContainer>
       <PageHeader title="Məhsullar" subtitle="Kataloq — hər məhsulun öz kodu, xüsusiyyətləri və vahidi" />
 
-      <ProductSearchFilters
-        category={params.category}
-        name={params.name}
-        code={params.code}
-        unit={params.unit}
-        active={params.active}
-        onChange={updateParams}
-      />
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <ProductSearchFilters
+            category={params.category}
+            name={params.name}
+            code={params.code}
+            unit={params.unit}
+            active={params.active}
+            onChange={updateParams}
+          />
+        </CardContent>
+      </Card>
 
-      <ProductSearchGrid params={params} onParamsChange={updateParams} />
+      <Card>
+        <ProductSearchGrid params={params} onParamsChange={updateParams} />
+      </Card>
     </PageContainer>
   );
 }

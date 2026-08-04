@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import { useAuth } from '../../../hooks/useAuth';
 import { PageContainer, PageHeader } from '../../../shared/components';
@@ -46,9 +48,15 @@ export function ResourceListPage() {
           : 'Yalnız öz təşkilatınızın və ümumi resurslar göstərilir.'}
       </Typography>
 
-      <ResourceSearchFilters organization={params.organization} active={params.active} onChange={updateParams} />
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <ResourceSearchFilters organization={params.organization} active={params.active} onChange={updateParams} />
+        </CardContent>
+      </Card>
 
-      <ResourceSearchGrid params={params} onParamsChange={updateParams} canEdit={canEdit} />
+      <Card>
+        <ResourceSearchGrid params={params} onParamsChange={updateParams} canEdit={canEdit} />
+      </Card>
 
       {canEdit && (
         <ResourceFormDialog
