@@ -15,6 +15,11 @@ export interface Resource {
   brand: string | null;
   model: string | null;
   organizationId: string | null;
+  // Added 2026-08-04 (FRONTEND_AI_PROMPT_ORG_TYPE_AND_PRICE_OWNERSHIP.md § 7.2)
+  // — denormalized directly onto the response so any role can see the
+  // listing organization without a separate ORGANIZATION_READ-gated lookup.
+  organizationName: string | null;
+  organizationType: number | null;
   status: number | null;
   active: boolean;
   createdBy: string;
@@ -49,11 +54,22 @@ export interface ResourceUpdateRequest {
 // Query param names confirmed against § 3.4 — name/code/category/
 // manufacturer/brand/unit/attributeName/attributeValue moved to
 // GET /api/products (bax products/types/product.types.ts ProductSearchParams).
+//
+// 2026-08-04 (§ 7.1) reintroduced `name`/`code` directly on this endpoint
+// (contains match against the resource's product), plus `regionId`/
+// `minPrice`/`maxPrice` filtering by current active price. Server 400s if
+// minPrice/maxPrice is sent without regionId — no cross-currency comparison
+// exists in this system, so the UI must enforce that pairing too.
 export interface ResourceSearchParams {
   product?: string;
   organization?: string;
   status?: number;
   active?: boolean;
+  name?: string;
+  code?: string;
+  regionId?: string;
+  minPrice?: number;
+  maxPrice?: number;
   page?: number;
   size?: number;
   sort?: string;

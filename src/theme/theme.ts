@@ -80,6 +80,12 @@ export function createAppTheme(mode: ThemeMode): Theme {
         },
       },
       MuiDataGrid: {
+        defaultProps: {
+          // The app has its own dedicated filter UI on every list page —
+          // the built-in column-header 3-dot menu (filter/sort/hide-column)
+          // is redundant and was never wired to those custom filters anyway.
+          disableColumnMenu: true,
+        },
         styleOverrides: {
           root: {
             border: 'none',

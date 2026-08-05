@@ -12,7 +12,7 @@ import TableRow from '@mui/material/TableRow';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { PRICE_STATUS, type ResourcePrice } from '../types/resourcePrice.types';
-import { useRegionOrganizationLookup } from '../hooks/useRegionOrganizationLookup';
+import { useRegionLookup } from '../hooks/useRegionLookup';
 import { PriceStatusChip } from './PriceStatusChip';
 
 export interface PriceHistoryTableProps {
@@ -36,7 +36,7 @@ export function PriceHistoryTable({
   onApprove,
   onReject,
 }: PriceHistoryTableProps) {
-  const { regionNames, organizationNames } = useRegionOrganizationLookup(isCentralAdmin);
+  const regionNames = useRegionLookup();
 
   if (prices.length === 0) {
     return (
@@ -70,7 +70,7 @@ export function PriceHistoryTable({
             const canEditRow = isActionable && (price.createdBy === currentUserId || isCentralAdmin);
             return (
               <TableRow key={price.id} hover>
-                <TableCell>{organizationNames.get(price.organizationId) ?? '—'}</TableCell>
+                <TableCell>{price.organizationName}</TableCell>
                 <TableCell>{regionNames.get(price.regionId) ?? '—'}</TableCell>
                 <TableCell align="right">{price.price.toFixed(2)}</TableCell>
                 <TableCell align="right">{price.vat.toFixed(2)}%</TableCell>

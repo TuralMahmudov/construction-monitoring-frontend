@@ -2,12 +2,14 @@ import { useState } from 'react';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
 import { useSnackbar } from 'notistack';
 import { PageContainer, PageHeader } from '../../../shared/components';
 import { createMyResourcePrice } from '../api/myResourcePricesApi';
 import { useCreateMyResource } from '../hooks/useCreateMyResource';
 import { MyResourceFormDialog } from '../components/MyResourceFormDialog';
 import { MyResourcePriceQuickDialog } from '../components/MyResourcePriceQuickDialog';
+import { MyResourceSearchFilters } from '../components/MyResourceSearchFilters';
 import { MyResourceTable } from '../components/MyResourceTable';
 import { MyResourceViewDialog } from '../components/MyResourceViewDialog';
 import type { CreateMyResourceRequest, MyResource, MyResourceSearchParams } from '../types/myResource.types';
@@ -75,6 +77,21 @@ export function MyResourcesPage() {
           </Button>
         }
       />
+
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <MyResourceSearchFilters
+            name={params.name}
+            code={params.code}
+            status={params.status}
+            regionId={params.regionId}
+            minPrice={params.minPrice}
+            maxPrice={params.maxPrice}
+            hasPrice={params.hasPrice}
+            onChange={updateParams}
+          />
+        </CardContent>
+      </Card>
 
       <Card>
         <MyResourceTable

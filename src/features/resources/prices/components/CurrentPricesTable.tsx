@@ -6,9 +6,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
-import { useAuth } from '../../../../hooks/useAuth';
-import { isCentralAdmin } from '../../../../shared/lib/permissions';
-import { useRegionOrganizationLookup } from '../hooks/useRegionOrganizationLookup';
+import { useRegionLookup } from '../hooks/useRegionLookup';
 import type { CurrentPriceEntry } from '../utils/groupCurrentPrices';
 
 export interface CurrentPricesTableProps {
@@ -16,8 +14,7 @@ export interface CurrentPricesTableProps {
 }
 
 export function CurrentPricesTable({ entries }: CurrentPricesTableProps) {
-  const { user } = useAuth();
-  const { regionNames, organizationNames } = useRegionOrganizationLookup(isCentralAdmin(user?.roles ?? []));
+  const regionNames = useRegionLookup();
 
   if (entries.length === 0) {
     return (
@@ -41,7 +38,7 @@ export function CurrentPricesTable({ entries }: CurrentPricesTableProps) {
         <TableBody>
           {entries.map((entry) => (
             <TableRow key={`${entry.organizationId}-${entry.regionId}`} hover>
-              <TableCell>{organizationNames.get(entry.organizationId) ?? '—'}</TableCell>
+              <TableCell>{entry.price.organizationName}</TableCell>
               <TableCell>{regionNames.get(entry.regionId) ?? '—'}</TableCell>
               <TableCell align="right">
                 {entry.price.price.toFixed(2)} {entry.price.currency}

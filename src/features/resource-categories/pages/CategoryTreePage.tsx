@@ -80,22 +80,34 @@ export function CategoryTreePage() {
 
       <CategoryTreeToolbar />
 
-      <Box
+      <Paper
+        variant="outlined"
         sx={{
           display: 'flex',
-          gap: 2,
           flexGrow: 1,
           minHeight: 0,
+          borderRadius: '16px',
+          overflow: 'hidden',
           flexDirection: { xs: 'column', md: 'row' },
         }}
       >
-        <Paper variant="outlined" sx={{ flex: '1 1 60%', minWidth: 0, p: 2, overflowY: 'auto' }}>
+        <Box
+          sx={{
+            flex: '1 1 60%',
+            minWidth: 0,
+            p: 2,
+            overflowY: 'auto',
+            borderBottom: { xs: '1px solid', md: 'none' },
+            borderRight: { xs: 'none', md: '1px solid' },
+            borderColor: 'divider',
+          }}
+        >
           <CategoryTree />
-        </Paper>
-        <Paper variant="outlined" sx={{ flex: '1 1 40%', minWidth: 0, overflowY: 'auto' }}>
+        </Box>
+        <Box sx={{ flex: '1 1 40%', minWidth: 0, overflowY: 'auto' }}>
           <CategoryDetailsPanel />
-        </Paper>
-      </Box>
+        </Box>
+      </Paper>
 
       <CategoryFormDrawer />
 

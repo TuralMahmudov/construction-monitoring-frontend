@@ -7,4 +7,8 @@ export interface NavItem {
   children?: NavItem[];
   centralAdminOnly?: boolean;
   organizationOnly?: boolean;
+  // Hidden for vendor/organization accounts (isOrganizationActor) — visible to
+  // ALL central staff regardless of role, not just SUPER_ADMIN/ADMIN. Broader
+  // than centralAdminOnly, which only covers the admin-role subset.
+  hideForOrganization?: boolean;
 }

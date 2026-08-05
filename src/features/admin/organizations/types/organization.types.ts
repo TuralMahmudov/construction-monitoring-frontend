@@ -65,12 +65,10 @@ export interface Organization {
   taxId: string | null;
   contactInfo: string | null;
   status: OrganizationStatus;
-  // Not in OrganizationResponse per FRONTEND_AI_PROMPT_ADMIN_ORG_USERS.md § 2.1
-  // as of 2026-08-03 (backend gap flagged 2026-08-04 — org's own login
-  // username isn't visible anywhere in the admin panel). Optional so the
-  // edit dialog can show it read-only the moment backend adds it, without
-  // another frontend round-trip.
-  username?: string;
+  // Added 2026-08-04 (FRONTEND_AI_PROMPT_ORG_TYPE_AND_PRICE_OWNERSHIP.md § 7.3),
+  // read-only. `undefined`/`null` for the rare row with no linked login
+  // account (e.g. old placeholder organizations).
+  username?: string | null;
 }
 
 // POST /api/organizations — bundles the vendor org + its single login

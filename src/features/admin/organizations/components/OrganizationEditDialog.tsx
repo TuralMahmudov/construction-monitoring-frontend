@@ -27,9 +27,9 @@ export interface OrganizationEditDialogProps {
   open: boolean;
   editValues: OrganizationUpdateFormValues | null;
   // Read-only display only — not part of the submitted form, since PUT
-  // can't change the login account (§ 2.2). Undefined until backend adds
-  // `username` to OrganizationResponse (bax organization.types.ts).
-  username?: string;
+  // can't change the login account (§ 2.2). `null`/undefined for the rare
+  // org with no linked login account (bax organization.types.ts).
+  username?: string | null;
   isSubmitting: boolean;
   onClose: () => void;
   onSubmit: (values: OrganizationUpdateFormValues, onError: (error: unknown) => void) => void;

@@ -1,9 +1,10 @@
-import { useNavigate } from 'react-router-dom';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import Alert from '@mui/material/Alert';
 import { DataGrid, GridActionsCellItem, type GridColDef } from '@mui/x-data-grid';
 import { StatusBadge } from '../../../shared/components';
+import { useEntityView } from '../../../shared/entity-view/EntityViewProvider';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
+import type { OrganizationType } from '../../admin/organizations/types/organization.types';
 import { OrganizationChip } from '../../resources/components/OrganizationChip';
 import { useResourceSearch } from '../../resources/hooks/useResourceSearch';
 import type { Resource } from '../../resources/types/resource.types';
@@ -14,8 +15,8 @@ export interface ProductListingsTabProps {
 
 // § 3.4 — "bu məhsulu satan təşkilatlar": GET /api/resources?product={id}.
 export function ProductListingsTab({ productId }: ProductListingsTabProps) {
-  const navigate = useNavigate();
   const listingsQuery = useResourceSearch({ product: productId, size: 50 });
+  const { openResource } = useEntityView();
 
   if (listingsQuery.isError) {
     return <Alert severity="error">{getApiErrorMessage(listingsQuery.error)}</Alert>;
@@ -28,7 +29,12 @@ export function ProductListingsTab({ productId }: ProductListingsTabProps) {
       flex: 1,
       minWidth: 180,
       sortable: false,
-      renderCell: (params) => <OrganizationChip organizationId={params.row.organizationId} />,
+      renderCell: (params) => (
+        <OrganizationChip
+          organizationName={params.row.organizationName}
+          organizationType={params.row.organizationType as OrganizationType | null}
+        />
+      ),
     },
     {
       field: 'manufacturer',
@@ -74,7 +80,7 @@ export function ProductListingsTab({ productId }: ProductListingsTabProps) {
           key="view"
           icon={<VisibilityRoundedIcon />}
           label="Bax"
-          onClick={() => navigate(`/resources/${params.row.id}`)}
+          onClick={() => openResource(params.row.id)}
         />,
       ],
     },

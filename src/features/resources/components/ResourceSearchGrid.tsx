@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { DataGrid, GridActionsCellItem, type GridColDef } from '@mui/x-data-grid';
 import { ConfirmDialog, StatusBadge } from '../../../shared/components';
+import { useEntityView } from '../../../shared/entity-view/EntityViewProvider';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
-import { useCategoryNameLookup, useUnitLookup } from '../hooks/useLookups';
+import type { OrganizationType } from '../../admin/organizations/types/organization.types';
 import { useDeleteResource } from '../hooks/useDeleteResource';
 import type { ResolvedResourceSearchParams } from '../hooks/useResourceSearchParams';
 import { useResourceSearch } from '../hooks/useResourceSearch';
@@ -19,15 +21,15 @@ export interface ResourceSearchGridProps {
   canEdit: boolean;
 }
 
-// § 3.2 — code/name/category/unit read from resource.product.*, but
-// manufacturer/brand read directly from resource.* (2026-07-31 — these are
-// listing-specific, not product identity).
+// § 3.2 — code/name/description read from resource.product.*, but
+// specification/manufacturer/brand read directly from resource.* (2026-07-31
+// — these are listing-specific, not product identity). Category/unit columns
+// dropped: category duplicated "Ad" for how this catalog is actually
+// categorized, unit replaced by specification (more useful per-listing).
 export function ResourceSearchGrid({ params, onParamsChange, canEdit }: ResourceSearchGridProps) {
-  const navigate = useNavigate();
   const searchQuery = useResourceSearch(params);
   const deleteMutation = useDeleteResource();
-  const categoryNames = useCategoryNameLookup();
-  const unitSymbols = useUnitLookup();
+  const { openResource } = useEntityView();
   const [deleteTarget, setDeleteTarget] = useState<Resource | null>(null);
 
   const columns: GridColDef<Resource>[] = [
@@ -39,20 +41,29 @@ export function ResourceSearchGrid({ params, onParamsChange, canEdit }: Resource
       renderCell: (cellParams) => <StatusBadge active={cellParams.row.active} />,
     },
     { field: 'code', headerName: 'Kod', width: 140, sortable: false, valueGetter: (_v, row) => row.product.code },
-    { field: 'name', headerName: 'Ad', flex: 1, minWidth: 200, sortable: false, valueGetter: (_v, row) => row.product.name },
     {
-      field: 'categoryId',
-      headerName: 'Kateqoriya',
-      width: 200,
+      field: 'name',
+      headerName: 'Ad',
+      flex: 1,
+      minWidth: 240,
       sortable: false,
-      valueGetter: (_value, row) => categoryNames.get(row.product.categoryId) ?? '—',
+      renderCell: (cellParams) => (
+        <Box sx={{ py: 1 }}>
+          <Typography variant="body2">{cellParams.row.product.name}</Typography>
+          {cellParams.row.product.description && (
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+              {cellParams.row.product.description}
+            </Typography>
+          )}
+        </Box>
+      ),
     },
     {
-      field: 'unitId',
-      headerName: 'Vahid',
-      width: 100,
+      field: 'specification',
+      headerName: 'Spesifikasiya',
+      width: 200,
       sortable: false,
-      valueGetter: (_value, row) => (row.product.unitId ? (unitSymbols.get(row.product.unitId) ?? '—') : '—'),
+      valueGetter: (_value, row) => row.specification ?? '—',
     },
     { field: 'manufacturer', headerName: 'İstehsalçı', width: 160, sortable: false, valueGetter: (_v, row) => row.manufacturer ?? '—' },
     { field: 'brand', headerName: 'Brend', width: 140, sortable: false, valueGetter: (_v, row) => row.brand ?? '—' },
@@ -61,7 +72,12 @@ export function ResourceSearchGrid({ params, onParamsChange, canEdit }: Resource
       headerName: 'Təşkilat',
       width: 150,
       sortable: false,
-      renderCell: (cellParams) => <OrganizationChip organizationId={cellParams.row.organizationId} />,
+      renderCell: (cellParams) => (
+        <OrganizationChip
+          organizationName={cellParams.row.organizationName}
+          organizationType={cellParams.row.organizationType as OrganizationType | null}
+        />
+      ),
     },
     {
       field: 'actions',
@@ -74,7 +90,7 @@ export function ResourceSearchGrid({ params, onParamsChange, canEdit }: Resource
             key="view"
             icon={<VisibilityRoundedIcon />}
             label="Bax"
-            onClick={() => navigate(`/resources/${cellParams.row.id}`)}
+            onClick={() => openResource(cellParams.row.id)}
           />,
         ];
         if (canEdit) {
@@ -105,6 +121,7 @@ export function ResourceSearchGrid({ params, onParamsChange, canEdit }: Resource
         rowCount={searchQuery.data?.totalElements ?? 0}
         loading={searchQuery.isFetching}
         columns={columns}
+        getRowHeight={() => 'auto'}
         paginationMode="server"
         paginationModel={{ page: params.page, pageSize: params.size }}
         onPaginationModelChange={(model) => onParamsChange({ page: model.page, size: model.pageSize })}

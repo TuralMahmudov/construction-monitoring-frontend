@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import LaunchRoundedIcon from '@mui/icons-material/LaunchRounded';
 import Box from '@mui/material/Box';
@@ -10,9 +9,13 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useAuth } from '../../../hooks/useAuth';
 import { StatusBadge } from '../../../shared/components';
-import { canWrite, isCentralAdmin } from '../../../shared/lib/permissions';
-import { useOrganizationLookup } from '../../admin/organizations/hooks/useOrganizations';
-import { ORGANIZATION_TYPE_ICONS, ORGANIZATION_TYPE_LABELS } from '../../admin/organizations/types/organization.types';
+import { useEntityView } from '../../../shared/entity-view/EntityViewProvider';
+import { canWrite } from '../../../shared/lib/permissions';
+import {
+  ORGANIZATION_TYPE_ICONS,
+  ORGANIZATION_TYPE_LABELS,
+  type OrganizationType,
+} from '../../admin/organizations/types/organization.types';
 import { useCategoryNameLookup, useUnitLookup } from '../hooks/useLookups';
 import { useUpdateResource } from '../hooks/useUpdateResource';
 import type { Resource } from '../types/resource.types';
@@ -49,6 +52,7 @@ export function ResourceGeneralTab({ resource }: ResourceGeneralTabProps) {
   const categoryNames = useCategoryNameLookup();
   const unitSymbols = useUnitLookup();
   const updateMutation = useUpdateResource();
+  const { openProduct } = useEntityView();
   const [active, setActive] = useState(resource.active);
   const [editOpen, setEditOpen] = useState(false);
 
@@ -56,18 +60,13 @@ export function ResourceGeneralTab({ resource }: ResourceGeneralTabProps) {
   // individual user — there's no general-purpose user-id -> name lookup
   // (FRONTEND_AI_PROMPT_ORG_TYPE_AND_PRICE_OWNERSHIP.md § 4), but the
   // organization that owns this listing is a meaningful, always-correct
-  // stand-in for "who created/maintains this". Same ORGANIZATION_READ gating
-  // as OrganizationChip — resolves to a real name for central admins only
-  // until that permission is broadened (bax memory).
-  const organizations = useOrganizationLookup(isCentralAdmin(user?.roles ?? []));
-  const ownerOrgName = resource.organizationId
-    ? (() => {
-        const org = organizations.get(resource.organizationId);
-        return org
-          ? `${org.name} ${ORGANIZATION_TYPE_ICONS[org.type]} ${ORGANIZATION_TYPE_LABELS[org.type]}`
-          : 'Təşkilata məxsus';
-      })()
-    : 'Ümumi/Mərkəzi';
+  // stand-in for "who created/maintains this". organizationName/Type now
+  // travel directly on the resource (§ 7.2), no lookup needed.
+  const ownerOrgType = resource.organizationType as OrganizationType | null;
+  const ownerOrgName =
+    resource.organizationName && ownerOrgType
+      ? `${resource.organizationName} ${ORGANIZATION_TYPE_ICONS[ownerOrgType]} ${ORGANIZATION_TYPE_LABELS[ownerOrgType]}`
+      : (resource.organizationName ?? 'Ümumi/Mərkəzi');
 
   function handleToggleActive() {
     const nextActive = !active;
@@ -91,12 +90,7 @@ export function ResourceGeneralTab({ resource }: ResourceGeneralTabProps) {
               Redaktə et
             </Button>
           )}
-          <Button
-            size="small"
-            component={RouterLink}
-            to={`/products/${product.id}`}
-            startIcon={<LaunchRoundedIcon />}
-          >
+          <Button size="small" onClick={() => openProduct(product.id)} startIcon={<LaunchRoundedIcon />}>
             Məhsula bax
           </Button>
         </Stack>
@@ -104,7 +98,10 @@ export function ResourceGeneralTab({ resource }: ResourceGeneralTabProps) {
 
       <Stack direction="row" spacing={1}>
         <StatusBadge active={resource.active} />
-        <OrganizationChip organizationId={resource.organizationId} />
+        <OrganizationChip
+          organizationName={resource.organizationName}
+          organizationType={resource.organizationType as OrganizationType | null}
+        />
       </Stack>
 
       <Divider sx={{ my: 2 }} />

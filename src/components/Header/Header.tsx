@@ -20,10 +20,9 @@ import { DRAWER_WIDTH } from '../../layouts/constants';
 
 export interface HeaderProps {
   onMenuClick: () => void;
-  title?: string;
 }
 
-export function Header({ onMenuClick, title = 'İdarə paneli' }: HeaderProps) {
+export function Header({ onMenuClick }: HeaderProps) {
   const { mode, toggleColorMode } = useColorMode();
   const { user, logout } = useAuth();
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
@@ -45,10 +44,12 @@ export function Header({ onMenuClick, title = 'İdarə paneli' }: HeaderProps) {
       sx={{
         width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
         ml: { md: `${DRAWER_WIDTH}px` },
-        bgcolor: 'background.paper',
+        bgcolor: 'background.default',
+        border: 'none',
+        boxShadow: 'none',
       }}
     >
-      <Toolbar sx={{ gap: 1 }}>
+      <Toolbar variant="dense" sx={{ gap: 1 }}>
         <IconButton
           color="inherit"
           edge="start"
@@ -59,9 +60,7 @@ export function Header({ onMenuClick, title = 'İdarə paneli' }: HeaderProps) {
           <MenuIcon />
         </IconButton>
 
-        <Typography variant="h6" noWrap component="h1" sx={{ flexGrow: 1 }}>
-          {title}
-        </Typography>
+        <Box sx={{ flexGrow: 1 }} />
 
         <Tooltip title={mode === 'light' ? 'Tünd rejimə keç' : 'İşıqlı rejimə keç'}>
           <IconButton color="inherit" onClick={toggleColorMode} aria-label="toggle color mode">

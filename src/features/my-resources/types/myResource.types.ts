@@ -48,10 +48,21 @@ export interface MyResource {
   createdDate: string;
 }
 
+// `code`/`regionId`/`minPrice`/`maxPrice`/`hasPrice` mirror/extend the
+// filters added to the general GET /api/resources (bax FRONTEND_AI_PROMPT_
+// ORG_TYPE_AND_PRICE_OWNERSHIP.md § 7.1) — NOT confirmed in
+// MY_RESOURCES_BACKEND_CONTRACT.md for this "mine" endpoint yet (that doc
+// only lists name/category/status). Sent speculatively; verify live/ask
+// backend if they don't actually narrow results.
 export interface MyResourceSearchParams {
   name?: string;
+  code?: string;
   category?: string;
   status?: ResourceStatus;
+  regionId?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  hasPrice?: boolean;
   page?: number;
   size?: number;
   sort?: string;

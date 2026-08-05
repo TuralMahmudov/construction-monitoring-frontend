@@ -3,12 +3,13 @@ import CircleRoundedIcon from '@mui/icons-material/CircleRounded';
 import PriceChangeRoundedIcon from '@mui/icons-material/PriceChangeRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import { DataGrid, type GridColDef, type GridSortModel } from '@mui/x-data-grid';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
-import { useCategoryNameLookup, useUnitLookup } from '../../resources/hooks/useLookups';
 import { useMyResources } from '../hooks/useMyResources';
 import type { MyResource, MyResourceSearchParams } from '../types/myResource.types';
 import { StatusChip } from './StatusChip';
@@ -22,8 +23,6 @@ export interface MyResourceTableProps {
 
 export function MyResourceTable({ params, onParamsChange, onView, onManagePrice }: MyResourceTableProps) {
   const searchQuery = useMyResources(params);
-  const categoryNames = useCategoryNameLookup();
-  const unitSymbols = useUnitLookup();
 
   const columns: GridColDef<MyResource>[] = [
     {
@@ -33,28 +32,37 @@ export function MyResourceTable({ params, onParamsChange, onView, onManagePrice 
       sortable: false,
       renderCell: (cellParams) => <StatusChip status={cellParams.row.status} label={cellParams.row.statusLabel} />,
     },
+    { field: 'code', headerName: 'Kod', width: 140 },
     {
-      field: 'categoryId',
-      headerName: 'Kateqoriya',
-      width: 180,
-      sortable: false,
-      valueGetter: (_value, row) => categoryNames.get(row.categoryId) ?? '—',
+      field: 'name',
+      headerName: 'Ad',
+      flex: 1,
+      minWidth: 240,
+      renderCell: (cellParams) => (
+        <Box sx={{ py: 1 }}>
+          <Typography variant="body2">{cellParams.row.name}</Typography>
+          {cellParams.row.description && (
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+              {cellParams.row.description}
+            </Typography>
+          )}
+        </Box>
+      ),
     },
-    { field: 'name', headerName: 'Ad', flex: 1, minWidth: 200 },
     { field: 'manufacturer', headerName: 'İstehsalçı', width: 160 },
     { field: 'brand', headerName: 'Brend', width: 140, valueGetter: (_value, row) => row.brand ?? '—' },
-    { field: 'model', headerName: 'Model', width: 140, valueGetter: (_value, row) => row.model ?? '—' },
+    { field: 'model', headerName: 'Model', width: 100, valueGetter: (_value, row) => row.model ?? '—' },
     {
-      field: 'unitId',
-      headerName: 'Vahid',
-      width: 100,
+      field: 'specification',
+      headerName: 'Spesifikasiya',
+      width: 140,
       sortable: false,
-      valueGetter: (_value, row) => unitSymbols.get(row.unitId) ?? '—',
+      valueGetter: (_value, row) => row.specification ?? '—',
     },
     {
       field: 'createdDate',
       headerName: 'Yaradılma tarixi',
-      width: 150,
+      width: 120,
       valueGetter: (_value, row) => dayjs(row.createdDate).format('DD.MM.YYYY'),
     },
     {
@@ -117,7 +125,7 @@ export function MyResourceTable({ params, onParamsChange, onView, onManagePrice 
       }}
       pageSizeOptions={[10, 25, 50]}
       disableRowSelectionOnClick
-      getRowHeight={() => 56}
+      getRowHeight={() => 'auto'}
       localeText={{ noRowsLabel: 'Nəticə tapılmadı' }}
       sx={{
         borderRadius: 2,

@@ -10,7 +10,7 @@ export function PublicOnlyRoute({ children }: { children: ReactElement }) {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/resource-categories" replace />;
   }
 
   return children;

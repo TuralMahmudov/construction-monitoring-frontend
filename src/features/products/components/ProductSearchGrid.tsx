@@ -1,10 +1,11 @@
-import { useNavigate } from 'react-router-dom';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { DataGrid, GridActionsCellItem, type GridColDef } from '@mui/x-data-grid';
 import { StatusBadge } from '../../../shared/components';
+import { useEntityView } from '../../../shared/entity-view/EntityViewProvider';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
-import { useCategoryNameLookup, useUnitLookup } from '../../resources/hooks/useLookups';
 import { useProducts } from '../hooks/useProducts';
 import type { ResolvedProductSearchParams } from '../hooks/useProductSearchParams';
 import type { Product, ProductSearchParams } from '../types/product.types';
@@ -15,28 +16,10 @@ export interface ProductSearchGridProps {
 }
 
 export function ProductSearchGrid({ params, onParamsChange }: ProductSearchGridProps) {
-  const navigate = useNavigate();
   const searchQuery = useProducts(params);
-  const categoryNames = useCategoryNameLookup();
-  const unitSymbols = useUnitLookup();
+  const { openProduct } = useEntityView();
 
   const columns: GridColDef<Product>[] = [
-    { field: 'code', headerName: 'Kod', width: 140, sortable: false },
-    { field: 'name', headerName: 'Ad', flex: 1, minWidth: 200, sortable: false },
-    {
-      field: 'categoryId',
-      headerName: 'Kateqoriya',
-      width: 200,
-      sortable: false,
-      valueGetter: (_value, row) => categoryNames.get(row.categoryId) ?? '—',
-    },
-    {
-      field: 'unitId',
-      headerName: 'Vahid',
-      width: 100,
-      sortable: false,
-      valueGetter: (_value, row) => (row.unitId ? (unitSymbols.get(row.unitId) ?? '—') : '—'),
-    },
     {
       field: 'active',
       headerName: 'Status',
@@ -44,17 +27,35 @@ export function ProductSearchGrid({ params, onParamsChange }: ProductSearchGridP
       sortable: false,
       renderCell: (cellParams) => <StatusBadge active={cellParams.row.active} />,
     },
+    { field: 'code', headerName: 'Kod', width: 140, sortable: false },
+    {
+      field: 'name',
+      headerName: 'Ad',
+      flex: 1,
+      minWidth: 240,
+      sortable: false,
+      renderCell: (cellParams) => (
+        <Box sx={{ py: 1 }}>
+          <Typography variant="body2">{cellParams.row.name}</Typography>
+          {cellParams.row.description && (
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+              {cellParams.row.description}
+            </Typography>
+          )}
+        </Box>
+      ),
+    },
     {
       field: 'actions',
       type: 'actions',
-      headerName: 'Əməliyyatlar',
+      headerName: '',
       width: 90,
       getActions: (cellParams) => [
         <GridActionsCellItem
           key="view"
           icon={<VisibilityRoundedIcon />}
           label="Bax"
-          onClick={() => navigate(`/products/${cellParams.row.id}`)}
+          onClick={() => openProduct(cellParams.row.id)}
         />,
       ],
     },
@@ -71,6 +72,7 @@ export function ProductSearchGrid({ params, onParamsChange }: ProductSearchGridP
       rowCount={searchQuery.data?.totalElements ?? 0}
       loading={searchQuery.isFetching}
       columns={columns}
+      getRowHeight={() => 'auto'}
       paginationMode="server"
       paginationModel={{ page: params.page, pageSize: params.size }}
       onPaginationModelChange={(model) => onParamsChange({ page: model.page, size: model.pageSize })}

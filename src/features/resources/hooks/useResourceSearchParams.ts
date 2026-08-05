@@ -3,7 +3,10 @@ import { useSearchParams } from 'react-router-dom';
 import type { ResourceSearchParams } from '../types/resource.types';
 
 export type ResolvedResourceSearchParams = Required<Pick<ResourceSearchParams, 'page' | 'size'>> &
-  Pick<ResourceSearchParams, 'product' | 'organization' | 'active' | 'sort'>;
+  Pick<
+    ResourceSearchParams,
+    'product' | 'organization' | 'active' | 'sort' | 'name' | 'code' | 'regionId' | 'minPrice' | 'maxPrice'
+  >;
 
 export function useResourceSearchParams() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -14,6 +17,11 @@ export function useResourceSearchParams() {
       organization: searchParams.get('organization') ?? undefined,
       active: searchParams.get('active') === null ? undefined : searchParams.get('active') === 'true',
       sort: searchParams.get('sort') ?? undefined,
+      name: searchParams.get('name') ?? undefined,
+      code: searchParams.get('code') ?? undefined,
+      regionId: searchParams.get('regionId') ?? undefined,
+      minPrice: searchParams.get('minPrice') === null ? undefined : Number(searchParams.get('minPrice')),
+      maxPrice: searchParams.get('maxPrice') === null ? undefined : Number(searchParams.get('maxPrice')),
       page: Number(searchParams.get('page') ?? 0),
       size: Number(searchParams.get('size') ?? 10),
     }),

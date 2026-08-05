@@ -3,6 +3,8 @@ export interface FlaggedPriceReviewResponse {
   resourceId: string;
   regionId: string;
   organizationId: string;
+  // Added 2026-08-04 (FRONTEND_AI_PROMPT_ORG_TYPE_AND_PRICE_OWNERSHIP.md § 7.2, bonus)
+  organizationName: string;
   price: number;
   vat: number;
   currency: string;

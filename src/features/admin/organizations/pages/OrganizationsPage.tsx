@@ -67,6 +67,7 @@ export function OrganizationsPage() {
       renderCell: (params) => <OrganizationTypeChip type={params.row.type} />,
     },
     { field: 'taxId', headerName: 'VÖEN', width: 140, valueGetter: (_value, row) => row.taxId ?? '—' },
+    { field: 'username', headerName: 'İstifadəçi adı', width: 160, sortable: false, valueGetter: (_value, row) => row.username ?? '—' },
     {
       field: 'contactInfo',
       headerName: 'Əlaqə məlumatı',

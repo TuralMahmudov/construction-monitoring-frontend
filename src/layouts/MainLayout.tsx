@@ -4,13 +4,14 @@ import Toolbar from '@mui/material/Toolbar';
 import { Outlet } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Sidebar } from '../components/Sidebar';
+import { EntityViewProvider } from '../shared/entity-view/EntityViewProvider';
 import { DRAWER_WIDTH } from './constants';
 
 export function MainLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
       <Header onMenuClick={() => setMobileOpen((prev) => !prev)} />
       <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
 
@@ -23,9 +24,11 @@ export function MainLayout() {
           minHeight: '100vh',
         }}
       >
-        <Toolbar />
-        <Box sx={{ p: 3 }}>
-          <Outlet />
+        <Toolbar variant="dense" />
+        <Box sx={{ p: 2 }}>
+          <EntityViewProvider>
+            <Outlet />
+          </EntityViewProvider>
         </Box>
       </Box>
     </Box>

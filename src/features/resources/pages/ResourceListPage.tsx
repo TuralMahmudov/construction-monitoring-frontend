@@ -50,7 +50,16 @@ export function ResourceListPage() {
 
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <ResourceSearchFilters organization={params.organization} active={params.active} onChange={updateParams} />
+          <ResourceSearchFilters
+            organization={params.organization}
+            active={params.active}
+            name={params.name}
+            code={params.code}
+            regionId={params.regionId}
+            minPrice={params.minPrice}
+            maxPrice={params.maxPrice}
+            onChange={updateParams}
+          />
         </CardContent>
       </Card>
 

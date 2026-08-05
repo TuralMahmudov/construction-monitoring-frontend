@@ -17,7 +17,7 @@ export function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
       sx={{ alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between' }}
     >
       <Box>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
+        <Typography variant="h6" sx={{ fontWeight: 500 }}>
           {title}
         </Typography>
         {subtitle && (

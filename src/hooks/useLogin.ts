@@ -40,7 +40,7 @@ export function useLogin(): UseLoginResult {
 
       try {
         await login(values);
-        navigate('/dashboard');
+        navigate('/resource-categories');
       } catch (err) {
         if (err instanceof ApiError) {
           if (err.status === 400 && err.validationErrors) {

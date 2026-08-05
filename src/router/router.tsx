@@ -39,7 +39,7 @@ export const router = createBrowserRouter([
     ),
     errorElement: <RouteErrorBoundary />,
     children: [
-      { index: true, element: <Navigate to="/dashboard" replace /> },
+      { index: true, element: <Navigate to="/resource-categories" replace /> },
       { path: 'dashboard', element: <Dashboard /> },
       { path: 'resource-categories', element: <CategoryTreePage /> },
       { path: 'resource-categories/search', element: <CategorySearchPage /> },

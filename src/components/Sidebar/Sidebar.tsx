@@ -3,20 +3,25 @@ import ExpandLessRoundedIcon from '@mui/icons-material/ExpandLessRounded';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
-import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
 import { useLocation, useNavigate } from 'react-router-dom';
+import logo from '../../assets/logo.svg';
 import { useAuth } from '../../hooks/useAuth';
 import { DRAWER_WIDTH } from '../../layouts/constants';
 import { isCentralAdmin, isOrganizationActor } from '../../shared/lib/permissions';
 import type { NavItem } from '../../types/navigation';
 import { navItems } from './navItems';
+
+// Pill-shaped active-item highlight, inset from the drawer edges — matches
+// the reference design Tural provided (Screenshot_numune_sesda.png), not the
+// previous edge-to-edge rectangle.
+const NAV_ITEM_SX = { borderRadius: 999, mb: 0.5 };
+
 
 export interface SidebarProps {
   mobileOpen: boolean;
@@ -40,7 +45,7 @@ function NavItemGroup({
       <ListItemButton
         selected={currentPath === item.path}
         onClick={() => item.path && onNavigate(item.path)}
-        sx={{ borderRadius: 1, mb: 0.5 }}
+        sx={NAV_ITEM_SX}
       >
         <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
         <ListItemText primary={item.label} />
@@ -50,7 +55,7 @@ function NavItemGroup({
 
   return (
     <>
-      <ListItemButton onClick={() => setOpen((prev) => !prev)} sx={{ borderRadius: 1, mb: 0.5 }}>
+      <ListItemButton onClick={() => setOpen((prev) => !prev)} sx={NAV_ITEM_SX}>
         <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
         <ListItemText primary={item.label} />
         {open ? <ExpandLessRoundedIcon fontSize="small" /> : <ExpandMoreRoundedIcon fontSize="small" />}
@@ -62,7 +67,7 @@ function NavItemGroup({
               key={child.path}
               selected={currentPath === child.path}
               onClick={() => child.path && onNavigate(child.path)}
-              sx={{ borderRadius: 1, mb: 0.5 }}
+              sx={NAV_ITEM_SX}
             >
               <ListItemIcon sx={{ minWidth: 40 }}>{child.icon}</ListItemIcon>
               <ListItemText primary={child.label} />
@@ -87,6 +92,9 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
     if (item.organizationOnly && !canAccessOwnResources) {
       return false;
     }
+    if (item.hideForOrganization && canAccessOwnResources) {
+      return false;
+    }
     return true;
   });
 
@@ -97,12 +105,9 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
 
   const content = (
     <Box>
-      <Toolbar>
-        <Typography variant="h6" noWrap sx={{ fontWeight: 700 }}>
-          Tikinti Qiymətlərinin Monitorinqi
-        </Typography>
+      <Toolbar sx={{ py: 2 }}>
+        <Box component="img" src={logo} alt="TQMS" sx={{ width: '100%', maxWidth: 200, height: 'auto', display: 'block' }} />
       </Toolbar>
-      <Divider />
       <List sx={{ px: 1, py: 1 }}>
         {visibleNavItems.map((item) => (
           <NavItemGroup
@@ -143,6 +148,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
           '& .MuiDrawer-paper': {
             boxSizing: 'border-box',
             width: DRAWER_WIDTH,
+            border: 'none',
           },
         }}
         open
