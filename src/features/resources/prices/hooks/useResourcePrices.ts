@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSnackbar } from 'notistack';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
+import { resourceKeys } from '../../hooks/queryKeys';
 import {
   approveResourcePrice,
   createResourcePrice,
@@ -23,14 +24,17 @@ export function useResourcePriceHistory(resourceId: string) {
   });
 }
 
-export function useCreateResourcePrice(resourceId: string) {
+export function useCreateResourcePrice(resourceId: string, organizationId?: string | null) {
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
 
   return useMutation({
-    mutationFn: (payload: ResourcePriceFormValues) => createResourcePrice(resourceId, payload),
+    mutationFn: (payload: ResourcePriceFormValues) => createResourcePrice(resourceId, payload, organizationId),
     onSuccess: (price: ResourcePrice) => {
       queryClient.invalidateQueries({ queryKey: priceKeys.history(resourceId) });
+      // Resource list rows show a hasPrice dot (Resurslar, Sənədlərin İdarəsi) —
+      // refetch those too so it flips without a manual page reload.
+      queryClient.invalidateQueries({ queryKey: resourceKeys.all });
       enqueueSnackbar(
         price.status === PRICE_STATUS.FLAGGED
           ? 'Qiymət yaradıldı, lakin bazar qiymətindən əhəmiyyətli dərəcədə fərqləndiyi üçün admin nəzərdənkeçirməsinə göndərildi.'

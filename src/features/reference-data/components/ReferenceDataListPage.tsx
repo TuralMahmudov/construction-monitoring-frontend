@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import { DataGrid, GridActionsCellItem, type GridColDef } from '@mui/x-data-grid';
-import { ConfirmDialog, PageContainer, PageHeader } from '../../../shared/components';
+import { PageContainer, PageHeader } from '../../../shared/components';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
 import type { ReferenceDataHooks } from '../hooks/createReferenceDataHooks';
 import type { BaseReferenceItem, ReferenceDataSearchParams } from '../types/referenceData.types';
@@ -18,21 +17,21 @@ export interface ReferenceDataListPageProps<TItem extends BaseReferenceItem> {
   subtitle?: string;
   entityLabelSingular: string;
   columns: GridColDef<TItem>[];
-  hooks: Pick<ReferenceDataHooks<TItem, unknown>, 'useList' | 'useRemove'>;
+  hooks: Pick<ReferenceDataHooks<TItem, unknown>, 'useList'>;
   canEdit: boolean;
-  /** Forwarded to ReferenceDataFilters — see its doc comment. */
   showCodeFilter?: boolean;
   onAdd: () => void;
   onEdit: (item: TItem) => void;
 }
 
-/**
- * Shared list/grid/filter/pagination/delete-confirm chrome for a simple
- * code/name/active reference entity. The create/edit dialog itself is left
- * to the caller — react-hook-form + Zod's generics don't compose cleanly
- * through an extra layer of generic form component, so each entity keeps its
- * own small, concretely-typed dialog instead of fighting that friction here.
- */
+// Deliberately no hard-delete action here — Units/Regions are foreign keys
+// on Products/Resources/Prices, and every other reference-style entity in
+// this app (Organizations, Products, Resources, Categories) uses an
+// active/inactive toggle instead of a real DELETE for exactly that reason.
+// Deactivating (via the edit dialog's "Aktiv" switch) is the only lifecycle-
+// ending action offered; `useRemove`/`DELETE` still exist in the underlying
+// API/hooks layer for any future entity that genuinely needs it, just not
+// wired into this shared list UI.
 export function ReferenceDataListPage<TItem extends BaseReferenceItem>({
   title,
   subtitle,
@@ -48,7 +47,6 @@ export function ReferenceDataListPage<TItem extends BaseReferenceItem>({
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
   const [sortField, setSortField] = useState<string | undefined>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [deleteTarget, setDeleteTarget] = useState<TItem | null>(null);
 
   const searchParams: ReferenceDataSearchParams = {
     ...filters,
@@ -58,7 +56,6 @@ export function ReferenceDataListPage<TItem extends BaseReferenceItem>({
   };
 
   const listQuery = hooks.useList(searchParams);
-  const removeMutation = hooks.useRemove();
 
   function handleFilterChange(patch: Partial<{ code?: string; name?: string; active?: boolean }>) {
     setFilters((prev) => ({ ...prev, ...patch }));
@@ -69,19 +66,13 @@ export function ReferenceDataListPage<TItem extends BaseReferenceItem>({
     field: 'actions',
     type: 'actions',
     headerName: 'Əməliyyatlar',
-    width: 120,
+    width: 90,
     getActions: (params) => [
       <GridActionsCellItem
         key="edit"
         icon={<EditRoundedIcon />}
         label="Redaktə et"
         onClick={() => onEdit(params.row)}
-      />,
-      <GridActionsCellItem
-        key="delete"
-        icon={<DeleteRoundedIcon color="error" />}
-        label="Sil"
-        onClick={() => setDeleteTarget(params.row)}
       />,
     ],
   };
@@ -140,26 +131,13 @@ export function ReferenceDataListPage<TItem extends BaseReferenceItem>({
           localeText={{
             noRowsLabel: `Hələ heç bir ${entityLabelSingular} yoxdur — "Yeni" düyməsi ilə əlavə edin.`,
           }}
+          sx={{
+            borderRadius: 2,
+            bgcolor: 'background.paper',
+            '& .MuiDataGrid-columnHeaders': { bgcolor: 'grey.50' },
+          }}
         />
       </Card>
-
-      {canEdit && (
-        <ConfirmDialog
-          open={Boolean(deleteTarget)}
-          title={`${entityLabelSingular}i sil`}
-          description={`"${deleteTarget?.name ?? ''}" adlı ${entityLabelSingular}i silmək istədiyinizə əminsiniz?`}
-          confirmLabel="Sil"
-          confirmColor="error"
-          loading={removeMutation.isPending}
-          onConfirm={() => {
-            if (!deleteTarget) {
-              return;
-            }
-            removeMutation.mutate(deleteTarget.id, { onSettled: () => setDeleteTarget(null) });
-          }}
-          onCancel={() => setDeleteTarget(null)}
-        />
-      )}
     </PageContainer>
   );
 }

@@ -3,7 +3,6 @@ import CircleRoundedIcon from '@mui/icons-material/CircleRounded';
 import PriceChangeRoundedIcon from '@mui/icons-material/PriceChangeRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
@@ -38,15 +37,14 @@ export function MyResourceTable({ params, onParamsChange, onView, onManagePrice 
       headerName: 'Ad',
       flex: 1,
       minWidth: 240,
+      // `description` is server-generated as "{category name} — {attr: val,
+      // ...}" and `name` usually defaults to that same category name, so
+      // showing both stacked just repeated the same text twice — description
+      // alone already carries everything meaningful.
       renderCell: (cellParams) => (
-        <Box sx={{ py: 1 }}>
-          <Typography variant="body2">{cellParams.row.name}</Typography>
-          {cellParams.row.description && (
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-              {cellParams.row.description}
-            </Typography>
-          )}
-        </Box>
+        <Typography variant="body2" sx={{ py: 1.5 }}>
+          {cellParams.row.description || cellParams.row.name}
+        </Typography>
       ),
     },
     { field: 'manufacturer', headerName: 'İstehsalçı', width: 160 },

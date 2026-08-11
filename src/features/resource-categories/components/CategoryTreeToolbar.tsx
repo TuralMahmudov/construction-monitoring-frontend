@@ -57,6 +57,7 @@ export function CategoryTreeToolbar() {
         color="error"
         disabled={!selected}
         onClick={() => selected && requestDelete(selected)}
+        sx={{ ml: 'auto' }}
       >
         Sil
       </Button>

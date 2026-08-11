@@ -35,10 +35,14 @@ export interface ResourcePrice {
   approvedDate: string | null;
 }
 
-// No `organizationId` here — FRONTEND_AI_PROMPT_ORG_TYPE_AND_PRICE_OWNERSHIP.md
-// § 3: the server always derives it from the submitting user's own
-// organization, the field was removed from the API entirely (not just
-// auto-filled client-side).
+// No `organizationId` here — for an organization caller the server derives it
+// from the submitter's own organization. A central caller (no organization of
+// their own, e.g. adding a price from the admin-facing Resurslar/Sənədlərin
+// İdarəsi screens) must supply it explicitly or the API 400s ("Only an
+// organization account can submit a price, unless the caller has
+// VIEW_ALL_ORGANIZATION_RESOURCES and supplies organizationId" — verified
+// live 2026-08-11). Kept out of the form itself (not user-editable, it's the
+// resource's own owning org) — see createResourcePrice's separate parameter.
 export interface ResourcePriceFormValues {
   regionId: string;
   price: number;

@@ -16,7 +16,9 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useAuth } from '../../hooks/useAuth';
 import { useColorMode } from '../../hooks/useColorMode';
+import { NotificationBell } from '../../features/notifications/components/NotificationBell';
 import { DRAWER_WIDTH } from '../../layouts/constants';
+import { canReviewDocuments } from '../../shared/lib/permissions';
 
 export interface HeaderProps {
   onMenuClick: () => void;
@@ -61,6 +63,8 @@ export function Header({ onMenuClick }: HeaderProps) {
         </IconButton>
 
         <Box sx={{ flexGrow: 1 }} />
+
+        {canReviewDocuments(user) && <NotificationBell />}
 
         <Tooltip title={mode === 'light' ? 'Tünd rejimə keç' : 'İşıqlı rejimə keç'}>
           <IconButton color="inherit" onClick={toggleColorMode} aria-label="toggle color mode">

@@ -25,21 +25,22 @@ import { PriceHistoryTable } from './PriceHistoryTable';
 
 export interface ResourcePricesTabProps {
   resourceId: string;
+  // The resource's owning organization — this tab only ever mounts inside
+  // ResourceViewDialog, a central-admin-facing screen (Resurslar/Məhsullar,
+  // both hideForOrganization), so the caller always needs this to submit a
+  // price on that organization's behalf (bax resourcePrice.types.ts).
+  organizationId: string | null;
 }
 
-export function ResourcePricesTab({ resourceId }: ResourcePricesTabProps) {
+export function ResourcePricesTab({ resourceId, organizationId }: ResourcePricesTabProps) {
   const { user } = useAuth();
   const canEdit = canWrite(user?.roles ?? []);
   const canApprove = canApprovePrices(user?.roles ?? []);
   const isAdmin = isCentralAdmin(user?.roles ?? []);
-  // FRONTEND_AI_PROMPT_ORG_TYPE_AND_PRICE_OWNERSHIP.md § 3 — the server
-  // hard-rejects a price submission from a CENTRAL (organizationId=null)
-  // account with 400, so the create button/form must not be offered to them
-  // in the first place, not just rely on the 400 surfacing.
-  const canCreatePrice = canEdit && Boolean(user?.organizationId);
+  const canCreatePrice = canEdit;
 
   const historyQuery = useResourcePriceHistory(resourceId);
-  const createMutation = useCreateResourcePrice(resourceId);
+  const createMutation = useCreateResourcePrice(resourceId, organizationId);
   const updateMutation = useUpdateResourcePrice(resourceId);
   const approveMutation = useApproveResourcePrice(resourceId);
   const rejectMutation = useRejectResourcePrice(resourceId);

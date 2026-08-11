@@ -91,21 +91,21 @@ export function CategoryAttributesPanel({ categoryId, canEdit }: CategoryAttribu
   return (
     <Box>
       <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-        <Typography variant="subtitle2">Bağlı atributlar</Typography>
+        <Typography variant="subtitle2">Bağlı xüsusiyyət növləri</Typography>
         {canEdit && (
           <Button
             size="small"
             startIcon={<AddRoundedIcon />}
             onClick={() => setDialog({ open: true, mode: 'create', item: null })}
           >
-            Atribut bağla
+            Xüsusiyyət növü bağla
           </Button>
         )}
       </Stack>
 
       {links.length === 0 ? (
         <Typography color="text.secondary" variant="body2" sx={{ py: 1 }}>
-          Bu kateqoriyaya hələ heç bir atribut bağlanmayıb.
+          Bu kateqoriyaya hələ heç bir xüsusiyyət növü bağlanmayıb.
         </Typography>
       ) : (
         <TableContainer>
@@ -174,8 +174,8 @@ export function CategoryAttributesPanel({ categoryId, canEdit }: CategoryAttribu
 
           <ConfirmDialog
             open={Boolean(unlinkTarget)}
-            title="Atributu ayır"
-            description={`"${unlinkTarget?.attributeName ?? ''}" atributunu bu kateqoriyadan ayırmaq istədiyinizə əminsiniz?`}
+            title="Xüsusiyyət növünü ayır"
+            description={`"${unlinkTarget?.attributeName ?? ''}" xüsusiyyət növünü bu kateqoriyadan ayırmaq istədiyinizə əminsiniz?`}
             confirmLabel="Ayır"
             confirmColor="error"
             loading={unlinkMutation.isPending}

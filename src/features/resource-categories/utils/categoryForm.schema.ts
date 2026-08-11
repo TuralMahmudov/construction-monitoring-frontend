@@ -6,10 +6,6 @@ export const categoryFormSchema = z.object({
   // 0 is the "not yet selected" sentinel — the backend itself rejects 0
   // ("Unrecognized resource type: 0"), so it doubles as a safe default.
   type: z.number().int().positive('Növ seçin.'),
-  sortOrder: z
-    .number({ message: 'Sıra nömrəsi rəqəm olmalıdır.' })
-    .int('Sıra nömrəsi tam ədəd olmalıdır.')
-    .min(0, 'Sıra nömrəsi mənfi ola bilməz.'),
   active: z.boolean(),
 });
 

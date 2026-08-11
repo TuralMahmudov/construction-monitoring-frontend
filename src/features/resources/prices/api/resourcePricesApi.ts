@@ -8,11 +8,19 @@ export function getPriceHistory(resourceId: string, size = 100): Promise<PageRes
   return apiGet<PageResponse<ResourcePrice>>(`${BASE_URL}/history`, { resourceId, size });
 }
 
+// `organizationId` is only needed for a central caller (see
+// ResourcePriceFormValues comment) — omit it for an organization caller
+// submitting their own resource's price.
 export function createResourcePrice(
   resourceId: string,
   payload: ResourcePriceFormValues,
+  organizationId?: string | null,
 ): Promise<ResourcePrice> {
-  return apiPost<ResourcePrice>(BASE_URL, { ...payload, resourceId });
+  return apiPost<ResourcePrice>(BASE_URL, {
+    ...payload,
+    resourceId,
+    ...(organizationId ? { organizationId } : {}),
+  });
 }
 
 export function updateResourcePrice(

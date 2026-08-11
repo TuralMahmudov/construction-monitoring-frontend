@@ -2,6 +2,8 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
+import { NumberField } from '../../../shared/components';
+import { useAllUnits } from '../../reference-data/hooks/useReferenceOptions';
 import {
   ATTRIBUTE_DATA_TYPE,
   type AttributeDataType,
@@ -14,6 +16,10 @@ export interface AttributeValueFieldProps {
   onChange: (value: string) => void;
   label: string;
   unit?: string | null;
+  /** Resolves to the unit's own `decimalPrecision` (bax reference-data
+   *  Vahidlər) so NUMBER inputs cap decimals to what the unit actually
+   *  supports — e.g. "ədəd" (0 decimals) vs "metr" (2 decimals). */
+  defaultUnitId?: string | null;
   enumValues?: AttributeEnumValue[];
   required?: boolean;
   disabled?: boolean;
@@ -31,6 +37,7 @@ export function AttributeValueField({
   onChange,
   label,
   unit,
+  defaultUnitId,
   enumValues,
   required,
   disabled,
@@ -38,6 +45,10 @@ export function AttributeValueField({
   helperText,
 }: AttributeValueFieldProps) {
   const displayLabel = required ? `${label} *` : label;
+  const allUnitsQuery = useAllUnits();
+  const unitDecimals = defaultUnitId
+    ? allUnitsQuery.data?.content.find((u) => u.id === defaultUnitId)?.decimalPrecision
+    : undefined;
 
   if (dataType === ATTRIBUTE_DATA_TYPE.BOOLEAN) {
     return (
@@ -93,39 +104,35 @@ export function AttributeValueField({
     );
   }
 
-  const isNumber = dataType === ATTRIBUTE_DATA_TYPE.NUMBER;
+  if (dataType === ATTRIBUTE_DATA_TYPE.NUMBER) {
+    return (
+      <NumberField
+        label={displayLabel}
+        fullWidth
+        value={value === '' ? 0 : Number(value)}
+        onChange={(num) => onChange(num === 0 ? '' : String(num))}
+        decimals={unitDecimals ?? undefined}
+        disabled={disabled}
+        error={error}
+        helperText={helperText ?? (unit ? `Vahid: ${unit}` : undefined)}
+        slotProps={{
+          input: unit ? { endAdornment: <span>{unit}</span> } : undefined,
+        }}
+      />
+    );
+  }
 
   return (
     <TextField
-      type={isNumber ? 'number' : 'text'}
       label={displayLabel}
       fullWidth
       value={value}
-      onChange={(event) => {
-        const raw = event.target.value;
-        // Attribute numbers (diameter, weight, etc.) are physical
-        // measurements — negative values are never valid. Stripping the
-        // sign (rather than ignoring the event) keeps the controlled value
-        // in sync with the DOM; ignoring it desyncs them and leaves the
-        // field stuck showing whatever the browser typed natively.
-        onChange(isNumber ? raw.replace(/-/g, '') : raw);
-      }}
-      onWheel={
-        isNumber
-          ? (event) => {
-              // Focused number inputs hijack page-scroll wheel events to
-              // bump the value. Blurring on wheel lets the scroll pass
-              // through to the page instead.
-              (event.target as HTMLElement).blur();
-            }
-          : undefined
-      }
+      onChange={(event) => onChange(event.target.value)}
       disabled={disabled}
       error={error}
       helperText={helperText ?? (unit ? `Vahid: ${unit}` : undefined)}
       slotProps={{
         input: unit ? { endAdornment: <span>{unit}</span> } : undefined,
-        htmlInput: isNumber ? { min: 0 } : undefined,
       }}
     />
   );

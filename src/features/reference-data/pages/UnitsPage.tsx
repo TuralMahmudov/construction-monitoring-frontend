@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import type { GridColDef } from '@mui/x-data-grid';
+import Alert from '@mui/material/Alert';
 import { useAuth } from '../../../hooks/useAuth';
-import { StatusBadge } from '../../../shared/components';
-import { canWrite } from '../../../shared/lib/permissions';
+import { PageContainer, StatusBadge } from '../../../shared/components';
+import { canWrite, isOrganizationActor } from '../../../shared/lib/permissions';
 import { UnitFormDialog } from '../components/UnitFormDialog';
 import { ReferenceDataListPage } from '../components/ReferenceDataListPage';
 import { unitsHooks } from '../hooks/useUnitsData';
@@ -23,6 +24,7 @@ const columns: GridColDef<UnitItem>[] = [
 
 export function UnitsPage() {
   const { user } = useAuth();
+  const canAccess = !isOrganizationActor(user);
   const canEdit = canWrite(user?.roles ?? []);
 
   const createMutation = unitsHooks.useCreate();
@@ -34,6 +36,14 @@ export function UnitsPage() {
     mode: 'create',
     item: null,
   });
+
+  if (!canAccess) {
+    return (
+      <PageContainer>
+        <Alert severity="warning">Bu səhifəyə girişiniz yoxdur.</Alert>
+      </PageContainer>
+    );
+  }
 
   function closeDialog() {
     setDialog({ open: false, mode: 'create', item: null });

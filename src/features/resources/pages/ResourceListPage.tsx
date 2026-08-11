@@ -64,7 +64,7 @@ export function ResourceListPage() {
       </Card>
 
       <Card>
-        <ResourceSearchGrid params={params} onParamsChange={updateParams} canEdit={canEdit} />
+        <ResourceSearchGrid params={params} onParamsChange={updateParams} />
       </Card>
 
       {canEdit && (

@@ -3,6 +3,8 @@ import { createTheme, responsiveFontSizes, type Theme } from '@mui/material/styl
 // (which adds the `MuiDataGrid` key) is loaded — without it, TS doesn't know
 // about that key here even though DataGrid is used throughout the app.
 import type {} from '@mui/x-data-grid/themeAugmentation';
+// Same reasoning for `MuiTreeItem` (category tree, category pickers).
+import type {} from '@mui/x-tree-view/themeAugmentation';
 import { darkPalette, lightPalette } from './palette';
 
 export type ThemeMode = 'light' | 'dark';
@@ -91,14 +93,41 @@ export function createAppTheme(mode: ThemeMode): Theme {
             border: 'none',
           },
           columnHeaders: {
-            backgroundColor: mode === 'light' ? '#f4f6f8' : '#0f1620',
+            // No heavy fill — the header row's job is to stay quiet so it
+            // doesn't compete with the data, not to announce itself.
+            backgroundColor: 'transparent',
+            borderBottom: '1px solid',
+            borderColor: mode === 'light' ? '#e0e0e0' : '#263241',
           },
-          columnHeaderTitle: {
-            fontWeight: 600,
-          },
+          columnHeaderTitle: ({ theme }) => ({
+            fontSize: 13,
+            letterSpacing: '0.4px',
+            fontWeight: 500,
+            color: theme.palette.text.secondary,
+          }),
           row: {
             '&:hover': {
               backgroundColor: mode === 'light' ? 'rgba(21,101,192,0.04)' : 'rgba(94,146,243,0.08)',
+            },
+          },
+        },
+      },
+      // Vertical indent-guide lines (one per nesting level, via the
+      // recursively-nested groupTransition containers) + a left accent bar
+      // on the selected row — the default selected state is just a faint
+      // background tint that's easy to miss at deep indentation.
+      MuiTreeItem: {
+        styleOverrides: {
+          groupTransition: {
+            marginLeft: 10,
+            paddingLeft: 10,
+            borderLeft: '1px solid',
+            borderColor: mode === 'light' ? '#d0d5dd' : '#324459',
+          },
+          content: {
+            borderLeft: '3px solid transparent',
+            '&[data-selected]': {
+              borderLeftColor: mode === 'light' ? '#1565c0' : '#5e92f3',
             },
           },
         },

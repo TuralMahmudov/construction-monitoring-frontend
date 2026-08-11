@@ -30,3 +30,38 @@ export function isCentralAdmin(roles: Role[]): boolean {
 export function isOrganizationActor(user: AuthUser | null): boolean {
   return user?.actorType === 2;
 }
+
+// Sənəd İdxalı module (FRONTEND_AI_PROMPT_DOCUMENT_IMPORT_5.md § 0).
+export const PERMISSIONS = {
+  DOCUMENT_UPLOAD: 'DOCUMENT_UPLOAD',
+  DOCUMENT_REVIEW: 'DOCUMENT_REVIEW',
+  COST_WRITE: 'COST_WRITE',
+  VIEW_ALL_ORGANIZATION_RESOURCES: 'VIEW_ALL_ORGANIZATION_RESOURCES',
+} as const;
+
+function hasPermission(user: AuthUser | null, permission: string): boolean {
+  return (user?.permissions ?? []).includes(permission);
+}
+
+// Vendor (organization) accounts uploading their own documents. A central
+// account (organizationId === null) never sees this, even with the
+// permission — backend 400s that combination (§0).
+export function canUploadDocuments(user: AuthUser | null): boolean {
+  return isOrganizationActor(user) && hasPermission(user, PERMISSIONS.DOCUMENT_UPLOAD);
+}
+
+// Central document list + lock/status actions.
+export function canReviewDocuments(user: AuthUser | null): boolean {
+  return hasPermission(user, PERMISSIONS.DOCUMENT_REVIEW);
+}
+
+// "Emal et" bulk resource/price creation additionally needs COST_WRITE (to
+// write resource-prices) and VIEW_ALL_ORGANIZATION_RESOURCES (to create on
+// behalf of the document's organization) — all three together (§0).
+export function canProcessDocuments(user: AuthUser | null): boolean {
+  return (
+    hasPermission(user, PERMISSIONS.DOCUMENT_REVIEW) &&
+    hasPermission(user, PERMISSIONS.COST_WRITE) &&
+    hasPermission(user, PERMISSIONS.VIEW_ALL_ORGANIZATION_RESOURCES)
+  );
+}

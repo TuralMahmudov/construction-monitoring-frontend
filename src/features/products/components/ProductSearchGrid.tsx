@@ -1,11 +1,12 @@
+import type { ReactNode } from 'react';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { DataGrid, GridActionsCellItem, type GridColDef } from '@mui/x-data-grid';
 import { StatusBadge } from '../../../shared/components';
 import { useEntityView } from '../../../shared/entity-view/EntityViewProvider';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
+import { useAllUnits } from '../../reference-data/hooks/useReferenceOptions';
 import { useProducts } from '../hooks/useProducts';
 import type { ResolvedProductSearchParams } from '../hooks/useProductSearchParams';
 import type { Product, ProductSearchParams } from '../types/product.types';
@@ -15,35 +16,60 @@ export interface ProductSearchGridProps {
   onParamsChange: (patch: Partial<ProductSearchParams>) => void;
 }
 
+// Plain-string cells stay top-aligned under getRowHeight="auto" (MUI DataGrid
+// disables flex-centering once row height is dynamic) while the Ad column's
+// own Typography+padding makes it look centered — wrapping every text cell
+// the same way keeps rows visually consistent.
+function CellText({ children }: { children: ReactNode }) {
+  return (
+    <Typography variant="body2" sx={{ py: 1.5 }}>
+      {children}
+    </Typography>
+  );
+}
+
 export function ProductSearchGrid({ params, onParamsChange }: ProductSearchGridProps) {
   const searchQuery = useProducts(params);
   const { openProduct } = useEntityView();
+  const unitsQuery = useAllUnits();
+  const unitSymbolById = new Map((unitsQuery.data?.content ?? []).map((unit) => [unit.id, unit.symbol || unit.name]));
 
   const columns: GridColDef<Product>[] = [
     {
-      field: 'active',
-      headerName: 'Status',
-      width: 110,
+      field: 'code',
+      headerName: 'Kod',
+      width: 140,
       sortable: false,
-      renderCell: (cellParams) => <StatusBadge active={cellParams.row.active} />,
+      renderCell: (cellParams) => <CellText>{cellParams.row.code}</CellText>,
     },
-    { field: 'code', headerName: 'Kod', width: 140, sortable: false },
     {
       field: 'name',
       headerName: 'Ad',
       flex: 1,
       minWidth: 240,
       sortable: false,
+      // `description` is server-generated as "{category name} — {attr: val, ...}"
+      // and `name` usually defaults to that same category name, so showing
+      // both stacked just repeated the same text twice — description alone
+      // already carries everything meaningful (falls back to name for the
+      // rare row without one).
+      renderCell: (cellParams) => <CellText>{cellParams.row.description || cellParams.row.name}</CellText>,
+    },
+    {
+      field: 'unitId',
+      headerName: 'Vahid',
+      width: 100,
+      sortable: false,
       renderCell: (cellParams) => (
-        <Box sx={{ py: 1 }}>
-          <Typography variant="body2">{cellParams.row.name}</Typography>
-          {cellParams.row.description && (
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-              {cellParams.row.description}
-            </Typography>
-          )}
-        </Box>
+        <CellText>{cellParams.row.unitId ? (unitSymbolById.get(cellParams.row.unitId) ?? '—') : '—'}</CellText>
       ),
+    },
+    {
+      field: 'active',
+      headerName: 'Status',
+      width: 130,
+      sortable: false,
+      renderCell: (cellParams) => <StatusBadge active={cellParams.row.active} />,
     },
     {
       field: 'actions',

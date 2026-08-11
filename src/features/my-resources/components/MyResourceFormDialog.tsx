@@ -270,6 +270,7 @@ export function MyResourceFormDialog({ open, isSubmitting, onClose, onSubmit }: 
                       onChange={(value) => setAttributeValues((prev) => ({ ...prev, [link.id]: value }))}
                       label={link.attributeName}
                       unit={link.defaultUnitSymbol}
+                      defaultUnitId={link.defaultUnitId}
                       enumValues={link.enumValues}
                       required={link.required}
                       disabled={isSubmitting}

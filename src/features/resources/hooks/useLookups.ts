@@ -11,8 +11,8 @@ export function useCategoryNameLookup() {
   }, [listQuery.data]);
 }
 
-export function useUnitLookup() {
-  const unitsQuery = useUnitOptions();
+export function useUnitLookup(enabled = true) {
+  const unitsQuery = useUnitOptions(enabled);
   return useMemo(() => {
     const map = new Map<string, string>();
     (unitsQuery.data?.content ?? []).forEach((unit) => map.set(unit.id, unit.symbol || unit.name));

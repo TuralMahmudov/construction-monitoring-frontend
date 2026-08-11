@@ -14,8 +14,11 @@ export const lightPalette: PaletteOptions = {
     dark: '#1c313a',
     contrastText: '#ffffff',
   },
+  // Noticeably darker than paper (#ffffff) on purpose — the previous
+  // #f4f6f8 was only 1-2 RGB units off white, so cards read as floating
+  // with no visible canvas underneath them.
   background: {
-    default: '#f4f6f8',
+    default: '#eef1f4',
     paper: '#ffffff',
   },
   divider: '#e0e0e0',

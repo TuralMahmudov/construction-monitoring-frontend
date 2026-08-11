@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import Alert from '@mui/material/Alert';
@@ -16,6 +16,7 @@ import { useUnitOptions } from '../../../reference-data/hooks/useReferenceOption
 import { ApiError } from '../../../../services/httpClient';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
 import { ignoreBackdropClose } from '../../../../shared/lib/ignoreBackdropClose';
+import { useAllActiveAttributeDefinitions } from '../hooks/useAttributeDefinitions';
 import {
   ATTRIBUTE_DATA_TYPE,
   ATTRIBUTE_DATA_TYPE_LABELS,
@@ -23,6 +24,35 @@ import {
   type AttributeDefinitionFormValues,
 } from '../types/attributeDefinition.types';
 import { attributeDefinitionFormSchema } from '../utils/attributeDefinitionForm.schema';
+
+const MIN_WORD_LEN = 4;
+
+function normalize(text: string): string {
+  return text.trim().toLocaleLowerCase('az');
+}
+
+// Heuristic only — catches "Diametr" vs "Boru Diametri" (shared word) and
+// "Diametr" vs "Diametr2" (substring), not unrelated synonyms like "En" vs
+// "Genişlik". A nudge for the admin to check, not a guarantee.
+function findSimilarNames(typedName: string, existingNames: string[]): string[] {
+  const typed = normalize(typedName);
+  if (typed.length < 3) {
+    return [];
+  }
+  const typedWords = typed.split(/[^a-zçəğıöşü0-9]+/i).filter((w) => w.length >= MIN_WORD_LEN);
+
+  return existingNames.filter((existing) => {
+    const candidate = normalize(existing);
+    if (candidate === typed) {
+      return false; // exact match already surfaced via the 409 "already exists" error on submit
+    }
+    if (candidate.includes(typed) || typed.includes(candidate)) {
+      return true;
+    }
+    const candidateWords = candidate.split(/[^a-zçəğıöşü0-9]+/i);
+    return typedWords.some((word) => candidateWords.includes(word));
+  });
+}
 
 const DEFAULT_VALUES: AttributeDefinitionFormValues = {
   name: '',
@@ -50,6 +80,7 @@ export function AttributeDefinitionFormDialog({
 }: AttributeDefinitionFormDialogProps) {
   const [formError, setFormError] = useState<string | null>(null);
   const unitOptions = useUnitOptions();
+  const existingDefinitionsQuery = useAllActiveAttributeDefinitions();
 
   const {
     control,
@@ -64,6 +95,15 @@ export function AttributeDefinitionFormDialog({
   });
 
   const dataType = watch('dataType');
+  const name = watch('name');
+
+  const similarNames = useMemo(() => {
+    if (mode === 'edit') {
+      return []; // renaming an existing definition isn't the "accidental duplicate" scenario
+    }
+    const existingNames = (existingDefinitionsQuery.data?.content ?? []).map((def) => def.name);
+    return findSimilarNames(name ?? '', existingNames);
+  }, [name, mode, existingDefinitionsQuery.data]);
 
   useEffect(() => {
     if (!open) {
@@ -84,7 +124,7 @@ export function AttributeDefinitionFormDialog({
         });
         setFormError(fieldEntries.length > 0 ? null : getApiErrorMessage(error));
       } else if (error.status === 409) {
-        setError('name', { type: 'server', message: 'Bu adda atribut artıq mövcuddur.' });
+        setError('name', { type: 'server', message: 'Bu adda xüsusiyyət növü artıq mövcuddur.' });
       } else {
         setFormError(getApiErrorMessage(error));
       }
@@ -103,7 +143,7 @@ export function AttributeDefinitionFormDialog({
 
   return (
     <Dialog open={open} onClose={ignoreBackdropClose(onClose)} maxWidth="xs" fullWidth>
-      <DialogTitle>{mode === 'edit' ? 'Atributu redaktə et' : 'Yeni atribut'}</DialogTitle>
+      <DialogTitle>{mode === 'edit' ? 'Xüsusiyyət növünü redaktə et' : 'Yeni xüsusiyyət növü'}</DialogTitle>
       <DialogContent>
         <Stack spacing={2.5} sx={{ pt: 1 }}>
           {formError && <Alert severity="error">{formError}</Alert>}
@@ -122,6 +162,13 @@ export function AttributeDefinitionFormDialog({
               />
             )}
           />
+
+          {similarNames.length > 0 && (
+            <Alert severity="warning">
+              Oxşar adlı xüsusiyyət növü artıq mövcuddur: {similarNames.join(', ')}. Eyni xüsusiyyəti
+              təkrar yaratmadığınızdan əmin olun.
+            </Alert>
+          )}
 
           <Controller
             name="dataType"
@@ -157,7 +204,7 @@ export function AttributeDefinitionFormDialog({
                   value={field.value ?? ''}
                   onChange={(event) => field.onChange(event.target.value || null)}
                   error={!!errors.defaultUnitId}
-                  helperText={errors.defaultUnitId?.message ?? 'Bu atributun bütün dəyərləri bu vahidlə ölçülür.'}
+                  helperText={errors.defaultUnitId?.message ?? 'Bu xüsusiyyət növünün bütün dəyərləri bu vahidlə ölçülür.'}
                   disabled={isSubmitting || unitOptions.isLoading}
                 >
                   <MenuItem value="">Seçilməyib</MenuItem>

@@ -12,9 +12,12 @@ import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import dayjs from 'dayjs';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
+import { useAuth } from '../../../../hooks/useAuth';
 import { PageContainer, PageHeader } from '../../../../shared/components';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
+import { isCentralAdmin } from '../../../../shared/lib/permissions';
 import { useDebouncedValue } from '../../../resources/hooks/useDebouncedValue';
+import { useProductLookup } from '../../../products/hooks/useProductLookup';
 import { useAllRegions } from '../../../reference-data/hooks/useReferenceOptions';
 import { usePriceAverages } from '../hooks/usePriceAverages';
 import type { ResourcePriceAverageResponse } from '../types/priceAverage.types';
@@ -27,27 +30,37 @@ import { VariabilityChip } from '../components/VariabilityChip';
 const PAGE_SIZE = 25;
 
 export function MarketAveragesPage() {
+  const { user } = useAuth();
+  const canAccess = isCentralAdmin(user?.roles ?? []);
   const [nameInput, setNameInput] = useState('');
   const debouncedName = useDebouncedValue(nameInput, 300);
   const [regionId, setRegionId] = useState('');
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
   const [detailTarget, setDetailTarget] = useState<ResourcePriceAverageResponse | null>(null);
 
-  const regionsQuery = useAllRegions();
+  const regionsQuery = useAllRegions(canAccess);
   const regionNames = useMemo(() => {
     const map = new Map<string, string>();
     (regionsQuery.data?.content ?? []).forEach((region) => map.set(region.id, region.name));
     return map;
   }, [regionsQuery.data]);
 
-  const averagesQuery = usePriceAverages({
-    name: debouncedName || undefined,
-    regionId: regionId || undefined,
-    page: paginationModel.page,
-    size: paginationModel.pageSize,
-  });
+  const averagesQuery = usePriceAverages(
+    {
+      name: debouncedName || undefined,
+      regionId: regionId || undefined,
+      page: paginationModel.page,
+      size: paginationModel.pageSize,
+    },
+    { enabled: canAccess },
+  );
 
   const rows = useMemo(() => averagesQuery.data?.content ?? [], [averagesQuery.data]);
+  // description (kateqoriya + atribut xülasəsi) bu aggregate cavabında
+  // yoxdur (yalnız bare `resourceName`), productId isə var — productId
+  // üzrə ayrıca lookup ilə tapılır (bax useProductLookup).
+  const productIds = useMemo(() => rows.map((row) => row.productId), [rows]);
+  const productLookup = useProductLookup(productIds);
   // `.filter(Boolean)` matters here, not just tidiness: until the backend
   // sends `resourceName` (bax MARKET_ANALYTICS_BACKEND_CONTRACT.md), rows
   // carry it as undefined — feeding that straight into Autocomplete's
@@ -79,6 +92,14 @@ export function MarketAveragesPage() {
     return { stable, moderate, high };
   }, [rows]);
 
+  if (!canAccess) {
+    return (
+      <PageContainer>
+        <Alert severity="warning">Bu səhifəyə girişiniz yoxdur.</Alert>
+      </PageContainer>
+    );
+  }
+
   const columns: GridColDef<ResourcePriceAverageResponse>[] = [
     {
       field: 'resourceName',
@@ -86,6 +107,7 @@ export function MarketAveragesPage() {
       flex: 1,
       minWidth: 180,
       sortable: false,
+      valueGetter: (_v, row) => productLookup.get(row.productId)?.description || row.resourceName,
     },
     {
       field: 'regionId',

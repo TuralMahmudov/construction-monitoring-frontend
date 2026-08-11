@@ -6,6 +6,8 @@ import { MarketAveragesPage } from '../features/admin/market-averages/pages/Mark
 import { MatchGroupReviewPage } from '../features/admin/match-groups/pages/MatchGroupReviewPage';
 import { OrganizationsPage } from '../features/admin/organizations/pages/OrganizationsPage';
 import { UsersPage } from '../features/admin/users/pages/UsersPage';
+import { DocumentsAdminPage } from '../features/documents/pages/DocumentsAdminPage';
+import { MyDocumentsPage } from '../features/documents/pages/MyDocumentsPage';
 import { MyResourcesPage } from '../features/my-resources/pages/MyResourcesPage';
 import { ProductDetailPage } from '../features/products/pages/ProductDetailPage';
 import { ProductListPage } from '../features/products/pages/ProductListPage';
@@ -44,6 +46,8 @@ export const router = createBrowserRouter([
       { path: 'resource-categories', element: <CategoryTreePage /> },
       { path: 'resource-categories/search', element: <CategorySearchPage /> },
       { path: 'my-resources', element: <MyResourcesPage /> },
+      { path: 'documents', element: <MyDocumentsPage /> },
+      { path: 'admin/documents', element: <DocumentsAdminPage /> },
       { path: 'products', element: <ProductListPage /> },
       { path: 'products/:id', element: <ProductDetailPage /> },
       { path: 'resources', element: <ResourceListPage /> },

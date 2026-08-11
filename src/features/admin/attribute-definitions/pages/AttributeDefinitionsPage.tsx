@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import ListAltRoundedIcon from '@mui/icons-material/ListAltRounded';
 import Alert from '@mui/material/Alert';
@@ -14,16 +13,15 @@ import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import { DataGrid, GridActionsCellItem, type GridColDef } from '@mui/x-data-grid';
 import { useAuth } from '../../../../hooks/useAuth';
-import { ConfirmDialog, PageContainer, PageHeader, StatusBadge } from '../../../../shared/components';
+import { PageContainer, PageHeader, StatusBadge } from '../../../../shared/components';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
-import { canWrite } from '../../../../shared/lib/permissions';
+import { canWrite, isCentralAdmin } from '../../../../shared/lib/permissions';
 import { useUnitLookup } from '../../../resources/hooks/useLookups';
 import { AttributeDefinitionFormDialog } from '../components/AttributeDefinitionFormDialog';
 import { AttributeEnumValuesDialog } from '../components/AttributeEnumValuesDialog';
 import {
   useAttributeDefinitionsList,
   useCreateAttributeDefinition,
-  useDeleteAttributeDefinition,
   useUpdateAttributeDefinition,
 } from '../hooks/useAttributeDefinitions';
 import {
@@ -37,21 +35,24 @@ import {
 
 export function AttributeDefinitionsPage() {
   const { user } = useAuth();
+  const canAccess = isCentralAdmin(user?.roles ?? []);
   const canEdit = canWrite(user?.roles ?? []);
-  const unitSymbols = useUnitLookup();
+  const unitSymbols = useUnitLookup(canAccess);
 
   const [filters, setFilters] = useState<{ name?: string; dataType?: AttributeDataType }>({});
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
 
-  const listQuery = useAttributeDefinitionsList({
-    ...filters,
-    page: paginationModel.page,
-    size: paginationModel.pageSize,
-    sort: 'name,asc',
-  });
+  const listQuery = useAttributeDefinitionsList(
+    {
+      ...filters,
+      page: paginationModel.page,
+      size: paginationModel.pageSize,
+      sort: 'name,asc',
+    },
+    canAccess,
+  );
   const createMutation = useCreateAttributeDefinition();
   const updateMutation = useUpdateAttributeDefinition();
-  const deleteMutation = useDeleteAttributeDefinition();
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   const [dialog, setDialog] = useState<{
@@ -60,7 +61,14 @@ export function AttributeDefinitionsPage() {
     item: AttributeDefinition | null;
   }>({ open: false, mode: 'create', item: null });
   const [enumDialog, setEnumDialog] = useState<AttributeDefinition | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<AttributeDefinition | null>(null);
+
+  if (!canAccess) {
+    return (
+      <PageContainer>
+        <Alert severity="warning">Bu səhifəyə girişiniz yoxdur.</Alert>
+      </PageContainer>
+    );
+  }
 
   function closeDialog() {
     setDialog({ open: false, mode: 'create', item: null });
@@ -117,19 +125,13 @@ export function AttributeDefinitionsPage() {
       field: 'actions',
       type: 'actions',
       headerName: 'Əməliyyatlar',
-      width: 100,
+      width: 60,
       getActions: (params) => [
         <GridActionsCellItem
           key="edit"
           icon={<EditRoundedIcon />}
           label="Redaktə et"
           onClick={() => setDialog({ open: true, mode: 'edit', item: params.row })}
-        />,
-        <GridActionsCellItem
-          key="delete"
-          icon={<DeleteRoundedIcon color="error" />}
-          label="Sil"
-          onClick={() => setDeleteTarget(params.row)}
         />,
       ],
     },
@@ -142,7 +144,7 @@ export function AttributeDefinitionsPage() {
   return (
     <PageContainer>
       <PageHeader
-        title="Atribut Lüğəti"
+        title="Xüsusiyyət Növləri"
         subtitle="Resurslara bağlana bilən xüsusiyyətlərin qlobal siyahısı (Diametr, Marka, Material və s.)"
         actions={
           canEdit ? (
@@ -151,7 +153,7 @@ export function AttributeDefinitionsPage() {
               variant="contained"
               onClick={() => setDialog({ open: true, mode: 'create', item: null })}
             >
-              Yeni atribut
+              Yeni xüsusiyyət növü
             </Button>
           ) : undefined
         }
@@ -209,7 +211,7 @@ export function AttributeDefinitionsPage() {
           onPaginationModelChange={setPaginationModel}
           pageSizeOptions={[10, 25, 50]}
           disableRowSelectionOnClick
-          localeText={{ noRowsLabel: 'Hələ heç bir atribut yoxdur — "Yeni atribut" ilə əlavə edin.' }}
+          localeText={{ noRowsLabel: 'Hələ heç bir xüsusiyyət növü yoxdur — "Yeni xüsusiyyət növü" ilə əlavə edin.' }}
         />
       </Card>
 
@@ -239,24 +241,6 @@ export function AttributeDefinitionsPage() {
         definitionName={enumDialog?.name ?? ''}
         onClose={() => setEnumDialog(null)}
       />
-
-      {canEdit && (
-        <ConfirmDialog
-          open={Boolean(deleteTarget)}
-          title="Atributu sil"
-          description={`"${deleteTarget?.name ?? ''}" atributunu silmək istədiyinizə əminsiniz?`}
-          confirmLabel="Sil"
-          confirmColor="error"
-          loading={deleteMutation.isPending}
-          onConfirm={() => {
-            if (!deleteTarget) {
-              return;
-            }
-            deleteMutation.mutate(deleteTarget.id, { onSettled: () => setDeleteTarget(null) });
-          }}
-          onCancel={() => setDeleteTarget(null)}
-        />
-      )}
     </PageContainer>
   );
 }

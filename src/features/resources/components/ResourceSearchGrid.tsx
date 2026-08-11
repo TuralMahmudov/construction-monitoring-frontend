@@ -1,15 +1,19 @@
 import { useState } from 'react';
-import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
+import CircleRoundedIcon from '@mui/icons-material/CircleRounded';
+import PriceChangeRoundedIcon from '@mui/icons-material/PriceChangeRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { DataGrid, GridActionsCellItem, type GridColDef } from '@mui/x-data-grid';
-import { ConfirmDialog, StatusBadge } from '../../../shared/components';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import Tooltip from '@mui/material/Tooltip';
+import { DataGrid, type GridColDef } from '@mui/x-data-grid';
+import { useAuth } from '../../../hooks/useAuth';
+import { StatusBadge } from '../../../shared/components';
 import { useEntityView } from '../../../shared/entity-view/EntityViewProvider';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
+import { canWrite } from '../../../shared/lib/permissions';
 import type { OrganizationType } from '../../admin/organizations/types/organization.types';
-import { useDeleteResource } from '../hooks/useDeleteResource';
+import { ResourcePriceQuickDialog } from '../prices/components/ResourcePriceQuickDialog';
 import type { ResolvedResourceSearchParams } from '../hooks/useResourceSearchParams';
 import { useResourceSearch } from '../hooks/useResourceSearch';
 import type { Resource, ResourceSearchParams } from '../types/resource.types';
@@ -18,7 +22,6 @@ import { OrganizationChip } from './OrganizationChip';
 export interface ResourceSearchGridProps {
   params: ResolvedResourceSearchParams;
   onParamsChange: (patch: Partial<ResourceSearchParams>) => void;
-  canEdit: boolean;
 }
 
 // § 3.2 — code/name/description read from resource.product.*, but
@@ -26,37 +29,32 @@ export interface ResourceSearchGridProps {
 // — these are listing-specific, not product identity). Category/unit columns
 // dropped: category duplicated "Ad" for how this catalog is actually
 // categorized, unit replaced by specification (more useful per-listing).
-export function ResourceSearchGrid({ params, onParamsChange, canEdit }: ResourceSearchGridProps) {
+export function ResourceSearchGrid({ params, onParamsChange }: ResourceSearchGridProps) {
+  const { user } = useAuth();
+  const canAddPrice = canWrite(user?.roles ?? []);
   const searchQuery = useResourceSearch(params);
-  const deleteMutation = useDeleteResource();
   const { openResource } = useEntityView();
-  const [deleteTarget, setDeleteTarget] = useState<Resource | null>(null);
+  const [priceTarget, setPriceTarget] = useState<Resource | null>(null);
 
   const columns: GridColDef<Resource>[] = [
     {
-      field: 'active',
-      headerName: 'Status',
-      width: 120,
+      field: 'code',
+      headerName: 'Kod',
+      width: 140,
       sortable: false,
-      renderCell: (cellParams) => <StatusBadge active={cellParams.row.active} />,
+      valueGetter: (_v, row) => row.product.code,
     },
-    { field: 'code', headerName: 'Kod', width: 140, sortable: false, valueGetter: (_v, row) => row.product.code },
     {
       field: 'name',
       headerName: 'Ad',
       flex: 1,
       minWidth: 240,
       sortable: false,
-      renderCell: (cellParams) => (
-        <Box sx={{ py: 1 }}>
-          <Typography variant="body2">{cellParams.row.product.name}</Typography>
-          {cellParams.row.product.description && (
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-              {cellParams.row.product.description}
-            </Typography>
-          )}
-        </Box>
-      ),
+      // `product.description` is server-generated as "{category name} —
+      // {attr: val, ...}" and `product.name` usually defaults to that same
+      // category name, so showing both stacked just repeated the same text
+      // twice — description alone already carries everything meaningful.
+      valueGetter: (_v, row) => row.product.description || row.product.name,
     },
     {
       field: 'specification',
@@ -80,32 +78,37 @@ export function ResourceSearchGrid({ params, onParamsChange, canEdit }: Resource
       ),
     },
     {
+      field: 'active',
+      headerName: 'Status',
+      width: 130,
+      sortable: false,
+      renderCell: (cellParams) => <StatusBadge active={cellParams.row.active} />,
+    },
+    {
       field: 'actions',
-      type: 'actions',
       headerName: 'Əməliyyatlar',
-      width: canEdit ? 110 : 90,
-      getActions: (cellParams) => {
-        const actions = [
-          <GridActionsCellItem
-            key="view"
-            icon={<VisibilityRoundedIcon />}
-            label="Bax"
-            onClick={() => openResource(cellParams.row.id)}
-          />,
-        ];
-        if (canEdit) {
-          actions.push(
-            <GridActionsCellItem
-              key="delete"
-              icon={<DeleteRoundedIcon color="error" />}
-              label="Sil"
-              onClick={() => setDeleteTarget(cellParams.row)}
-              showInMenu
-            />,
-          );
-        }
-        return actions;
-      },
+      width: canAddPrice ? 130 : 90,
+      sortable: false,
+      filterable: false,
+      renderCell: (cellParams) => (
+        <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+          <Tooltip title="Bax">
+            <IconButton size="small" onClick={() => openResource(cellParams.row.id)}>
+              <VisibilityRoundedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          {canAddPrice && (
+            <Tooltip title="Qiymət əlavə et">
+              <IconButton size="small" onClick={() => setPriceTarget(cellParams.row)}>
+                <PriceChangeRoundedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+          <Tooltip title={cellParams.row.hasPrice ? 'Qiymət əlavə olunub' : 'Qiymət yoxdur'}>
+            <CircleRoundedIcon sx={{ fontSize: 10, color: cellParams.row.hasPrice ? 'success.main' : 'text.disabled' }} />
+          </Tooltip>
+        </Stack>
+      ),
     },
   ];
 
@@ -128,25 +131,16 @@ export function ResourceSearchGrid({ params, onParamsChange, canEdit }: Resource
         pageSizeOptions={[10, 25, 50]}
         disableRowSelectionOnClick
         localeText={{ noRowsLabel: 'Nəticə tapılmadı' }}
+        sx={{ '& .MuiDataGrid-cell': { alignItems: 'center', py: 1.5 } }}
       />
 
-      {canEdit && (
-        <ConfirmDialog
-          open={Boolean(deleteTarget)}
-          title="Elanı sil"
-          description={`"${deleteTarget?.product.code ?? ''} — ${deleteTarget?.product.name ?? ''}" elanını silmək istədiyinizə əminsiniz?`}
-          confirmLabel="Sil"
-          confirmColor="error"
-          loading={deleteMutation.isPending}
-          onConfirm={() => {
-            if (!deleteTarget) {
-              return;
-            }
-            deleteMutation.mutate(deleteTarget.id, { onSettled: () => setDeleteTarget(null) });
-          }}
-          onCancel={() => setDeleteTarget(null)}
-        />
-      )}
+      <ResourcePriceQuickDialog
+        open={priceTarget !== null}
+        resourceId={priceTarget?.id ?? null}
+        resourceLabel={priceTarget ? `${priceTarget.product.code} — ${priceTarget.product.description || priceTarget.product.name}` : ''}
+        organizationId={priceTarget?.organizationId ?? null}
+        onClose={() => setPriceTarget(null)}
+      />
     </>
   );
 }

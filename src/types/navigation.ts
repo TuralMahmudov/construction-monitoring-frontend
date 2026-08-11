@@ -11,4 +11,8 @@ export interface NavItem {
   // ALL central staff regardless of role, not just SUPER_ADMIN/ADMIN. Broader
   // than centralAdminOnly, which only covers the admin-role subset.
   hideForOrganization?: boolean;
+  // Sənəd İdxalı module (bax shared/lib/permissions.ts) — permission-array
+  // gates, independent of the role-based flags above.
+  requiresDocumentUpload?: boolean;
+  requiresDocumentReview?: boolean;
 }

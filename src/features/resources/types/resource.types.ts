@@ -22,6 +22,13 @@ export interface Resource {
   organizationType: number | null;
   status: number | null;
   active: boolean;
+  // Added 2026-08-11 — server-computed convenience flag (avoids an N+1 price
+  // lookup per row), same pattern as MyResource.hasPrice.
+  hasPrice: boolean;
+  // Added 2026-08-10 (FRONTEND_AI_PROMPT_DOCUMENT_IMPORT_5.md § 5) — only set
+  // for resources created through document bulk-processing (bax
+  // features/documents); null for directly-created listings.
+  documentId: string | null;
   createdBy: string;
   createdDate: string;
   modifiedBy: string | null;
@@ -70,6 +77,9 @@ export interface ResourceSearchParams {
   regionId?: string;
   minPrice?: number;
   maxPrice?: number;
+  // § 5 — filters to the resources created by one document's bulk-processing
+  // sessions (the "Bax" audit view).
+  documentId?: string;
   page?: number;
   size?: number;
   sort?: string;

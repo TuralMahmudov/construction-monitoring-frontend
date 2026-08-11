@@ -53,7 +53,8 @@ export function FlaggedPricesPage() {
       sortable: false,
       valueGetter: (_value, row) => {
         const resource = resourceLookup.get(row.resourceId);
-        return resource ? `${resource.product.code} — ${resource.product.name}` : row.resourceId;
+        if (!resource) return row.resourceId;
+        return `${resource.product.code} — ${resource.product.description || resource.product.name}`;
       },
     },
     {

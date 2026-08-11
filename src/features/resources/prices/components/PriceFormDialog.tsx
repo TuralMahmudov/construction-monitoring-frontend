@@ -14,6 +14,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import { useRegionOptions } from '../../../reference-data/hooks/useReferenceOptions';
 import { ApiError } from '../../../../services/httpClient';
 import { NumberField } from '../../../../shared/components';
@@ -41,6 +42,10 @@ export interface PriceFormDialogProps {
   isSubmitting: boolean;
   onClose: () => void;
   onSubmit: (values: ResourcePriceFormValues, onError: (error: unknown) => void) => void;
+  // Extra context under the title — used by callers that open this dialog
+  // directly from a table row (which resource is this price for?), not
+  // needed when it's already nested inside that resource's own view.
+  subtitle?: string;
 }
 
 export function PriceFormDialog({
@@ -50,6 +55,7 @@ export function PriceFormDialog({
   isSubmitting,
   onClose,
   onSubmit,
+  subtitle,
 }: PriceFormDialogProps) {
   const [formError, setFormError] = useState<string | null>(null);
   const [noExpiry, setNoExpiry] = useState(true);
@@ -105,7 +111,14 @@ export function PriceFormDialog({
 
   return (
     <Dialog open={open} onClose={ignoreBackdropClose(onClose)} maxWidth="sm" fullWidth>
-      <DialogTitle>{mode === 'edit' ? 'Qiyməti redaktə et' : 'Yeni qiymət'}</DialogTitle>
+      <DialogTitle>
+        {mode === 'edit' ? 'Qiyməti redaktə et' : 'Yeni qiymət'}
+        {subtitle && (
+          <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+            ({subtitle})
+          </Typography>
+        )}
+      </DialogTitle>
       <DialogContent>
         <Stack spacing={2.5} sx={{ pt: 1 }}>
           {formError && <Alert severity="error">{formError}</Alert>}

@@ -115,7 +115,7 @@ export function LinkAttributeDialog({
         });
         setFormError(fieldEntries.length > 0 ? null : getApiErrorMessage(error));
       } else if (error.status === 409) {
-        setFormError('Bu atribut artıq bu kateqoriyaya bağlıdır.');
+        setFormError('Bu xüsusiyyət növü artıq bu kateqoriyaya bağlıdır.');
       } else {
         setFormError(getApiErrorMessage(error));
       }
@@ -136,13 +136,13 @@ export function LinkAttributeDialog({
 
   return (
     <Dialog open={open} onClose={ignoreBackdropClose(onClose)} maxWidth="xs" fullWidth>
-      <DialogTitle>{mode === 'edit' ? 'Bağlantını konfiqurasiya et' : 'Atribut bağla'}</DialogTitle>
+      <DialogTitle>{mode === 'edit' ? 'Bağlantını konfiqurasiya et' : 'Xüsusiyyət növü bağla'}</DialogTitle>
       <DialogContent>
         <Stack spacing={2.5} sx={{ pt: 1 }}>
           {formError && <Alert severity="error">{formError}</Alert>}
 
           {mode === 'edit' ? (
-            <TextField label="Atribut" value={editAttributeName ?? ''} fullWidth disabled />
+            <TextField label="Xüsusiyyət növü" value={editAttributeName ?? ''} fullWidth disabled />
           ) : (
             <Controller
               name="attributeDefinitionId"
@@ -151,7 +151,7 @@ export function LinkAttributeDialog({
                 <TextField
                   {...field}
                   select
-                  label="Atribut"
+                  label="Xüsusiyyət növü"
                   fullWidth
                   error={!!errors.attributeDefinitionId}
                   helperText={errors.attributeDefinitionId?.message}
@@ -159,7 +159,7 @@ export function LinkAttributeDialog({
                 >
                   {availableDefinitions.length === 0 && (
                     <MenuItem value="" disabled>
-                      Bağlana biləcək atribut yoxdur
+                      Bağlana biləcək xüsusiyyət növü yoxdur
                     </MenuItem>
                   )}
                   {availableDefinitions.map((definition) => (

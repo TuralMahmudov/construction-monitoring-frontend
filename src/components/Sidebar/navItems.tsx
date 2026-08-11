@@ -3,6 +3,7 @@ import AdminPanelSettingsRoundedIcon from '@mui/icons-material/AdminPanelSetting
 import ApartmentRoundedIcon from '@mui/icons-material/ApartmentRounded';
 import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
 import CompareArrowsRoundedIcon from '@mui/icons-material/CompareArrowsRounded';
+import FolderSharedRoundedIcon from '@mui/icons-material/FolderSharedRounded';
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
 import LibraryBooksRoundedIcon from '@mui/icons-material/LibraryBooksRounded';
@@ -11,6 +12,7 @@ import PublicRoundedIcon from '@mui/icons-material/PublicRounded';
 import SellRoundedIcon from '@mui/icons-material/SellRounded';
 import QueryStatsRoundedIcon from '@mui/icons-material/QueryStatsRounded';
 import StraightenRoundedIcon from '@mui/icons-material/StraightenRounded';
+import UploadFileRoundedIcon from '@mui/icons-material/UploadFileRounded';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import type { NavItem } from '../../types/navigation';
 
@@ -23,12 +25,33 @@ export const navItems: NavItem[] = [
     label: 'Resurs Kataloqu',
     path: '/resource-categories',
     icon: <AccountTreeRoundedIcon />,
+    // 2026-08-11 (Tural) — təşkilat hesabları üçün naviqasiyada yalnız
+    // "Sənəd İdxalı" qalsın, qalanı gizlədilsin. Route qalır, sadəcə linksiz.
+    hideForOrganization: true,
   },
   {
     label: 'Mənim Resurslarım',
     path: '/my-resources',
     icon: <PersonPinCircleRoundedIcon />,
     organizationOnly: true,
+    // 2026-08-11 (Tural) — eyni qərar: təşkilat hesabları üçün naviqasiyada
+    // gizlədilir (bu item onsuz da yalnız təşkilat üçün idi, ona görə hər iki
+    // bayraqla nəticədə heç kimə göstərilmir). Route qalır, sadəcə linksiz.
+    hideForOrganization: true,
+  },
+  {
+    label: 'Sənəd İdxalı',
+    path: '/documents',
+    icon: <UploadFileRoundedIcon />,
+    organizationOnly: true,
+    requiresDocumentUpload: true,
+  },
+  {
+    label: 'Sənədlərin İdarəsi',
+    path: '/admin/documents',
+    icon: <FolderSharedRoundedIcon />,
+    hideForOrganization: true,
+    requiresDocumentReview: true,
   },
   {
     label: 'Məhsullar',
@@ -58,7 +81,7 @@ export const navItems: NavItem[] = [
     children: [
       { label: 'Təşkilatlar', path: '/admin/organizations', icon: <ApartmentRoundedIcon /> },
       { label: 'İstifadəçilər', path: '/admin/users', icon: <GroupRoundedIcon /> },
-      { label: 'Atribut Lüğəti', path: '/admin/attribute-definitions', icon: <CategoryRoundedIcon /> },
+      { label: 'Xüsusiyyət Növləri', path: '/admin/attribute-definitions', icon: <CategoryRoundedIcon /> },
       { label: 'Kənar Dəyər Qiymətlər', path: '/admin/flagged-prices', icon: <WarningAmberRoundedIcon /> },
       { label: 'Uyğunlaşdırma Baxışı', path: '/admin/match-groups', icon: <CompareArrowsRoundedIcon /> },
       { label: 'Bazar Qiymətləri Analitikası', path: '/admin/market-averages', icon: <QueryStatsRoundedIcon /> },

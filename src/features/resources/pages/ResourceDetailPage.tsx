@@ -53,7 +53,9 @@ export function ResourceDetailPage() {
           </Tabs>
           <Stack sx={{ p: 2 }}>
             {tab === 'general' && <ResourceGeneralTab resource={resourceQuery.data} />}
-            {tab === 'prices' && <ResourcePricesTab resourceId={resourceQuery.data.id} />}
+            {tab === 'prices' && (
+              <ResourcePricesTab resourceId={resourceQuery.data.id} organizationId={resourceQuery.data.organizationId} />
+            )}
             {tab === 'market' && <ResourceMarketAveragesTab resource={resourceQuery.data} />}
           </Stack>
         </Paper>

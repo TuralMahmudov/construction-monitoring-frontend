@@ -59,6 +59,7 @@ export function ProductAttributesFields({
           onChange={(value) => onChange(link.id, value)}
           label={link.attributeName}
           unit={link.defaultUnitSymbol}
+          defaultUnitId={link.defaultUnitId}
           enumValues={link.enumValues}
           required={link.required}
           disabled={disabled}

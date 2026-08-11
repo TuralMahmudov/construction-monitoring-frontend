@@ -8,8 +8,10 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
+import { useAuth } from '../../../hooks/useAuth';
 import { PageContainer, PageHeader } from '../../../shared/components';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
+import { isOrganizationActor } from '../../../shared/lib/permissions';
 import { useProduct } from '../hooks/useProduct';
 import { ProductAttributesReadOnly } from '../components/ProductAttributesReadOnly';
 import { ProductGeneralTab } from '../components/ProductGeneralTab';
@@ -18,9 +20,19 @@ import { ProductListingsTab } from '../components/ProductListingsTab';
 type TabKey = 'general' | 'attributes' | 'listings';
 
 export function ProductDetailPage() {
+  const { user } = useAuth();
+  const canAccess = !isOrganizationActor(user);
   const { id } = useParams<{ id: string }>();
   const [tab, setTab] = useState<TabKey>('general');
-  const productQuery = useProduct(id ?? null);
+  const productQuery = useProduct(id ?? null, canAccess);
+
+  if (!canAccess) {
+    return (
+      <PageContainer>
+        <Alert severity="warning">Bu səhifəyə girişiniz yoxdur.</Alert>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer>

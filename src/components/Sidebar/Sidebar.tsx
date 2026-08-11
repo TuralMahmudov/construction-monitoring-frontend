@@ -13,7 +13,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.svg';
 import { useAuth } from '../../hooks/useAuth';
 import { DRAWER_WIDTH } from '../../layouts/constants';
-import { isCentralAdmin, isOrganizationActor } from '../../shared/lib/permissions';
+import { canReviewDocuments, canUploadDocuments, isCentralAdmin, isOrganizationActor } from '../../shared/lib/permissions';
 import type { NavItem } from '../../types/navigation';
 import { navItems } from './navItems';
 
@@ -85,6 +85,8 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
   const { user } = useAuth();
   const canAccessAdmin = isCentralAdmin(user?.roles ?? []);
   const canAccessOwnResources = isOrganizationActor(user);
+  const canUpload = canUploadDocuments(user);
+  const canReview = canReviewDocuments(user);
   const visibleNavItems = navItems.filter((item) => {
     if (item.centralAdminOnly && !canAccessAdmin) {
       return false;
@@ -93,6 +95,12 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
       return false;
     }
     if (item.hideForOrganization && canAccessOwnResources) {
+      return false;
+    }
+    if (item.requiresDocumentUpload && !canUpload) {
+      return false;
+    }
+    if (item.requiresDocumentReview && !canReview) {
       return false;
     }
     return true;

@@ -1,5 +1,7 @@
 import { TreeItem } from '@mui/x-tree-view/TreeItem';
+import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
 import Stack from '@mui/material/Stack';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import type { Product } from '../../products/types/product.types';
 import { makeProductTreeItemId } from '../utils/treeItemId';
@@ -28,9 +30,9 @@ export function ProductTreeItem({ product, summary, onSelect }: ProductTreeItemP
           direction="row"
           spacing={0.75}
           sx={{
-            alignItems: 'baseline',
+            alignItems: 'center',
             py: 0.5,
-            flexWrap: 'wrap',
+            minWidth: 0,
             cursor: onSelect ? 'pointer' : 'default',
             '&:hover': onSelect ? { color: 'primary.main' } : undefined,
           }}
@@ -43,9 +45,12 @@ export function ProductTreeItem({ product, summary, onSelect }: ProductTreeItemP
               : undefined
           }
         >
-          <Typography variant="body2" color="text.secondary">
-            {summary || product.name}
-          </Typography>
+          <Inventory2RoundedIcon fontSize="small" color="disabled" sx={{ flexShrink: 0 }} />
+          <Tooltip title={summary || product.name}>
+            <Typography variant="body2" color="text.secondary" noWrap sx={{ minWidth: 0 }}>
+              {summary || product.name}
+            </Typography>
+          </Tooltip>
         </Stack>
       }
     />

@@ -55,7 +55,7 @@ export function ResourceViewDialog({ open, resourceId, onClose }: ResourceViewDi
                   <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>
                     Qiymətlər
                   </Typography>
-                  <ResourcePricesTab resourceId={resource.id} />
+                  <ResourcePricesTab resourceId={resource.id} organizationId={resource.organizationId} />
                 </CardContent>
               </Card>
 

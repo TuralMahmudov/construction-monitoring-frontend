@@ -18,11 +18,12 @@ const keys = {
   list: (params: AttributeDefinitionSearchParams) => ['attribute-definitions', 'list', params] as const,
 };
 
-export function useAttributeDefinitionsList(params: AttributeDefinitionSearchParams) {
+export function useAttributeDefinitionsList(params: AttributeDefinitionSearchParams, enabled = true) {
   return useQuery({
     queryKey: keys.list(params),
     queryFn: () => searchAttributeDefinitions(params),
     placeholderData: (previousData) => previousData,
+    enabled,
   });
 }
 
