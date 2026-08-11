@@ -57,6 +57,10 @@ export interface LinkAttributeDialogProps {
   editValues: InternalFormValues | null;
   editAttributeName?: string;
   availableDefinitions: AttributeDefinition[];
+  // Create mode only — appended silently (currently-linked count), no manual
+  // "Sıra nömrəsi" input on this dialog anymore. Reordering after the fact is
+  // still possible via edit mode, which is the only place that field shows.
+  nextSortOrder: number;
   isSubmitting: boolean;
   onClose: () => void;
   onSubmit: (
@@ -71,6 +75,7 @@ export function LinkAttributeDialog({
   editValues,
   editAttributeName,
   availableDefinitions,
+  nextSortOrder,
   isSubmitting,
   onClose,
   onSubmit,
@@ -100,9 +105,9 @@ export function LinkAttributeDialog({
     reset(
       mode === 'edit' && editValues
         ? { ...editValues, visible: true, searchable: true, filterable: true, affectsMatchGroup: true }
-        : DEFAULT_VALUES,
+        : { ...DEFAULT_VALUES, sortOrder: nextSortOrder },
     );
-  }, [open, mode, editValues, reset]);
+  }, [open, mode, editValues, nextSortOrder, reset]);
 
   function handleApiError(error: unknown) {
     if (error instanceof ApiError) {
@@ -172,21 +177,23 @@ export function LinkAttributeDialog({
             />
           )}
 
-          <Controller
-            name="sortOrder"
-            control={control}
-            render={({ field }) => (
-              <NumberField
-                label="Sıra nömrəsi"
-                fullWidth
-                value={field.value}
-                error={!!errors.sortOrder}
-                helperText={errors.sortOrder?.message}
-                disabled={isSubmitting}
-                onChange={field.onChange}
-              />
-            )}
-          />
+          {mode === 'edit' && (
+            <Controller
+              name="sortOrder"
+              control={control}
+              render={({ field }) => (
+                <NumberField
+                  label="Sıra nömrəsi"
+                  fullWidth
+                  value={field.value}
+                  error={!!errors.sortOrder}
+                  helperText={errors.sortOrder?.message}
+                  disabled={isSubmitting}
+                  onChange={field.onChange}
+                />
+              )}
+            />
+          )}
 
           <Controller
             name="required"

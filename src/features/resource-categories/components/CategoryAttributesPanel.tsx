@@ -167,6 +167,7 @@ export function CategoryAttributesPanel({ categoryId, canEdit }: CategoryAttribu
             }
             editAttributeName={dialog.item?.attributeName}
             availableDefinitions={availableDefinitions}
+            nextSortOrder={links.length}
             isSubmitting={isSubmitting}
             onClose={closeDialog}
             onSubmit={handleSubmit}

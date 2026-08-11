@@ -113,7 +113,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
 
   const content = (
     <Box>
-      <Toolbar sx={{ py: 2 }}>
+      <Toolbar sx={{ py: 2, pl: 3 }}>
         <Box component="img" src={logo} alt="TQMS" sx={{ width: '100%', maxWidth: 200, height: 'auto', display: 'block' }} />
       </Toolbar>
       <List sx={{ px: 1, py: 1 }}>

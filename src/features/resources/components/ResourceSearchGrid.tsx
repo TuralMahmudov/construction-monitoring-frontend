@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import dayjs from 'dayjs';
 import CircleRoundedIcon from '@mui/icons-material/CircleRounded';
 import PriceChangeRoundedIcon from '@mui/icons-material/PriceChangeRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
@@ -6,7 +7,7 @@ import Alert from '@mui/material/Alert';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
-import { DataGrid, type GridColDef } from '@mui/x-data-grid';
+import { DataGrid, type GridColDef, type GridSortModel } from '@mui/x-data-grid';
 import { useAuth } from '../../../hooks/useAuth';
 import { StatusBadge } from '../../../shared/components';
 import { useEntityView } from '../../../shared/entity-view/EntityViewProvider';
@@ -64,7 +65,12 @@ export function ResourceSearchGrid({ params, onParamsChange }: ResourceSearchGri
       valueGetter: (_value, row) => row.specification ?? '—',
     },
     { field: 'manufacturer', headerName: 'İstehsalçı', width: 160, sortable: false, valueGetter: (_v, row) => row.manufacturer ?? '—' },
-    { field: 'brand', headerName: 'Brend', width: 140, sortable: false, valueGetter: (_v, row) => row.brand ?? '—' },
+    {
+      field: 'createdDate',
+      headerName: 'Yaradılma tarixi',
+      width: 140,
+      valueGetter: (_v, row) => dayjs(row.createdDate).format('DD.MM.YYYY'),
+    },
     {
       field: 'organizationId',
       headerName: 'Təşkilat',
@@ -116,6 +122,15 @@ export function ResourceSearchGrid({ params, onParamsChange }: ResourceSearchGri
     return <Alert severity="error">{getApiErrorMessage(searchQuery.error)}</Alert>;
   }
 
+  const sortModel: GridSortModel = params.sort
+    ? [
+        {
+          field: params.sort.split(',')[0],
+          sort: params.sort.split(',')[1] === 'desc' ? 'desc' : 'asc',
+        },
+      ]
+    : [];
+
   return (
     <>
       <DataGrid
@@ -128,6 +143,15 @@ export function ResourceSearchGrid({ params, onParamsChange }: ResourceSearchGri
         paginationMode="server"
         paginationModel={{ page: params.page, pageSize: params.size }}
         onPaginationModelChange={(model) => onParamsChange({ page: model.page, size: model.pageSize })}
+        sortingMode="server"
+        sortModel={sortModel}
+        onSortModelChange={(model) => {
+          if (model.length === 0) {
+            onParamsChange({ sort: undefined });
+            return;
+          }
+          onParamsChange({ sort: `${model[0].field},${model[0].sort ?? 'asc'}` });
+        }}
         pageSizeOptions={[10, 25, 50]}
         disableRowSelectionOnClick
         localeText={{ noRowsLabel: 'Nəticə tapılmadı' }}

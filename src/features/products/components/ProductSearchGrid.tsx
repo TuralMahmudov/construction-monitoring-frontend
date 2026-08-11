@@ -32,7 +32,7 @@ export function ProductSearchGrid({ params, onParamsChange }: ProductSearchGridP
   const searchQuery = useProducts(params);
   const { openProduct } = useEntityView();
   const unitsQuery = useAllUnits();
-  const unitSymbolById = new Map((unitsQuery.data?.content ?? []).map((unit) => [unit.id, unit.symbol || unit.name]));
+  const unitNameById = new Map((unitsQuery.data?.content ?? []).map((unit) => [unit.id, unit.name]));
 
   const columns: GridColDef<Product>[] = [
     {
@@ -58,10 +58,10 @@ export function ProductSearchGrid({ params, onParamsChange }: ProductSearchGridP
     {
       field: 'unitId',
       headerName: 'Vahid',
-      width: 100,
+      width: 140,
       sortable: false,
       renderCell: (cellParams) => (
-        <CellText>{cellParams.row.unitId ? (unitSymbolById.get(cellParams.row.unitId) ?? '—') : '—'}</CellText>
+        <CellText>{cellParams.row.unitId ? (unitNameById.get(cellParams.row.unitId) ?? '—') : '—'}</CellText>
       ),
     },
     {

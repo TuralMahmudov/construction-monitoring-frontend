@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import dayjs, { type Dayjs } from 'dayjs';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import FilterListRoundedIcon from '@mui/icons-material/FilterListRounded';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -9,9 +11,11 @@ import Grid from '@mui/material/Grid';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useAuth } from '../../../hooks/useAuth';
+import { NumberField } from '../../../shared/components';
 import { isCentralAdmin } from '../../../shared/lib/permissions';
 import { useOrganizationLookup } from '../../admin/organizations/hooks/useOrganizations';
 import { ORGANIZATION_TYPE_ICONS, ORGANIZATION_TYPE_LABELS } from '../../admin/organizations/types/organization.types';
@@ -26,6 +30,8 @@ export interface ResourceSearchFiltersProps {
   regionId?: string;
   minPrice?: number;
   maxPrice?: number;
+  createdFrom?: string;
+  createdTo?: string;
   onChange: (patch: Partial<ResourceSearchParams>) => void;
 }
 
@@ -44,6 +50,8 @@ export function ResourceSearchFilters({
   regionId,
   minPrice,
   maxPrice,
+  createdFrom,
+  createdTo,
   onChange,
 }: ResourceSearchFiltersProps) {
   const theme = useTheme();
@@ -77,101 +85,116 @@ export function ResourceSearchFilters({
       <Collapse in={expanded || !isSmallScreen}>
         <Grid container spacing={2} sx={{ pb: 1 }}>
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <TextField
-              select
-              label="Status"
-              fullWidth
-              size="small"
-              value={activeValue}
-              onChange={(event) =>
-                onChange({ active: event.target.value === '' ? undefined : event.target.value === 'true' })
-              }
-            >
-              <MenuItem value="">Hamısı</MenuItem>
-              <MenuItem value="true">Aktiv</MenuItem>
-              <MenuItem value="false">Deaktiv</MenuItem>
-            </TextField>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <TextField
-              label="Ad"
-              fullWidth
-              size="small"
-              value={name ?? ''}
-              onChange={(event) => onChange({ name: event.target.value || undefined })}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <TextField
-              label="Kod"
-              fullWidth
-              size="small"
-              value={code ?? ''}
-              onChange={(event) => onChange({ code: event.target.value || undefined })}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <TextField
-              select
-              label="Region"
-              fullWidth
-              size="small"
-              value={regionId ?? ''}
-              disabled={regionsQuery.isLoading}
-              onChange={(event) => {
-                const newRegionId = event.target.value || undefined;
-                // Region cleared → the min/max price filters become invalid
-                // (server 400s without regionId), so drop them too.
-                onChange(
-                  newRegionId ? { regionId: newRegionId } : { regionId: undefined, minPrice: undefined, maxPrice: undefined },
-                );
-              }}
-            >
-              <MenuItem value="">Bütün regionlar</MenuItem>
-              {(regionsQuery.data?.content ?? []).map((region) => (
-                <MenuItem key={region.id} value={region.id}>
-                  {region.name}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <Stack spacing={2}>
+            <Stack spacing={1}>
               <TextField
-                label="Qiymət (min)"
-                type="number"
+                label="Kod"
                 fullWidth
                 size="small"
-                value={minPrice ?? ''}
-                disabled={!hasRegion}
-                helperText={!hasRegion ? 'Əvvəlcə region seçin' : undefined}
-                onChange={(event) => onChange({ minPrice: event.target.value === '' ? undefined : Number(event.target.value) })}
+                value={code ?? ''}
+                onChange={(event) => onChange({ code: event.target.value || undefined })}
               />
               <TextField
-                label="Qiymət (maks)"
-                type="number"
+                label="Ad"
                 fullWidth
                 size="small"
-                value={maxPrice ?? ''}
-                disabled={!hasRegion}
-                helperText={!hasRegion ? 'Əvvəlcə region seçin' : undefined}
-                onChange={(event) => onChange({ maxPrice: event.target.value === '' ? undefined : Number(event.target.value) })}
+                value={name ?? ''}
+                onChange={(event) => onChange({ name: event.target.value || undefined })}
               />
             </Stack>
           </Grid>
-          {canFilterByOrganization && (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <Autocomplete
-                options={organizationOptions}
-                getOptionLabel={(option) => `${option.name} ${ORGANIZATION_TYPE_ICONS[option.type]} ${ORGANIZATION_TYPE_LABELS[option.type]}`}
-                isOptionEqualToValue={(option, val) => option.id === val.id}
-                value={organizationOptions.find((org) => org.id === organization) ?? null}
-                onChange={(_event, newValue) => onChange({ organization: newValue?.id ?? undefined })}
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <Stack spacing={1}>
+              {canFilterByOrganization && (
+                <Autocomplete
+                  options={organizationOptions}
+                  getOptionLabel={(option) => `${option.name} ${ORGANIZATION_TYPE_ICONS[option.type]} ${ORGANIZATION_TYPE_LABELS[option.type]}`}
+                  isOptionEqualToValue={(option, val) => option.id === val.id}
+                  value={organizationOptions.find((org) => org.id === organization) ?? null}
+                  onChange={(_event, newValue) => onChange({ organization: newValue?.id ?? undefined })}
+                  size="small"
+                  renderInput={(params) => <TextField {...params} label="Təşkilat" />}
+                />
+              )}
+              <Stack direction="row" spacing={1}>
+                <DatePicker
+                  label="Tarixdən"
+                  value={createdFrom ? dayjs(createdFrom) : null}
+                  onChange={(newValue: Dayjs | null) => onChange({ createdFrom: newValue ? newValue.format('YYYY-MM-DD') : undefined })}
+                  slotProps={{ textField: { size: 'small', fullWidth: true }, field: { clearable: true } }}
+                />
+                <DatePicker
+                  label="Tarixə"
+                  value={createdTo ? dayjs(createdTo) : null}
+                  onChange={(newValue: Dayjs | null) => onChange({ createdTo: newValue ? newValue.format('YYYY-MM-DD') : undefined })}
+                  slotProps={{ textField: { size: 'small', fullWidth: true }, field: { clearable: true } }}
+                />
+              </Stack>
+            </Stack>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <Stack spacing={1}>
+              <TextField
+                select
+                label="Status"
+                fullWidth
                 size="small"
-                renderInput={(params) => <TextField {...params} label="Təşkilat" />}
-              />
-            </Grid>
-          )}
+                value={activeValue}
+                onChange={(event) =>
+                  onChange({ active: event.target.value === '' ? undefined : event.target.value === 'true' })
+                }
+              >
+                <MenuItem value="">Hamısı</MenuItem>
+                <MenuItem value="true">Aktiv</MenuItem>
+                <MenuItem value="false">Deaktiv</MenuItem>
+              </TextField>
+              <TextField
+                select
+                label="Region"
+                fullWidth
+                size="small"
+                value={regionId ?? ''}
+                disabled={regionsQuery.isLoading}
+                onChange={(event) => {
+                  const newRegionId = event.target.value || undefined;
+                  // Region cleared → the min/max price filters become invalid
+                  // (server 400s without regionId), so drop them too.
+                  onChange(
+                    newRegionId ? { regionId: newRegionId } : { regionId: undefined, minPrice: undefined, maxPrice: undefined },
+                  );
+                }}
+              >
+                <MenuItem value="">Bütün regionlar</MenuItem>
+                {(regionsQuery.data?.content ?? []).map((region) => (
+                  <MenuItem key={region.id} value={region.id}>
+                    {region.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <Stack direction="row" spacing={1}>
+                <NumberField
+                  label="Qiymət (min)"
+                  fullWidth
+                  size="small"
+                  value={minPrice ?? 0}
+                  disabled={!hasRegion}
+                  onChange={(value) => onChange({ minPrice: value === 0 ? undefined : value })}
+                />
+                <NumberField
+                  label="Qiymət (maks)"
+                  fullWidth
+                  size="small"
+                  value={maxPrice ?? 0}
+                  disabled={!hasRegion}
+                  onChange={(value) => onChange({ maxPrice: value === 0 ? undefined : value })}
+                />
+              </Stack>
+              {!hasRegion && (
+                <Typography variant="caption" color="text.secondary">
+                  Qiymət üçün əvvəlcə region seçin
+                </Typography>
+              )}
+            </Stack>
+          </Grid>
         </Grid>
       </Collapse>
     </Box>

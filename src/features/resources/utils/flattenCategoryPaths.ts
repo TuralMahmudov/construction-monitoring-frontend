@@ -12,7 +12,7 @@ export interface FlatCategoryOption {
  * is resolved from the same array via parentId, so this degrades gracefully
  * (shorter paths) if only a partial set is available rather than crashing.
  */
-export function flattenCategoryPaths(categories: ResourceCategory[]): FlatCategoryOption[] {
+export function flattenCategoryPaths(categories: ResourceCategory[], leafOnly = false): FlatCategoryOption[] {
   const byId = new Map(categories.map((category) => [category.id, category]));
 
   function buildPath(category: ResourceCategory): string {
@@ -34,6 +34,7 @@ export function flattenCategoryPaths(categories: ResourceCategory[]): FlatCatego
   }
 
   return categories
+    .filter((category) => !leafOnly || category.leaf)
     .map((category) => ({ id: category.id, name: category.name, path: buildPath(category) }))
     .sort((a, b) => a.path.localeCompare(b.path, 'az'));
 }

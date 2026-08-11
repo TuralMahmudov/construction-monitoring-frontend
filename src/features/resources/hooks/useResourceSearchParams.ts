@@ -5,7 +5,17 @@ import type { ResourceSearchParams } from '../types/resource.types';
 export type ResolvedResourceSearchParams = Required<Pick<ResourceSearchParams, 'page' | 'size'>> &
   Pick<
     ResourceSearchParams,
-    'product' | 'organization' | 'active' | 'sort' | 'name' | 'code' | 'regionId' | 'minPrice' | 'maxPrice'
+    | 'product'
+    | 'organization'
+    | 'active'
+    | 'sort'
+    | 'name'
+    | 'code'
+    | 'regionId'
+    | 'minPrice'
+    | 'maxPrice'
+    | 'createdFrom'
+    | 'createdTo'
   >;
 
 export function useResourceSearchParams() {
@@ -22,6 +32,8 @@ export function useResourceSearchParams() {
       regionId: searchParams.get('regionId') ?? undefined,
       minPrice: searchParams.get('minPrice') === null ? undefined : Number(searchParams.get('minPrice')),
       maxPrice: searchParams.get('maxPrice') === null ? undefined : Number(searchParams.get('maxPrice')),
+      createdFrom: searchParams.get('createdFrom') ?? undefined,
+      createdTo: searchParams.get('createdTo') ?? undefined,
       page: Number(searchParams.get('page') ?? 0),
       size: Number(searchParams.get('size') ?? 10),
     }),

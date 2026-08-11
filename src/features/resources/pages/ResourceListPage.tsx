@@ -58,6 +58,8 @@ export function ResourceListPage() {
             regionId={params.regionId}
             minPrice={params.minPrice}
             maxPrice={params.maxPrice}
+            createdFrom={params.createdFrom}
+            createdTo={params.createdTo}
             onChange={updateParams}
           />
         </CardContent>

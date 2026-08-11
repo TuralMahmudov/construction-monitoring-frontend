@@ -18,7 +18,9 @@ export function CategoryPathAutocomplete({
   helperText,
   disabled,
 }: CategoryPathAutocompleteProps) {
-  const { options, isLoading } = useCategoryOptions();
+  // Every current caller (product filter, resource/product creation) assigns
+  // or searches by a category a product actually lives in — always a leaf.
+  const { options, isLoading } = useCategoryOptions(true);
   const selected = options.find((option) => option.id === value) ?? null;
 
   return (

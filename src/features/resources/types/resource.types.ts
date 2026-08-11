@@ -77,6 +77,10 @@ export interface ResourceSearchParams {
   regionId?: string;
   minPrice?: number;
   maxPrice?: number;
+  // Added 2026-08-11 (BACKEND_REQUEST_RESOURCES_CREATED_DATE_FILTER.md) —
+  // `YYYY-MM-DD`, both independent and optional (createdDate range).
+  createdFrom?: string;
+  createdTo?: string;
   // § 5 — filters to the resources created by one document's bulk-processing
   // sessions (the "Bax" audit view).
   documentId?: string;
