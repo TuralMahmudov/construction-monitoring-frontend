@@ -10,6 +10,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import { ApiError } from '../../../../services/httpClient';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
 import { ignoreBackdropClose } from '../../../../shared/lib/ignoreBackdropClose';
@@ -38,6 +39,12 @@ export interface OrganizationEditDialogProps {
 // No login fields here — this is what actually "disables" a vendor
 // (status=SUSPENDED/INACTIVE). The login account itself (username/password)
 // is untouched by this endpoint (§ 2.2).
+//
+// `email` is editable as of 2026-08-12 (FRONTEND_AI_PROMPT_ORGANIZATION_EMAIL.md
+// § 3) — but this endpoint is a full overwrite, not a partial update, so
+// `editValues.email` must always carry the organization's current value
+// (bax OrganizationsPage's `editTarget.email ?? ''`) or saving any other
+// field would silently blank it out.
 export function OrganizationEditDialog({
   open,
   editValues,
@@ -53,10 +60,11 @@ export function OrganizationEditDialog({
     handleSubmit,
     reset,
     setError,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm<OrganizationUpdateFormValues>({
     resolver: zodResolver(organizationUpdateFormSchema),
     defaultValues: editValues ?? undefined,
+    mode: 'onChange',
   });
 
   useEffect(() => {
@@ -67,7 +75,7 @@ export function OrganizationEditDialog({
     reset(editValues);
   }, [open, editValues, reset]);
 
-  const KNOWN_FIELDS = ['name', 'type', 'taxId', 'contactInfo', 'status'];
+  const KNOWN_FIELDS = ['name', 'type', 'taxId', 'contactInfo', 'email', 'status'];
 
   function handleApiError(error: unknown) {
     if (error instanceof ApiError) {
@@ -115,7 +123,7 @@ export function OrganizationEditDialog({
             render={({ field }) => (
               <TextField
                 {...field}
-                label="Ad"
+                label="Ad *"
                 fullWidth
                 error={!!errors.name}
                 helperText={errors.name?.message}
@@ -131,7 +139,7 @@ export function OrganizationEditDialog({
               <TextField
                 {...field}
                 select
-                label="Təşkilat növü"
+                label="Təşkilat növü *"
                 fullWidth
                 error={!!errors.type}
                 helperText={errors.type?.message}
@@ -154,6 +162,7 @@ export function OrganizationEditDialog({
               <TextField
                 {...field}
                 label="VÖEN"
+                placeholder="məs. 1234567890"
                 fullWidth
                 error={!!errors.taxId}
                 helperText={errors.taxId?.message}
@@ -169,9 +178,28 @@ export function OrganizationEditDialog({
               <TextField
                 {...field}
                 label="Əlaqə məlumatı"
+                placeholder="məs. +994 XX XXX XX XX"
                 fullWidth
                 error={!!errors.contactInfo}
                 helperText={errors.contactInfo?.message}
+                disabled={isSubmitting}
+              />
+            )}
+          />
+
+          <Controller
+            name="email"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                type="email"
+                label="E-poçt"
+                placeholder="məs. contact@example.com"
+                fullWidth
+                autoComplete="off"
+                error={!!errors.email}
+                helperText={errors.email?.message}
                 disabled={isSubmitting}
               />
             )}
@@ -184,7 +212,7 @@ export function OrganizationEditDialog({
               <TextField
                 {...field}
                 select
-                label="Status"
+                label="Status *"
                 fullWidth
                 helperText="Bloklanıb/Deaktiv — giriş hesabının özü söndürülmür, yalnız təşkilatın statusu dəyişir."
                 disabled={isSubmitting}
@@ -198,13 +226,17 @@ export function OrganizationEditDialog({
               </TextField>
             )}
           />
+
+          <Typography variant="caption" color="text.secondary">
+            * mütləq doldurulmalı sahələr
+          </Typography>
         </Stack>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={onClose} disabled={isSubmitting}>
           İmtina
         </Button>
-        <Button variant="contained" onClick={submit} disabled={isSubmitting}>
+        <Button variant="contained" onClick={submit} disabled={isSubmitting || !isValid}>
           {isSubmitting ? 'Yadda saxlanılır...' : 'Yadda saxla'}
         </Button>
       </DialogActions>

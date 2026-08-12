@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
+import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
+import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
@@ -8,6 +12,8 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
@@ -21,25 +27,30 @@ import {
   ORGANIZATION_TYPE_LABELS,
   ORGANIZATION_TYPE_OPTIONS,
   type OrganizationCreateFormValues,
+  type OrganizationCreatePayload,
 } from '../types/organization.types';
 import { organizationCreateFormSchema } from '../utils/organizationForm.schema';
 
+// OPERATOR is the day-to-day vendor role (bax FRONTEND_AI_PROMPT_ADMIN_ORG_USERS.md
+// nümunələri) — a sane default so admins aren't forced to remember which of
+// the six roles a fresh vendor account actually needs.
 const DEFAULT_VALUES: OrganizationCreateFormValues = {
   name: '',
   type: ORGANIZATION_TYPE_OPTIONS[0],
   taxId: '',
   contactInfo: '',
-  username: '',
   email: '',
+  username: '',
   password: '',
-  roleNames: [],
+  confirmPassword: '',
+  roleNames: ['OPERATOR'],
 };
 
 export interface OrganizationCreateDialogProps {
   open: boolean;
   isSubmitting: boolean;
   onClose: () => void;
-  onSubmit: (values: OrganizationCreateFormValues, onError: (error: unknown) => void) => void;
+  onSubmit: (values: OrganizationCreatePayload, onError: (error: unknown) => void) => void;
 }
 
 // Creates an organization AND its single login account in one request.
@@ -47,6 +58,11 @@ export interface OrganizationCreateDialogProps {
 // (manufacturer/distributor/reseller/government/other) — CENTRAL is never
 // offered here (FRONTEND_AI_PROMPT_ORG_TYPE_AND_PRICE_OWNERSHIP.md § 1).
 // Central staff accounts are a separate flow (UserCreateDialog).
+//
+// `email` moved out of the login-account group and into "Təşkilat
+// məlumatları" 2026-08-12 (FRONTEND_AI_PROMPT_ORGANIZATION_EMAIL.md § 4) —
+// it's optional contact info now, not a credential; login is username+
+// password only, always was.
 export function OrganizationCreateDialog({
   open,
   isSubmitting,
@@ -54,6 +70,8 @@ export function OrganizationCreateDialog({
   onSubmit,
 }: OrganizationCreateDialogProps) {
   const [formError, setFormError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const rolesQuery = useRoles();
 
   const {
@@ -61,17 +79,24 @@ export function OrganizationCreateDialog({
     handleSubmit,
     reset,
     setError,
-    formState: { errors },
+    watch,
+    formState: { errors, isValid },
   } = useForm<OrganizationCreateFormValues>({
     resolver: zodResolver(organizationCreateFormSchema),
     defaultValues: DEFAULT_VALUES,
+    mode: 'onChange',
   });
+
+  const password = watch('password');
+  const hasMinLength = password.length >= 8;
 
   useEffect(() => {
     if (!open) {
       return;
     }
     setFormError(null);
+    setShowPassword(false);
+    setShowConfirmPassword(false);
     reset(DEFAULT_VALUES);
   }, [open, reset]);
 
@@ -104,9 +129,9 @@ export function OrganizationCreateDialog({
     }
   }
 
-  const submit = handleSubmit((values) => {
+  const submit = handleSubmit(({ confirmPassword: _confirmPassword, ...payload }) => {
     setFormError(null);
-    onSubmit(values, handleApiError);
+    onSubmit(payload, handleApiError);
   });
 
   const roleOptions = rolesQuery.data ?? [];
@@ -128,7 +153,7 @@ export function OrganizationCreateDialog({
             render={({ field }) => (
               <TextField
                 {...field}
-                label="Ad"
+                label="Ad *"
                 fullWidth
                 error={!!errors.name}
                 helperText={errors.name?.message}
@@ -144,7 +169,7 @@ export function OrganizationCreateDialog({
               <TextField
                 {...field}
                 select
-                label="Təşkilat növü"
+                label="Təşkilat növü *"
                 fullWidth
                 error={!!errors.type}
                 helperText={errors.type?.message}
@@ -168,6 +193,7 @@ export function OrganizationCreateDialog({
                 <TextField
                   {...field}
                   label="VÖEN"
+                  placeholder="məs. 1234567890"
                   fullWidth
                   error={!!errors.taxId}
                   helperText={errors.taxId?.message}
@@ -182,6 +208,7 @@ export function OrganizationCreateDialog({
                 <TextField
                   {...field}
                   label="Əlaqə məlumatı"
+                  placeholder="məs. +994 XX XXX XX XX"
                   fullWidth
                   error={!!errors.contactInfo}
                   helperText={errors.contactInfo?.message}
@@ -190,6 +217,24 @@ export function OrganizationCreateDialog({
               )}
             />
           </Stack>
+
+          <Controller
+            name="email"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                type="email"
+                label="E-poçt"
+                placeholder="məs. contact@example.com"
+                fullWidth
+                autoComplete="off"
+                error={!!errors.email}
+                helperText={errors.email?.message}
+                disabled={isSubmitting}
+              />
+            )}
+          />
 
           <Typography variant="subtitle2" color="text.secondary" sx={{ pt: 1 }}>
             Giriş hesabı
@@ -201,25 +246,11 @@ export function OrganizationCreateDialog({
             render={({ field }) => (
               <TextField
                 {...field}
-                label="İstifadəçi adı"
+                label="İstifadəçi adı *"
                 fullWidth
+                autoComplete="off"
                 error={!!errors.username}
                 helperText={errors.username?.message}
-                disabled={isSubmitting}
-              />
-            )}
-          />
-
-          <Controller
-            name="email"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="E-poçt"
-                fullWidth
-                error={!!errors.email}
-                helperText={errors.email?.message}
                 disabled={isSubmitting}
               />
             )}
@@ -231,12 +262,73 @@ export function OrganizationCreateDialog({
             render={({ field }) => (
               <TextField
                 {...field}
-                type="password"
-                label="Şifrə"
+                type={showPassword ? 'text' : 'password'}
+                label="Şifrə *"
                 fullWidth
+                autoComplete="new-password"
                 error={!!errors.password}
-                helperText={errors.password?.message ?? 'Ən azı 8 simvol.'}
                 disabled={isSubmitting}
+                helperText={
+                  errors.password?.message ?? (
+                    <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }} component="span">
+                      {hasMinLength ? (
+                        <CheckCircleRoundedIcon color="success" sx={{ fontSize: 14 }} />
+                      ) : (
+                        <CancelRoundedIcon color="error" sx={{ fontSize: 14 }} />
+                      )}
+                      <span>Ən azı 8 simvol.</span>
+                    </Stack>
+                  )
+                }
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowPassword((prev) => !prev)}
+                          edge="end"
+                          size="small"
+                          aria-label={showPassword ? 'şifrəni gizlət' : 'şifrəni göstər'}
+                        >
+                          {showPassword ? <VisibilityOffRoundedIcon fontSize="small" /> : <VisibilityRoundedIcon fontSize="small" />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+              />
+            )}
+          />
+
+          <Controller
+            name="confirmPassword"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                type={showConfirmPassword ? 'text' : 'password'}
+                label="Şifrəni təkrarla *"
+                fullWidth
+                autoComplete="new-password"
+                error={!!errors.confirmPassword}
+                helperText={errors.confirmPassword?.message}
+                disabled={isSubmitting}
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowConfirmPassword((prev) => !prev)}
+                          edge="end"
+                          size="small"
+                          aria-label={showConfirmPassword ? 'şifrəni gizlət' : 'şifrəni göstər'}
+                        >
+                          {showConfirmPassword ? <VisibilityOffRoundedIcon fontSize="small" /> : <VisibilityRoundedIcon fontSize="small" />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  },
+                }}
               />
             )}
           />
@@ -255,7 +347,7 @@ export function OrganizationCreateDialog({
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Rollar"
+                    label="Rollar *"
                     error={!!errors.roleNames}
                     helperText={errors.roleNames?.message}
                   />
@@ -263,13 +355,17 @@ export function OrganizationCreateDialog({
               />
             )}
           />
+
+          <Typography variant="caption" color="text.secondary">
+            * mütləq doldurulmalı sahələr
+          </Typography>
         </Stack>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={onClose} disabled={isSubmitting}>
           İmtina
         </Button>
-        <Button variant="contained" onClick={submit} disabled={isSubmitting}>
+        <Button variant="contained" onClick={submit} disabled={isSubmitting || !isValid}>
           {isSubmitting ? 'Yadda saxlanılır...' : 'Yadda saxla'}
         </Button>
       </DialogActions>

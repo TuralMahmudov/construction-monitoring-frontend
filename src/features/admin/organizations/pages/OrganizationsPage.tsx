@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import Alert from '@mui/material/Alert';
@@ -36,12 +36,22 @@ export function OrganizationsPage() {
 
   const [filters, setFilters] = useState<{ name?: string; status?: OrganizationStatus; type?: OrganizationType }>({});
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [sortField, setSortField] = useState<string | undefined>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  // Memoized so the array reference only changes when the sort actually
+  // does — DataGrid treats a new `sortModel` reference as an external sort
+  // change and resets pagination to page 0 on every unrelated re-render
+  // otherwise (bax useGridPaginationModel's `sortModelChange` listener).
+  const sortModel = useMemo(
+    () => (sortField ? [{ field: sortField, sort: sortDirection }] : []),
+    [sortField, sortDirection],
+  );
 
   const listQuery = useOrganizationsList({
     ...filters,
     page: paginationModel.page,
     size: paginationModel.pageSize,
-    sort: 'name,asc',
+    sort: sortField ? `${sortField},${sortDirection}` : undefined,
   });
   const createMutation = useCreateOrganization();
   const updateMutation = useUpdateOrganization();
@@ -186,8 +196,18 @@ export function OrganizationsPage() {
           loading={listQuery.isFetching}
           columns={columns}
           paginationMode="server"
+          sortingMode="server"
+          sortingOrder={['asc', 'desc']}
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
+          sortModel={sortModel}
+          onSortModelChange={(model) => {
+            if (model.length === 0) {
+              return;
+            }
+            setSortField(model[0].field);
+            setSortDirection(model[0].sort ?? 'asc');
+          }}
           pageSizeOptions={[10, 25, 50]}
           disableRowSelectionOnClick
           localeText={{ noRowsLabel: 'Hələ heç bir təşkilat yoxdur — "Yeni təşkilat" ilə əlavə edin.' }}
@@ -216,6 +236,7 @@ export function OrganizationsPage() {
                 type: editTarget.type as CreatableOrganizationType,
                 taxId: editTarget.taxId ?? '',
                 contactInfo: editTarget.contactInfo ?? '',
+                email: editTarget.email ?? '',
                 status: editTarget.status,
               }
             : null

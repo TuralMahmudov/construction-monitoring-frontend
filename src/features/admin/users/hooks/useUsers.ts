@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSnackbar } from 'notistack';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
 import { createUser, searchUsers, updateUser } from '../api/usersApi';
-import type { UserCreateFormValues, UserSearchParams, UserUpdateFormValues } from '../types/user.types';
+import type { UserCreatePayload, UserSearchParams, UserUpdateFormValues } from '../types/user.types';
 
 const keys = {
   all: ['central-users'] as const,
@@ -22,7 +22,7 @@ export function useCreateUser() {
   const { enqueueSnackbar } = useSnackbar();
 
   return useMutation({
-    mutationFn: (payload: UserCreateFormValues) => createUser(payload),
+    mutationFn: (payload: UserCreatePayload) => createUser(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
       enqueueSnackbar('İstifadəçi uğurla yaradıldı.', { variant: 'success' });

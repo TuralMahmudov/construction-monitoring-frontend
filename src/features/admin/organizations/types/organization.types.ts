@@ -69,32 +69,50 @@ export interface Organization {
   // read-only. `undefined`/`null` for the rare row with no linked login
   // account (e.g. old placeholder organizations).
   username?: string | null;
+  // Added 2026-08-12 (FRONTEND_AI_PROMPT_ORGANIZATION_EMAIL.md § 2) — optional
+  // contact info, no longer a login credential. Omitted from the response
+  // entirely when blank (not `null`) — always normalize with `?? ''` before
+  // handing to a form, never assume presence.
+  email?: string;
 }
 
 // POST /api/organizations — bundles the vendor org + its single login
 // account in one request (§ 2). `type` is now mandatory (must be one of
-// ORGANIZATION_TYPE_OPTIONS, never CENTRAL).
+// ORGANIZATION_TYPE_OPTIONS, never CENTRAL). `email` is optional contact
+// info (FRONTEND_AI_PROMPT_ORGANIZATION_EMAIL.md, 2026-08-12) — it used to
+// be a required, unique login credential; that's gone, only `username`/
+// `password` are the login account now. `confirmPassword` is form-only
+// (never sent to the API), checked against `password` in the zod schema.
 export interface OrganizationCreateFormValues {
   name: string;
   type: CreatableOrganizationType;
   taxId: string;
   contactInfo: string;
-  username: string;
   email: string;
+  username: string;
   password: string;
+  confirmPassword: string;
   roleNames: string[];
 }
+
+// What actually goes over the wire — `confirmPassword` is form-only, the API
+// has never heard of it.
+export type OrganizationCreatePayload = Omit<OrganizationCreateFormValues, 'confirmPassword'>;
 
 // PUT /api/organizations/{id} — no login fields here, status is how a vendor
 // is suspended/deactivated (their login account itself is untouched). The
 // API accepts `type` as optional (omitted = unchanged) — the edit form
 // always sends the current/edited value, which is how admins re-classify
-// pre-migration orgs that were bulk-assigned OTHER(6).
+// pre-migration orgs that were bulk-assigned OTHER(6). `email` is editable
+// as of 2026-08-12 (FRONTEND_AI_PROMPT_ORGANIZATION_EMAIL.md § 3) — this
+// endpoint is a full overwrite, not a partial update, so the edit form must
+// always send the current value (never omit it) or it gets cleared.
 export interface OrganizationUpdateFormValues {
   name: string;
   type: CreatableOrganizationType;
   taxId: string;
   contactInfo: string;
+  email: string;
   status: OrganizationStatus;
 }
 

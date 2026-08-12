@@ -12,6 +12,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import { ApiError } from '../../../../services/httpClient';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
 import { ignoreBackdropClose } from '../../../../shared/lib/ignoreBackdropClose';
@@ -41,10 +42,11 @@ export function UserEditDialog({ open, editValues, isSubmitting, onClose, onSubm
     handleSubmit,
     reset,
     setError,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm<UserUpdateFormValues>({
     resolver: zodResolver(userUpdateFormSchema),
     defaultValues: editValues ?? undefined,
+    mode: 'onChange',
   });
 
   useEffect(() => {
@@ -94,7 +96,7 @@ export function UserEditDialog({ open, editValues, isSubmitting, onClose, onSubm
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Ad"
+                  label="Ad *"
                   fullWidth
                   error={!!errors.firstName}
                   helperText={errors.firstName?.message}
@@ -108,7 +110,7 @@ export function UserEditDialog({ open, editValues, isSubmitting, onClose, onSubm
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Soyad"
+                  label="Soyad *"
                   fullWidth
                   error={!!errors.lastName}
                   helperText={errors.lastName?.message}
@@ -132,7 +134,7 @@ export function UserEditDialog({ open, editValues, isSubmitting, onClose, onSubm
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Rollar"
+                    label="Rollar *"
                     error={!!errors.roleNames}
                     helperText={errors.roleNames?.message}
                   />
@@ -174,13 +176,17 @@ export function UserEditDialog({ open, editValues, isSubmitting, onClose, onSubm
               />
             )}
           />
+
+          <Typography variant="caption" color="text.secondary">
+            * mütləq doldurulmalı sahələr
+          </Typography>
         </Stack>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={onClose} disabled={isSubmitting}>
           İmtina
         </Button>
-        <Button variant="contained" onClick={submit} disabled={isSubmitting}>
+        <Button variant="contained" onClick={submit} disabled={isSubmitting || !isValid}>
           {isSubmitting ? 'Yadda saxlanılır...' : 'Yadda saxla'}
         </Button>
       </DialogActions>

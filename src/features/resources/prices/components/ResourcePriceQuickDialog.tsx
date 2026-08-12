@@ -7,7 +7,7 @@ export interface ResourcePriceQuickDialogProps {
   resourceLabel: string;
   // The resource's owning organization — required for these callers (see
   // ResourcePriceFormValues comment), since this dialog only ever opens from
-  // central-admin-facing screens (Resurslar, Sənədlərin İdarəsi).
+  // central-admin-facing screens (Resurslar, Daxil olanlar).
   organizationId: string | null;
   onClose: () => void;
 }

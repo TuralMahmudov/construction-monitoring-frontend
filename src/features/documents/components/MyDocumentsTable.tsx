@@ -1,9 +1,10 @@
+import { useMemo } from 'react';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import dayjs from 'dayjs';
 import Alert from '@mui/material/Alert';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import { DataGrid, type GridColDef } from '@mui/x-data-grid';
+import { DataGrid, type GridColDef, type GridSortModel } from '@mui/x-data-grid';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
 import { useMyDocuments } from '../hooks/useDocuments';
 import type { CcmsDocument, DocumentSearchParams } from '../types/document.types';
@@ -24,6 +25,23 @@ export interface MyDocumentsTableProps {
 
 export function MyDocumentsTable({ params, onParamsChange, onDownload }: MyDocumentsTableProps) {
   const listQuery = useMyDocuments(params);
+
+  // Memoized so the array reference only changes when params.sort actually
+  // does — DataGrid treats a new `sortModel` reference as an external sort
+  // change and resets pagination to page 0 on every unrelated re-render
+  // otherwise (bax useGridPaginationModel's `sortModelChange` listener).
+  const sortModel: GridSortModel = useMemo(
+    () =>
+      params.sort
+        ? [
+            {
+              field: params.sort.split(',')[0],
+              sort: params.sort.split(',')[1] === 'desc' ? 'desc' : 'asc',
+            },
+          ]
+        : [],
+    [params.sort],
+  );
 
   const columns: GridColDef<CcmsDocument>[] = [
     { field: 'originalFilename', headerName: 'Fayl adı', flex: 1, minWidth: 220 },
@@ -76,8 +94,17 @@ export function MyDocumentsTable({ params, onParamsChange, onDownload }: MyDocum
       loading={listQuery.isFetching}
       columns={columns}
       paginationMode="server"
+      sortingMode="server"
+      sortingOrder={['asc', 'desc']}
       paginationModel={{ page: params.page, pageSize: params.size }}
       onPaginationModelChange={(model) => onParamsChange({ page: model.page, size: model.pageSize })}
+      sortModel={sortModel}
+      onSortModelChange={(model) => {
+        if (model.length === 0) {
+          return;
+        }
+        onParamsChange({ sort: `${model[0].field},${model[0].sort ?? 'asc'}` });
+      }}
       pageSizeOptions={[10, 25, 50]}
       disableRowSelectionOnClick
       localeText={{ noRowsLabel: 'Hələ heç bir sənəd yüklənməyib.' }}

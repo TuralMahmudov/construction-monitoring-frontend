@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import dayjs from 'dayjs';
 import CircleRoundedIcon from '@mui/icons-material/CircleRounded';
 import PriceChangeRoundedIcon from '@mui/icons-material/PriceChangeRounded';
@@ -89,14 +90,22 @@ export function MyResourceTable({ params, onParamsChange, onView, onManagePrice 
     },
   ];
 
-  const sortModel: GridSortModel = params.sort
-    ? [
-        {
-          field: params.sort.split(',')[0],
-          sort: params.sort.split(',')[1] === 'desc' ? 'desc' : 'asc',
-        },
-      ]
-    : [];
+  // Memoized so the array reference only changes when params.sort actually
+  // does — DataGrid treats a new `sortModel` reference as an external sort
+  // change and resets pagination to page 0 on every unrelated re-render
+  // otherwise (bax useGridPaginationModel's `sortModelChange` listener).
+  const sortModel: GridSortModel = useMemo(
+    () =>
+      params.sort
+        ? [
+            {
+              field: params.sort.split(',')[0],
+              sort: params.sort.split(',')[1] === 'desc' ? 'desc' : 'asc',
+            },
+          ]
+        : [],
+    [params.sort],
+  );
 
   if (searchQuery.isError) {
     return <Alert severity="error">{getApiErrorMessage(searchQuery.error)}</Alert>;

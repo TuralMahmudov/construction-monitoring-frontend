@@ -2,7 +2,7 @@ import { apiGet, apiPost, apiPut } from '../../../../services/httpClient';
 import type { PageResponse } from '../../../../shared/types/pagination.types';
 import type {
   Organization,
-  OrganizationCreateFormValues,
+  OrganizationCreatePayload,
   OrganizationSearchParams,
   OrganizationUpdateFormValues,
 } from '../types/organization.types';
@@ -13,7 +13,7 @@ export function searchOrganizations(params: OrganizationSearchParams): Promise<P
   return apiGet<PageResponse<Organization>>(BASE_URL, { ...params });
 }
 
-export function createOrganization(payload: OrganizationCreateFormValues): Promise<Organization> {
+export function createOrganization(payload: OrganizationCreatePayload): Promise<Organization> {
   return apiPost<Organization>(BASE_URL, payload);
 }
 

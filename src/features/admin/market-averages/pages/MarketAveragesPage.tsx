@@ -36,7 +36,17 @@ export function MarketAveragesPage() {
   const debouncedName = useDebouncedValue(nameInput, 300);
   const [regionId, setRegionId] = useState('');
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
+  const [sortField, setSortField] = useState<string | undefined>(undefined);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [detailTarget, setDetailTarget] = useState<ResourcePriceAverageResponse | null>(null);
+  // Memoized so the array reference only changes when the sort actually
+  // does — DataGrid treats a new `sortModel` reference as an external sort
+  // change and resets pagination to page 0 on every unrelated re-render
+  // otherwise (bax useGridPaginationModel's `sortModelChange` listener).
+  const sortModel = useMemo(
+    () => (sortField ? [{ field: sortField, sort: sortDirection }] : []),
+    [sortField, sortDirection],
+  );
 
   const regionsQuery = useAllRegions(canAccess);
   const regionNames = useMemo(() => {
@@ -51,6 +61,7 @@ export function MarketAveragesPage() {
       regionId: regionId || undefined,
       page: paginationModel.page,
       size: paginationModel.pageSize,
+      sort: sortField ? `${sortField},${sortDirection}` : undefined,
     },
     { enabled: canAccess },
   );
@@ -236,8 +247,18 @@ export function MarketAveragesPage() {
             loading={averagesQuery.isFetching}
             columns={columns}
             paginationMode="server"
+            sortingMode="server"
+            sortingOrder={['asc', 'desc']}
             paginationModel={paginationModel}
             onPaginationModelChange={setPaginationModel}
+            sortModel={sortModel}
+            onSortModelChange={(model) => {
+              if (model.length === 0) {
+                return;
+              }
+              setSortField(model[0].field);
+              setSortDirection(model[0].sort ?? 'asc');
+            }}
             pageSizeOptions={[10, 25, 50]}
             getRowHeight={() => 56}
             disableRowSelectionOnClick

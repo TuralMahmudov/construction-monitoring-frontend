@@ -1,6 +1,6 @@
 import { apiGet, apiPost, apiPut } from '../../../../services/httpClient';
 import type { PageResponse } from '../../../../shared/types/pagination.types';
-import type { CentralUser, UserCreateFormValues, UserSearchParams, UserUpdateFormValues } from '../types/user.types';
+import type { CentralUser, UserCreatePayload, UserSearchParams, UserUpdateFormValues } from '../types/user.types';
 
 const BASE_URL = '/api/users';
 
@@ -8,7 +8,7 @@ export function searchUsers(params: UserSearchParams): Promise<PageResponse<Cent
   return apiGet<PageResponse<CentralUser>>(BASE_URL, { ...params });
 }
 
-export function createUser(payload: UserCreateFormValues): Promise<CentralUser> {
+export function createUser(payload: UserCreatePayload): Promise<CentralUser> {
   return apiPost<CentralUser>(BASE_URL, payload);
 }
 

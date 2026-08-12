@@ -9,7 +9,7 @@ import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
-import { DataGrid, type GridColDef } from '@mui/x-data-grid';
+import { DataGrid, type GridColDef, type GridSortModel } from '@mui/x-data-grid';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
 import { useDocumentResourceCounts } from '../hooks/useDocumentResourceCounts';
 import { useDocuments } from '../hooks/useDocuments';
@@ -46,10 +46,29 @@ export function DocumentsAdminTable({
   );
   const resourceCounts = useDocumentResourceCounts(countableDocumentIds);
 
+  // Memoized so the array reference only changes when params.sort actually
+  // does — DataGrid treats a new `sortModel` reference as an external sort
+  // change and resets pagination to page 0 on every unrelated re-render
+  // otherwise (bax useGridPaginationModel's `sortModelChange` listener).
+  const sortModel: GridSortModel = useMemo(
+    () =>
+      params.sort
+        ? [
+            {
+              field: params.sort.split(',')[0],
+              sort: params.sort.split(',')[1] === 'desc' ? 'desc' : 'asc',
+            },
+          ]
+        : [],
+    [params.sort],
+  );
+
   const columns: GridColDef<CcmsDocument>[] = [
-    { field: 'organizationName', headerName: 'Təşkilat', width: 200 },
+    // organizationName/uploadedByName are joined display names, not sortable
+    // columns on the backend entity — sorting by them 500s.
+    { field: 'organizationName', headerName: 'Təşkilat', width: 200, sortable: false },
     { field: 'originalFilename', headerName: 'Fayl', flex: 1, minWidth: 220 },
-    { field: 'uploadedByName', headerName: 'Yükləyən', width: 140 },
+    { field: 'uploadedByName', headerName: 'Yükləyən', width: 140, sortable: false },
     {
       field: 'createdAt',
       headerName: 'Tarix',
@@ -175,8 +194,17 @@ export function DocumentsAdminTable({
       loading={listQuery.isFetching}
       columns={columns}
       paginationMode="server"
+      sortingMode="server"
+      sortingOrder={['asc', 'desc']}
       paginationModel={{ page: params.page, pageSize: params.size }}
       onPaginationModelChange={(model) => onParamsChange({ page: model.page, size: model.pageSize })}
+      sortModel={sortModel}
+      onSortModelChange={(model) => {
+        if (model.length === 0) {
+          return;
+        }
+        onParamsChange({ sort: `${model[0].field},${model[0].sort ?? 'asc'}` });
+      }}
       pageSizeOptions={[10, 25, 50]}
       disableRowSelectionOnClick
       localeText={{ noRowsLabel: 'Sənəd tapılmadı.' }}

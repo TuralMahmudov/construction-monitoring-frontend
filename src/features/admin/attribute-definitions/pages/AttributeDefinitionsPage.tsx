@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import ListAltRoundedIcon from '@mui/icons-material/ListAltRounded';
@@ -41,13 +41,24 @@ export function AttributeDefinitionsPage() {
 
   const [filters, setFilters] = useState<{ name?: string; dataType?: AttributeDataType }>({});
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [sortField, setSortField] = useState<string | undefined>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  // Memoized so the array reference only changes when the sort actually
+  // does — DataGrid treats a new `sortModel` reference as an external sort
+  // change and resets pagination to page 0 (bax useGridPaginationModel's
+  // `sortModelChange` listener), which was silently kicking users back to
+  // page 1 on every unrelated re-render.
+  const sortModel = useMemo(
+    () => (sortField ? [{ field: sortField, sort: sortDirection }] : []),
+    [sortField, sortDirection],
+  );
 
   const listQuery = useAttributeDefinitionsList(
     {
       ...filters,
       page: paginationModel.page,
       size: paginationModel.pageSize,
-      sort: 'name,asc',
+      sort: sortField ? `${sortField},${sortDirection}` : undefined,
     },
     canAccess,
   );
@@ -207,8 +218,18 @@ export function AttributeDefinitionsPage() {
           loading={listQuery.isFetching}
           columns={canEdit ? columns : columns.filter((column) => column.field !== 'actions')}
           paginationMode="server"
+          sortingMode="server"
+          sortingOrder={['asc', 'desc']}
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
+          sortModel={sortModel}
+          onSortModelChange={(model) => {
+            if (model.length === 0) {
+              return;
+            }
+            setSortField(model[0].field);
+            setSortDirection(model[0].sort ?? 'asc');
+          }}
           pageSizeOptions={[10, 25, 50]}
           disableRowSelectionOnClick
           localeText={{ noRowsLabel: 'Hələ heç bir xüsusiyyət növü yoxdur — "Yeni xüsusiyyət növü" ilə əlavə edin.' }}
@@ -224,7 +245,7 @@ export function AttributeDefinitionsPage() {
               ? {
                   name: dialog.item.name,
                   dataType: dialog.item.dataType,
-                  defaultUnitId: dialog.item.defaultUnitId,
+                  defaultUnitId: dialog.item.defaultUnitId ?? null,
                   active: dialog.item.active,
                 }
               : null

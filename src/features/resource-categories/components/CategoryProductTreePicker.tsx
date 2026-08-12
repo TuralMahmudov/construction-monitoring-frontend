@@ -83,8 +83,9 @@ export function CategoryProductTreePicker({
         anchorEl={anchorEl}
         onClose={() => setAnchorEl(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        slotProps={{ paper: { sx: { width: anchorEl?.offsetWidth } } }}
       >
-        <Box sx={{ width: 400, maxHeight: 420, overflowY: 'auto', p: 1.5 }}>
+        <Box sx={{ minWidth: 400, maxHeight: 420, overflowY: 'auto', p: 1.5 }}>
           {treeQuery.isLoading && (
             <Stack sx={{ alignItems: 'center', py: 3 }}>
               <CircularProgress size={24} />

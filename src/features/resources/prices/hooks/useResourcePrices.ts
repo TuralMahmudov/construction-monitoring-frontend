@@ -32,7 +32,7 @@ export function useCreateResourcePrice(resourceId: string, organizationId?: stri
     mutationFn: (payload: ResourcePriceFormValues) => createResourcePrice(resourceId, payload, organizationId),
     onSuccess: (price: ResourcePrice) => {
       queryClient.invalidateQueries({ queryKey: priceKeys.history(resourceId) });
-      // Resource list rows show a hasPrice dot (Resurslar, Sənədlərin İdarəsi) —
+      // Resource list rows show a hasPrice dot (Resurslar, Daxil olanlar) —
       // refetch those too so it flips without a manual page reload.
       queryClient.invalidateQueries({ queryKey: resourceKeys.all });
       enqueueSnackbar(

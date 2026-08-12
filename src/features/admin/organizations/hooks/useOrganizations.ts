@@ -5,7 +5,7 @@ import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
 import { createOrganization, searchOrganizations, updateOrganization } from '../api/organizationsApi';
 import type {
   Organization,
-  OrganizationCreateFormValues,
+  OrganizationCreatePayload,
   OrganizationSearchParams,
   OrganizationUpdateFormValues,
 } from '../types/organization.types';
@@ -59,7 +59,7 @@ export function useCreateOrganization() {
   const { enqueueSnackbar } = useSnackbar();
 
   return useMutation({
-    mutationFn: (payload: OrganizationCreateFormValues) => createOrganization(payload),
+    mutationFn: (payload: OrganizationCreatePayload) => createOrganization(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.all });
       enqueueSnackbar('Təşkilat uğurla yaradıldı.', { variant: 'success' });

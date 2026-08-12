@@ -3,7 +3,7 @@ import AdminPanelSettingsRoundedIcon from '@mui/icons-material/AdminPanelSetting
 import ApartmentRoundedIcon from '@mui/icons-material/ApartmentRounded';
 import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
 import CompareArrowsRoundedIcon from '@mui/icons-material/CompareArrowsRounded';
-import FolderSharedRoundedIcon from '@mui/icons-material/FolderSharedRounded';
+import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
 import LibraryBooksRoundedIcon from '@mui/icons-material/LibraryBooksRounded';
@@ -47,9 +47,9 @@ export const navItems: NavItem[] = [
     requiresDocumentUpload: true,
   },
   {
-    label: 'Sənədlərin İdarəsi',
+    label: 'Daxil olanlar',
     path: '/admin/documents',
-    icon: <FolderSharedRoundedIcon />,
+    icon: <DownloadRoundedIcon />,
     hideForOrganization: true,
     requiresDocumentReview: true,
   },

@@ -3,7 +3,7 @@ import { useQueries } from '@tanstack/react-query';
 import { searchResources } from '../../resources/api/resourcesApi';
 import { resourceKeys } from '../../resources/hooks/queryKeys';
 
-// Per-document resource count for the "Sənədlərin İdarəsi" table's "Resurs
+// Per-document resource count for the "Daxil olanlar" table's "Resurs
 // sayı" column. `size: 1` keeps each response tiny — only `totalElements`
 // is read, the single row itself is discarded. Separate cache entry from
 // DocumentResourcesViewDialog's own (larger, size: 200) fetch — opening

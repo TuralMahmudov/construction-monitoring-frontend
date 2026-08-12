@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AccountTreeRoundedIcon from '@mui/icons-material/AccountTreeRounded';
 import Alert from '@mui/material/Alert';
@@ -58,9 +59,14 @@ export function CategorySearchGrid({ params, onParamsChange }: CategorySearchGri
     },
   ];
 
-  const sortModel: GridSortModel = params.sortBy
-    ? [{ field: params.sortBy, sort: params.sortDirection }]
-    : [];
+  // Memoized so the array reference only changes when the sort actually
+  // does — DataGrid treats a new `sortModel` reference as an external sort
+  // change and resets pagination to page 0 on every unrelated re-render
+  // otherwise (bax useGridPaginationModel's `sortModelChange` listener).
+  const sortModel: GridSortModel = useMemo(
+    () => (params.sortBy ? [{ field: params.sortBy, sort: params.sortDirection }] : []),
+    [params.sortBy, params.sortDirection],
+  );
 
   if (searchQuery.isError) {
     return <Alert severity="error">{getApiErrorMessage(searchQuery.error)}</Alert>;
@@ -75,6 +81,7 @@ export function CategorySearchGrid({ params, onParamsChange }: CategorySearchGri
       columns={columns}
       paginationMode="server"
       sortingMode="server"
+      sortingOrder={['asc', 'desc']}
       paginationModel={{ page: params.page, pageSize: params.size }}
       onPaginationModelChange={(model) => onParamsChange({ page: model.page, size: model.pageSize })}
       sortModel={sortModel}

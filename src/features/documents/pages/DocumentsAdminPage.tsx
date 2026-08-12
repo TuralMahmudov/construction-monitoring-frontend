@@ -69,7 +69,7 @@ export function DocumentsAdminPage() {
 
   return (
     <PageContainer>
-      <PageHeader title="Sənədlərin İdarəsi" subtitle="Təşkilatların idxal etdiyi sənədlər və emalları" />
+      <PageHeader title="Daxil olanlar" subtitle="Təşkilatların idxal etdiyi sənədlər və emalları" />
 
       <Card sx={{ mb: 3 }}>
         <CardContent>

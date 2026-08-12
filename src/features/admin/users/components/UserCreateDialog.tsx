@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
+import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
+import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
@@ -8,19 +12,23 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import { ApiError } from '../../../../services/httpClient';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
 import { ignoreBackdropClose } from '../../../../shared/lib/ignoreBackdropClose';
 import { useRoles } from '../../roles/hooks/useRoles';
-import type { UserCreateFormValues } from '../types/user.types';
+import type { UserCreateFormValues, UserCreatePayload } from '../types/user.types';
 import { userCreateFormSchema } from '../utils/userForm.schema';
 
 const DEFAULT_VALUES: UserCreateFormValues = {
   username: '',
   email: '',
   password: '',
+  confirmPassword: '',
   firstName: '',
   lastName: '',
   roleNames: [],
@@ -30,15 +38,23 @@ export interface UserCreateDialogProps {
   open: boolean;
   isSubmitting: boolean;
   onClose: () => void;
-  onSubmit: (values: UserCreateFormValues, onError: (error: unknown) => void) => void;
+  onSubmit: (values: UserCreatePayload, onError: (error: unknown) => void) => void;
 }
 
 // Only ever creates mərkəzi (central) individual staff — organizationId/
 // actorType aren't fields here, the server always sets them to null/
 // INDIVIDUAL (FRONTEND_AI_PROMPT_ADMIN_ORG_USERS.md § 3). Vendor accounts
 // are created via OrganizationCreateDialog instead.
+//
+// Unlike Organization's, `email` here is still a mandatory, validated
+// login-account field (FRONTEND_AI_PROMPT_ORGANIZATION_EMAIL.md § 5
+// explicitly leaves this endpoint's contract untouched) — it's grouped with
+// Ad/Soyad above "Giriş hesabı" purely for layout symmetry with the org
+// form, not because its backend role changed.
 export function UserCreateDialog({ open, isSubmitting, onClose, onSubmit }: UserCreateDialogProps) {
   const [formError, setFormError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const rolesQuery = useRoles();
 
   const {
@@ -46,17 +62,24 @@ export function UserCreateDialog({ open, isSubmitting, onClose, onSubmit }: User
     handleSubmit,
     reset,
     setError,
-    formState: { errors },
+    watch,
+    formState: { errors, isValid },
   } = useForm<UserCreateFormValues>({
     resolver: zodResolver(userCreateFormSchema),
     defaultValues: DEFAULT_VALUES,
+    mode: 'onChange',
   });
+
+  const password = watch('password');
+  const hasMinLength = password.length >= 8;
 
   useEffect(() => {
     if (!open) {
       return;
     }
     setFormError(null);
+    setShowPassword(false);
+    setShowConfirmPassword(false);
     reset(DEFAULT_VALUES);
   }, [open, reset]);
 
@@ -76,9 +99,9 @@ export function UserCreateDialog({ open, isSubmitting, onClose, onSubmit }: User
     }
   }
 
-  const submit = handleSubmit((values) => {
+  const submit = handleSubmit(({ confirmPassword: _confirmPassword, ...payload }) => {
     setFormError(null);
-    onSubmit(values, handleApiError);
+    onSubmit(payload, handleApiError);
   });
 
   const roleOptions = rolesQuery.data ?? [];
@@ -97,7 +120,7 @@ export function UserCreateDialog({ open, isSubmitting, onClose, onSubmit }: User
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Ad"
+                  label="Ad *"
                   fullWidth
                   error={!!errors.firstName}
                   helperText={errors.firstName?.message}
@@ -111,7 +134,7 @@ export function UserCreateDialog({ open, isSubmitting, onClose, onSubmit }: User
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Soyad"
+                  label="Soyad *"
                   fullWidth
                   error={!!errors.lastName}
                   helperText={errors.lastName?.message}
@@ -122,30 +145,37 @@ export function UserCreateDialog({ open, isSubmitting, onClose, onSubmit }: User
           </Stack>
 
           <Controller
-            name="username"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="İstifadəçi adı"
-                fullWidth
-                error={!!errors.username}
-                helperText={errors.username?.message}
-                disabled={isSubmitting}
-              />
-            )}
-          />
-
-          <Controller
             name="email"
             control={control}
             render={({ field }) => (
               <TextField
                 {...field}
-                label="E-poçt"
+                type="email"
+                label="E-poçt *"
                 fullWidth
+                autoComplete="off"
                 error={!!errors.email}
                 helperText={errors.email?.message}
+                disabled={isSubmitting}
+              />
+            )}
+          />
+
+          <Typography variant="subtitle2" color="text.secondary" sx={{ pt: 1 }}>
+            Giriş hesabı
+          </Typography>
+
+          <Controller
+            name="username"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="İstifadəçi adı *"
+                fullWidth
+                autoComplete="off"
+                error={!!errors.username}
+                helperText={errors.username?.message}
                 disabled={isSubmitting}
               />
             )}
@@ -157,12 +187,73 @@ export function UserCreateDialog({ open, isSubmitting, onClose, onSubmit }: User
             render={({ field }) => (
               <TextField
                 {...field}
-                type="password"
-                label="Şifrə"
+                type={showPassword ? 'text' : 'password'}
+                label="Şifrə *"
                 fullWidth
+                autoComplete="new-password"
                 error={!!errors.password}
-                helperText={errors.password?.message ?? 'Ən azı 8 simvol.'}
                 disabled={isSubmitting}
+                helperText={
+                  errors.password?.message ?? (
+                    <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }} component="span">
+                      {hasMinLength ? (
+                        <CheckCircleRoundedIcon color="success" sx={{ fontSize: 14 }} />
+                      ) : (
+                        <CancelRoundedIcon color="error" sx={{ fontSize: 14 }} />
+                      )}
+                      <span>Ən azı 8 simvol.</span>
+                    </Stack>
+                  )
+                }
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowPassword((prev) => !prev)}
+                          edge="end"
+                          size="small"
+                          aria-label={showPassword ? 'şifrəni gizlət' : 'şifrəni göstər'}
+                        >
+                          {showPassword ? <VisibilityOffRoundedIcon fontSize="small" /> : <VisibilityRoundedIcon fontSize="small" />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+              />
+            )}
+          />
+
+          <Controller
+            name="confirmPassword"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                type={showConfirmPassword ? 'text' : 'password'}
+                label="Şifrəni təkrarla *"
+                fullWidth
+                autoComplete="new-password"
+                error={!!errors.confirmPassword}
+                helperText={errors.confirmPassword?.message}
+                disabled={isSubmitting}
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowConfirmPassword((prev) => !prev)}
+                          edge="end"
+                          size="small"
+                          aria-label={showConfirmPassword ? 'şifrəni gizlət' : 'şifrəni göstər'}
+                        >
+                          {showConfirmPassword ? <VisibilityOffRoundedIcon fontSize="small" /> : <VisibilityRoundedIcon fontSize="small" />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  },
+                }}
               />
             )}
           />
@@ -181,7 +272,7 @@ export function UserCreateDialog({ open, isSubmitting, onClose, onSubmit }: User
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Rollar"
+                    label="Rollar *"
                     error={!!errors.roleNames}
                     helperText={errors.roleNames?.message}
                   />
@@ -189,13 +280,17 @@ export function UserCreateDialog({ open, isSubmitting, onClose, onSubmit }: User
               />
             )}
           />
+
+          <Typography variant="caption" color="text.secondary">
+            * mütləq doldurulmalı sahələr
+          </Typography>
         </Stack>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={onClose} disabled={isSubmitting}>
           İmtina
         </Button>
-        <Button variant="contained" onClick={submit} disabled={isSubmitting}>
+        <Button variant="contained" onClick={submit} disabled={isSubmitting || !isValid}>
           {isSubmitting ? 'Yadda saxlanılır...' : 'Yadda saxla'}
         </Button>
       </DialogActions>
