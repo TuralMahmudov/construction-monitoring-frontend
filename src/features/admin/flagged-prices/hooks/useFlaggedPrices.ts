@@ -8,10 +8,11 @@ import type { FlaggedPriceSearchParams } from '../types/flaggedPrice.types';
 const flaggedPricesRootKey = ['flagged-prices'] as const;
 const flaggedPricesKey = (params: FlaggedPriceSearchParams) => [...flaggedPricesRootKey, params] as const;
 
-export function useFlaggedPrices(params: FlaggedPriceSearchParams) {
+export function useFlaggedPrices(params: FlaggedPriceSearchParams, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: flaggedPricesKey(params),
     queryFn: () => getFlaggedPrices(params),
+    enabled: options?.enabled ?? true,
   });
 }
 

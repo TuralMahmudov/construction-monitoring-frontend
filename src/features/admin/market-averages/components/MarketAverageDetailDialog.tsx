@@ -1,3 +1,5 @@
+import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded';
+import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -8,15 +10,17 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import dayjs from 'dayjs';
+import { Link as RouterLink } from 'react-router-dom';
 import type { ResourcePriceAverageResponse } from '../types/priceAverage.types';
+import { formatSampleCount } from '../utils/formatSampleCount';
 import { computeVariability } from '../utils/priceVariability';
+import { computeSampleConfidence } from '../utils/sampleConfidence';
 import { ignoreBackdropClose } from '../../../../shared/lib/ignoreBackdropClose';
 import { PriceRangeBar } from './PriceRangeBar';
 import { VariabilityChip } from './VariabilityChip';
 
 export interface MarketAverageDetailDialogProps {
   row: ResourcePriceAverageResponse | null;
-  regionName: string;
   onClose: () => void;
 }
 
@@ -31,12 +35,13 @@ function Field({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function MarketAverageDetailDialog({ row, regionName, onClose }: MarketAverageDetailDialogProps) {
+export function MarketAverageDetailDialog({ row, onClose }: MarketAverageDetailDialogProps) {
   if (!row) {
     return null;
   }
 
   const variability = computeVariability(row.minPrice, row.maxPrice, row.medianPrice);
+  const confidence = computeSampleConfidence(row.sampleCount);
 
   return (
     <Dialog open onClose={ignoreBackdropClose(onClose)} maxWidth="sm" fullWidth>
@@ -44,29 +49,44 @@ export function MarketAverageDetailDialog({ row, regionName, onClose }: MarketAv
       <DialogContent>
         <Stack spacing={2.5} sx={{ pt: 1 }}>
           <Grid container spacing={2}>
-            <Field label="Region" value={regionName} />
+            <Field label="Kod" value={row.productCode} />
+            <Field label="Region" value={row.regionName} />
           </Grid>
 
           <Divider />
 
           <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              {row.medianPrice.toFixed(2)}
+              {row.medianPrice.toFixed(2)} {row.currency}
             </Typography>
             <VariabilityChip variability={variability} />
           </Stack>
 
-          <PriceRangeBar min={row.minPrice} max={row.maxPrice} median={row.medianPrice} />
+          <PriceRangeBar min={row.minPrice} max={row.maxPrice} median={row.medianPrice} currency={row.currency} />
+
+          {confidence.level !== 'normal' && (
+            <Alert severity={confidence.level === 'low' ? 'warning' : 'info'}>
+              {confidence.label} — az sayda təşkilatın qiymətinə əsaslanır, ehtiyatla dəyərləndirin.
+            </Alert>
+          )}
 
           <Divider />
 
           <Grid container spacing={2}>
-            <Field label="Nümunə sayı" value={String(row.sampleCount)} />
+            <Field label="Nümunə sayı" value={formatSampleCount(row.sampleCount, row.resourceCount)} />
             <Field label="Son hesablanma" value={dayjs(row.calculatedAt).format('DD.MM.YYYY HH:mm')} />
           </Grid>
         </Stack>
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
+      <DialogActions sx={{ px: 3, pb: 2, justifyContent: 'space-between' }}>
+        <Button
+          component={RouterLink}
+          to={`/products/${row.productId}?tab=listings`}
+          endIcon={<OpenInNewRoundedIcon fontSize="small" />}
+          onClick={onClose}
+        >
+          Təchizatçılara bax
+        </Button>
         <Button onClick={onClose}>Bağla</Button>
       </DialogActions>
     </Dialog>

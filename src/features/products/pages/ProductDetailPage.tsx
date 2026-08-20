@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Link as RouterLink, useParams } from 'react-router-dom';
+import { Link as RouterLink, useParams, useSearchParams } from 'react-router-dom';
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
@@ -19,11 +18,22 @@ import { ProductListingsTab } from '../components/ProductListingsTab';
 
 type TabKey = 'general' | 'attributes' | 'listings';
 
+const TAB_KEYS: TabKey[] = ['general', 'attributes', 'listings'];
+
 export function ProductDetailPage() {
   const { user } = useAuth();
   const canAccess = !isOrganizationActor(user);
   const { id } = useParams<{ id: string }>();
-  const [tab, setTab] = useState<TabKey>('general');
+  // URL-driven so a link (bax MarketAverageDetailDialog "Təchizatçılara bax")
+  // can jump straight to a specific tab instead of always landing on Ümumi.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const rawTab = searchParams.get('tab');
+  const tab: TabKey = TAB_KEYS.includes(rawTab as TabKey) ? (rawTab as TabKey) : 'general';
+  const setTab = (value: TabKey) => setSearchParams((prev) => {
+    const next = new URLSearchParams(prev);
+    next.set('tab', value);
+    return next;
+  }, { replace: true });
   const productQuery = useProduct(id ?? null, canAccess);
 
   if (!canAccess) {

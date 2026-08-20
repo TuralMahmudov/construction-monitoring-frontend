@@ -7,10 +7,11 @@ import type { MatchGroupSearchParams } from '../types/matchGroup.types';
 const matchGroupsRootKey = ['match-groups', 'pending-review'] as const;
 const matchGroupsKey = (params: MatchGroupSearchParams) => [...matchGroupsRootKey, params] as const;
 
-export function useMatchGroupsPendingReview(params: MatchGroupSearchParams) {
+export function useMatchGroupsPendingReview(params: MatchGroupSearchParams, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: matchGroupsKey(params),
     queryFn: () => getPendingReviewMatchGroups(params),
+    enabled: options?.enabled ?? true,
   });
 }
 
