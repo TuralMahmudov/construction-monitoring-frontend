@@ -29,6 +29,11 @@ export interface ResourcePrice {
   expireDate: string | null;
   comment: string | null;
   status: PriceStatus;
+  // Added 2026-08-17 (FRONTEND_AI_PROMPT_PERIOD_AND_SUPERSEDED.md § 1) — server
+  // always computes these from effectiveDate unless overridden at creation;
+  // never null on a response, independent of effectiveDate/expireDate.
+  periodYear: number;
+  periodQuarter: number;
   createdBy: string;
   createdDate: string;
   approvedBy: string | null;

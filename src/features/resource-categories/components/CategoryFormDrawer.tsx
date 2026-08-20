@@ -376,9 +376,6 @@ export function CategoryFormDrawer() {
               <Box>
                 <FieldLabel>Status</FieldLabel>
                 <StatusBadge active={drawer.category.active} />
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                  Statusu dəyişmək üçün alət çubuğundan istifadə edin.
-                </Typography>
               </Box>
             )}
           </Stack>

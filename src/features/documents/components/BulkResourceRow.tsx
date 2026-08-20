@@ -12,6 +12,7 @@ import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
+import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
@@ -193,58 +194,89 @@ export function BulkResourceRow({ row, attributeLinks, disabled, onChange, onAtt
             />
           </Stack>
 
-          {/* FormControlLabel deliberately not used here — it makes the
-              label text clickable too, so a stray click near the checkbox
-              (not on it) toggled the price section closed/open unexpectedly.
-              A plain Checkbox + Typography keeps only the box itself
-              clickable. */}
+          {/* Switch (not Checkbox) deliberately — this toggles the whole price
+              section open/closed, a different kind of action from the plain
+              option checkboxes inside it (e.g. "Naməlum müddətə qədər"), so it
+              needs a visibly different control shape, not just a second
+              checkbox next to/above another one. FormControlLabel isn't used
+              here either, for the same stray-click reason as before. */}
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <Checkbox
+            <Switch
               checked={row.price.enabled}
               onChange={(event) => onChange({ price: { ...row.price, enabled: event.target.checked } })}
               disabled={rowDisabled}
             />
-            <Typography variant="body2">Qiymət əlavə et</Typography>
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              Qiymət əlavə et
+            </Typography>
           </Stack>
 
           {row.price.enabled && (
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-              <Autocomplete
-                options={regions}
-                getOptionLabel={(option) => option.name}
-                isOptionEqualToValue={(option, val) => option.id === val.id}
-                value={regions.find((region) => region.id === row.price.regionId) ?? null}
-                onChange={(_event, newValue) => onChange({ price: { ...row.price, regionId: newValue?.id ?? '' } })}
-                disabled={rowDisabled}
-                sx={{ flex: 1 }}
-                renderInput={(inputParams) => <TextField {...inputParams} label="Region" />}
-              />
-              <NumberField
-                label="Qiymət"
-                fullWidth
-                value={row.price.price}
-                onChange={(price) => onChange({ price: { ...row.price, price } })}
-                disabled={rowDisabled}
-                sx={{ flex: 1 }}
-              />
-              <Autocomplete
-                freeSolo
-                options={CURRENCY_OPTIONS}
-                value={row.price.currency}
-                onInputChange={(_event, newValue) => onChange({ price: { ...row.price, currency: newValue.toUpperCase() } })}
-                disabled={rowDisabled}
-                sx={{ flex: 1, minWidth: 120 }}
-                renderInput={(inputParams) => <TextField {...inputParams} label="Valyuta" />}
-              />
-              <DatePicker
-                label="Effektiv tarix"
-                value={row.price.effectiveDate ? dayjs(row.price.effectiveDate) : null}
-                onChange={(newValue: Dayjs | null) =>
-                  onChange({ price: { ...row.price, effectiveDate: newValue ? newValue.format('YYYY-MM-DD') : '' } })
-                }
-                disabled={rowDisabled}
-                slotProps={{ textField: { fullWidth: true, sx: { flex: 1 } } }}
-              />
+            <Stack spacing={2}>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                <Autocomplete
+                  options={regions}
+                  getOptionLabel={(option) => option.name}
+                  isOptionEqualToValue={(option, val) => option.id === val.id}
+                  value={regions.find((region) => region.id === row.price.regionId) ?? null}
+                  onChange={(_event, newValue) => onChange({ price: { ...row.price, regionId: newValue?.id ?? '' } })}
+                  disabled={rowDisabled}
+                  sx={{ flex: 1 }}
+                  renderInput={(inputParams) => <TextField {...inputParams} label="Region" />}
+                />
+                <NumberField
+                  label="Qiymət"
+                  fullWidth
+                  value={row.price.price}
+                  onChange={(price) => onChange({ price: { ...row.price, price } })}
+                  disabled={rowDisabled}
+                  sx={{ flex: 1 }}
+                />
+                <Autocomplete
+                  freeSolo
+                  options={CURRENCY_OPTIONS}
+                  value={row.price.currency}
+                  onInputChange={(_event, newValue) => onChange({ price: { ...row.price, currency: newValue.toUpperCase() } })}
+                  disabled={rowDisabled}
+                  sx={{ flex: 1, minWidth: 120 }}
+                  renderInput={(inputParams) => <TextField {...inputParams} label="Valyuta" />}
+                />
+              </Stack>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                <DatePicker
+                  label="Effektiv tarix"
+                  value={row.price.effectiveDate ? dayjs(row.price.effectiveDate) : null}
+                  onChange={(newValue: Dayjs | null) =>
+                    onChange({ price: { ...row.price, effectiveDate: newValue ? newValue.format('YYYY-MM-DD') : '' } })
+                  }
+                  disabled={rowDisabled}
+                  slotProps={{ textField: { fullWidth: true, sx: { flex: 1 } } }}
+                />
+                <DatePicker
+                  label="Bitmə tarixi"
+                  value={row.price.expireDate ? dayjs(row.price.expireDate) : null}
+                  onChange={(newValue: Dayjs | null) =>
+                    onChange({ price: { ...row.price, expireDate: newValue ? newValue.format('YYYY-MM-DD') : null } })
+                  }
+                  disabled={rowDisabled || row.price.expireDate === null}
+                  slotProps={{ textField: { fullWidth: true, sx: { flex: 1 } } }}
+                />
+              </Stack>
+              <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                <Checkbox
+                  checked={row.price.expireDate === null}
+                  onChange={(event) =>
+                    onChange({
+                      price: {
+                        ...row.price,
+                        expireDate: event.target.checked ? null : dayjs().format('YYYY-MM-DD'),
+                      },
+                    })
+                  }
+                  disabled={rowDisabled}
+                />
+                <Typography variant="body2">Naməlum müddətə qədər</Typography>
+              </Stack>
             </Stack>
           )}
         </Stack>

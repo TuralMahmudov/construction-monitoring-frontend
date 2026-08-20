@@ -1,5 +1,6 @@
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
+import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -11,10 +12,12 @@ import Typography from '@mui/material/Typography';
 import { usePriceAverages } from '../../../admin/market-averages/hooks/usePriceAverages';
 import { PriceRangeBar } from '../../../admin/market-averages/components/PriceRangeBar';
 import { VariabilityChip } from '../../../admin/market-averages/components/VariabilityChip';
+import { formatSampleCount } from '../../../admin/market-averages/utils/formatSampleCount';
 import { computeVariability } from '../../../admin/market-averages/utils/priceVariability';
 import { useAllRegions } from '../../../reference-data/hooks/useReferenceOptions';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
 import type { Resource } from '../../types/resource.types';
+import { ResourceTrendSection } from './ResourceTrendSection';
 
 export interface ResourceMarketAveragesTabProps {
   resource: Resource;
@@ -40,42 +43,56 @@ export function ResourceMarketAveragesTab({ resource }: ResourceMarketAveragesTa
   const rows = averagesQuery.data?.content ?? [];
   const regionNames = new Map((regionsQuery.data?.content ?? []).map((region) => [region.id, region.name]));
 
-  if (rows.length === 0) {
-    return (
-      <Typography color="text.secondary" sx={{ py: 2 }}>
-        Bu bazar qrupu üçün hələ heç bir təsdiqlənmiş qiymət statistikası yoxdur.
-      </Typography>
-    );
-  }
-
   return (
-    <TableContainer>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>Region</TableCell>
-            <TableCell align="right">Median</TableCell>
-            <TableCell>Qiymət aralığı</TableCell>
-            <TableCell>Dəyişkənlik</TableCell>
-            <TableCell align="right">Nümunə sayı</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.regionId} hover>
-              <TableCell>{regionNames.get(row.regionId) ?? '—'}</TableCell>
-              <TableCell align="right">{row.medianPrice.toFixed(2)}</TableCell>
-              <TableCell>
-                <PriceRangeBar min={row.minPrice} max={row.maxPrice} median={row.medianPrice} />
-              </TableCell>
-              <TableCell>
-                <VariabilityChip variability={computeVariability(row.minPrice, row.maxPrice, row.medianPrice)} />
-              </TableCell>
-              <TableCell align="right">{row.sampleCount}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <Stack spacing={3}>
+      {rows.length === 0 ? (
+        <Typography color="text.secondary" sx={{ py: 2 }}>
+          Bu bazar qrupu üçün hələ heç bir təsdiqlənmiş qiymət statistikası yoxdur.
+        </Typography>
+      ) : (
+        <TableContainer>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Region</TableCell>
+                <TableCell align="right">Median</TableCell>
+                <TableCell>Qiymət aralığı</TableCell>
+                <TableCell>Dəyişkənlik</TableCell>
+                <TableCell align="right">Nümunə sayı</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {rows.map((row) => (
+                <TableRow key={row.regionId} hover>
+                  <TableCell>{regionNames.get(row.regionId) ?? '—'}</TableCell>
+                  <TableCell align="right">{row.medianPrice.toFixed(2)}</TableCell>
+                  <TableCell>
+                    <PriceRangeBar min={row.minPrice} max={row.maxPrice} median={row.medianPrice} />
+                  </TableCell>
+                  <TableCell>
+                    <VariabilityChip variability={computeVariability(row.minPrice, row.maxPrice, row.medianPrice)} />
+                  </TableCell>
+                  <TableCell align="right">{formatSampleCount(row.sampleCount, row.resourceCount)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+
+      <Divider />
+
+      <Stack spacing={1.5}>
+        <Stack spacing={0.25}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+            Qiymət Dinamikası
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Rüblər üzrə
+          </Typography>
+        </Stack>
+        <ResourceTrendSection productId={resource.productId} />
+      </Stack>
+    </Stack>
   );
 }

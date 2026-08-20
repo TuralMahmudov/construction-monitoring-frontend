@@ -6,6 +6,7 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { DataGrid, type GridColDef, type GridSortModel } from '@mui/x-data-grid';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
+import { formatPeriod } from '../../../shared/lib/period';
 import { azGridLocaleText } from '../../../theme/dataGridLocaleText';
 import { useMyDocuments } from '../hooks/useDocuments';
 import type { CcmsDocument, DocumentSearchParams } from '../types/document.types';
@@ -66,6 +67,13 @@ export function MyDocumentsTable({ params, onParamsChange, onDownload }: MyDocum
       headerName: 'Tarix',
       width: 140,
       valueGetter: (_value, row) => dayjs(row.createdAt).format('DD.MM.YYYY HH:mm'),
+    },
+    {
+      field: 'period',
+      headerName: 'Rüb',
+      width: 90,
+      sortable: false,
+      valueGetter: (_value, row) => formatPeriod(row.periodYear, row.periodQuarter),
     },
     {
       field: 'actions',

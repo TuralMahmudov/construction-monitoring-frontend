@@ -36,11 +36,18 @@ export interface CcmsDocument {
   processedByName?: string | null;
   processedDate?: string | null;
   reviewComment?: string | null;
+  // Added 2026-08-17 (FRONTEND_AI_PROMPT_PERIOD_AND_SUPERSEDED.md § 2) —
+  // auto-set from createdAt on upload, null for pre-existing documents.
+  periodYear: number | null;
+  periodQuarter: number | null;
 }
 
 export interface DocumentSearchParams {
   organizationId?: string;
   status?: DocumentStatus;
+  // Added 2026-08-19 (FRONTEND_AI_PROMPT_REPORTS_LIVE_AND_DOCUMENTS.md § "Hesabat #3").
+  periodYear?: number;
+  periodQuarter?: number;
   page?: number;
   size?: number;
   sort?: string;
@@ -99,4 +106,11 @@ export interface BulkResourceRowResult {
 
 export interface CreateDocumentResourcesResponse {
   results: BulkResourceRowResult[];
+}
+
+// PATCH /api/documents/{id}/period body (§ 2) — DOCUMENT_REVIEW only, 400s
+// once the document is COMPLETED.
+export interface UpdateDocumentPeriodRequest {
+  periodYear: number;
+  periodQuarter: number;
 }

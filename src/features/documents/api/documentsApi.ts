@@ -6,6 +6,7 @@ import type {
   CreateDocumentResourcesRequest,
   CreateDocumentResourcesResponse,
   DocumentSearchParams,
+  UpdateDocumentPeriodRequest,
   UpdateDocumentStatusRequest,
   UploadDocumentRequest,
 } from '../types/document.types';
@@ -57,6 +58,11 @@ export function processDocument(id: string): Promise<CcmsDocument> {
 
 export function updateDocumentStatus(id: string, payload: UpdateDocumentStatusRequest): Promise<CcmsDocument> {
   return apiPatch<CcmsDocument>(`${BASE_URL}/${id}/status`, payload);
+}
+
+// § 2 — DOCUMENT_REVIEW only, 400s once status === COMPLETED.
+export function updateDocumentPeriod(id: string, payload: UpdateDocumentPeriodRequest): Promise<CcmsDocument> {
+  return apiPatch<CcmsDocument>(`${BASE_URL}/${id}/period`, payload);
 }
 
 // § 3.3 — requires the caller to already hold the document's lock

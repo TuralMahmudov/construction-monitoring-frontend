@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
 import LaunchRoundedIcon from '@mui/icons-material/LaunchRounded';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -12,6 +11,7 @@ import { ProductAttributesReadOnly } from '../../products/components/ProductAttr
 import { useProduct } from '../../products/hooks/useProduct';
 import { StatusBadge } from '../../../shared/components';
 import { canWrite } from '../../../shared/lib/permissions';
+import { useEntityView } from '../../../shared/entity-view/EntityViewProvider';
 import { CategoryAttributesPanel } from './CategoryAttributesPanel';
 import { useCategory } from '../hooks/useCategory';
 import { useCategoryUiStore } from '../store/categoryUiStore';
@@ -95,6 +95,7 @@ function CategoryNodeDetails({ categoryId }: { categoryId: string }) {
 }
 
 function ProductNodeDetails({ productId }: { productId: string }) {
+  const { openProduct } = useEntityView();
   const productQuery = useProduct(productId);
 
   if (productQuery.isLoading) {
@@ -121,12 +122,7 @@ function ProductNodeDetails({ productId }: { productId: string }) {
         <Typography variant="h6" sx={{ fontWeight: 700 }}>
           {product.name}
         </Typography>
-        <Button
-          size="small"
-          component={RouterLink}
-          to={`/products/${product.id}`}
-          startIcon={<LaunchRoundedIcon />}
-        >
+        <Button size="small" onClick={() => openProduct(product.id)} startIcon={<LaunchRoundedIcon />}>
           Məhsula bax
         </Button>
       </Stack>

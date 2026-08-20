@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
@@ -30,17 +28,9 @@ export function ResourceListPage() {
 
   return (
     <PageContainer>
-      <PageHeader
-        title="Resurslar"
-        subtitle="Təşkilatların elan etdiyi məhsullar"
-        actions={
-          canEdit ? (
-            <Button startIcon={<AddRoundedIcon />} variant="contained" onClick={() => setCreateOpen(true)}>
-              Elan Yarat
-            </Button>
-          ) : undefined
-        }
-      />
+      {/* 2026-08-13 (Tural) — "Elan Yarat" hidden for now, not needed yet.
+          Dialog/flow stays in the code, just unreachable from this button. */}
+      <PageHeader title="Resurslar" subtitle="Təşkilatların elan etdiyi məhsullar" />
 
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
         {canViewAllOrganizations

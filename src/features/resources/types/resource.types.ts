@@ -22,6 +22,12 @@ export interface Resource {
   organizationType: number | null;
   status: number | null;
   active: boolean;
+  // Added 2026-08-17 (FRONTEND_AI_PROMPT_PERIOD_AND_SUPERSEDED.md § 4) —
+  // system-set (never user-editable), distinct from `active`: true means at
+  // least one of this resource's regions had its price closed because a
+  // newer resource replaced it. NOT region-scoped — true doesn't mean every
+  // region stopped contributing to market averages, only at least one did.
+  superseded: boolean;
   // Added 2026-08-11 — server-computed convenience flag (avoids an N+1 price
   // lookup per row), same pattern as MyResource.hasPrice.
   hasPrice: boolean;

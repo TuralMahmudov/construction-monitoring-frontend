@@ -11,6 +11,7 @@ import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import { DataGrid, type GridColDef, type GridSortModel } from '@mui/x-data-grid';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
+import { formatPeriod } from '../../../shared/lib/period';
 import { azGridLocaleText } from '../../../theme/dataGridLocaleText';
 import { useDocumentResourceCounts } from '../hooks/useDocumentResourceCounts';
 import { useDocuments } from '../hooks/useDocuments';
@@ -82,6 +83,13 @@ export function DocumentsAdminTable({
       width: 140,
       sortable: false,
       valueGetter: (_value, row) => row.processedByName ?? '—',
+    },
+    {
+      field: 'period',
+      headerName: 'Rüb',
+      width: 90,
+      sortable: false,
+      valueGetter: (_value, row) => formatPeriod(row.periodYear, row.periodQuarter),
     },
     {
       field: 'status',

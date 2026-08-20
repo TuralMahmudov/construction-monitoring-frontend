@@ -27,6 +27,7 @@ import type { CategoryAttributeDefinition } from '../../resource-categories/type
 import { useCompleteDocument, useCreateDocumentResources } from '../hooks/useDocuments';
 import type { BulkResourceRowRequest, CcmsDocument } from '../types/document.types';
 import { BulkResourceRow } from './BulkResourceRow';
+import { DocumentPeriodPicker } from './DocumentPeriodPicker';
 import { makeExistingRow, makeNewRow, type RowState } from './bulkRowState';
 
 export interface BulkResourceFormDialogProps {
@@ -236,6 +237,8 @@ export function BulkResourceFormDialog({ document, onClose }: BulkResourceFormDi
       <DialogContent>
         <Stack spacing={2.5} sx={{ pt: 1 }}>
           {formError && <Alert severity="error">{formError}</Alert>}
+
+          {document && <DocumentPeriodPicker document={document} />}
 
           <CategoryProductTreePicker
             label="Kateqoriya"

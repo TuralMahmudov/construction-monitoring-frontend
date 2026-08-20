@@ -9,6 +9,10 @@ import { UsersPage } from '../features/admin/users/pages/UsersPage';
 import { DocumentsAdminPage } from '../features/documents/pages/DocumentsAdminPage';
 import { MyDocumentsPage } from '../features/documents/pages/MyDocumentsPage';
 import { MyResourcesPage } from '../features/my-resources/pages/MyResourcesPage';
+import { DocumentImportReportPage } from '../features/reports/pages/DocumentImportReportPage';
+import { QuarterlyMarketPricesPage } from '../features/reports/pages/QuarterlyMarketPricesPage';
+import { ReportsListPage } from '../features/reports/pages/ReportsListPage';
+import { SubmittedPricesReportPage } from '../features/reports/pages/SubmittedPricesReportPage';
 import { ProductDetailPage } from '../features/products/pages/ProductDetailPage';
 import { ProductListPage } from '../features/products/pages/ProductListPage';
 import { CategorySearchPage } from '../features/resource-categories/pages/CategorySearchPage';
@@ -60,6 +64,10 @@ export const router = createBrowserRouter([
       { path: 'admin/flagged-prices', element: <FlaggedPricesPage /> },
       { path: 'admin/match-groups', element: <MatchGroupReviewPage /> },
       { path: 'admin/market-averages', element: <MarketAveragesPage /> },
+      { path: 'reports', element: <ReportsListPage /> },
+      { path: 'reports/quarterly-market-prices', element: <QuarterlyMarketPricesPage /> },
+      { path: 'reports/submitted-prices', element: <SubmittedPricesReportPage /> },
+      { path: 'reports/documents-import', element: <DocumentImportReportPage /> },
       { path: '*', element: <NotFound /> },
     ],
   },

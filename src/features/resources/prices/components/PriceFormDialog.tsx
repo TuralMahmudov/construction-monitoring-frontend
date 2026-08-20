@@ -91,9 +91,14 @@ export function PriceFormDialog({
         fieldEntries.forEach(([field, message]) => {
           setError(field as keyof ResourcePriceFormValues, { type: 'server', message });
         });
-        setFormError(fieldEntries.length > 0 ? null : getApiErrorMessage(error));
-      } else if (error.status === 409) {
-        setFormError(getApiErrorMessage(error));
+        // Heç bir sahə-səviyyəli xəta uyğun gəlmirsə, bu adətən forma
+        // sahələrinə deyil, biznes qaydasına aid bir mesajdır (məs. "artıq
+        // bu tarixdən sonra qiymət var, əvvəlcə onu redaktə edin") — generic
+        // "Daxil edilən məlumatlarda xəta var" yerinə real backend mesajını
+        // göstəririk ki, istifadəçi səbəbi görsün (2026-08-17, Tural).
+        setFormError(fieldEntries.length > 0 ? null : error.message);
+      } else if (error.status === 400 || error.status === 409) {
+        setFormError(error.message);
       } else {
         setFormError(getApiErrorMessage(error));
       }

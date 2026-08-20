@@ -8,12 +8,14 @@ import {
   getDocuments,
   getMyDocuments,
   processDocument,
+  updateDocumentPeriod,
   updateDocumentStatus,
   uploadDocument,
 } from '../api/documentsApi';
 import type {
   CreateDocumentResourcesRequest,
   DocumentSearchParams,
+  UpdateDocumentPeriodRequest,
   UpdateDocumentStatusRequest,
   UploadDocumentRequest,
 } from '../types/document.types';
@@ -91,6 +93,21 @@ export function useCompleteDocument() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: documentKeys.root });
       enqueueSnackbar('Sənədin emalı tamamlandı.', { variant: 'success' });
+    },
+    onError: (error) => enqueueSnackbar(documentActionErrorMessage(error), { variant: 'error' }),
+  });
+}
+
+export function useUpdateDocumentPeriod() {
+  const queryClient = useQueryClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: UpdateDocumentPeriodRequest }) =>
+      updateDocumentPeriod(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: documentKeys.root });
+      enqueueSnackbar('Rüb yeniləndi.', { variant: 'success' });
     },
     onError: (error) => enqueueSnackbar(documentActionErrorMessage(error), { variant: 'error' }),
   });

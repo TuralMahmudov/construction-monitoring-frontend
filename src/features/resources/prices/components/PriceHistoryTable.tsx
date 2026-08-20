@@ -11,6 +11,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { formatPeriod } from '../../../../shared/lib/period';
 import { PRICE_STATUS, type ResourcePrice } from '../types/resourcePrice.types';
 import { useRegionLookup } from '../hooks/useRegionLookup';
 import { PriceStatusChip } from './PriceStatusChip';
@@ -60,6 +61,7 @@ export function PriceHistoryTable({
             <TableCell>Valyuta</TableCell>
             <TableCell>Effektiv tarix</TableCell>
             <TableCell>Bitmə tarixi</TableCell>
+            <TableCell>Rüb</TableCell>
             <TableCell>Status</TableCell>
             {showActions && <TableCell align="right">Əməliyyatlar</TableCell>}
           </TableRow>
@@ -77,6 +79,7 @@ export function PriceHistoryTable({
                 <TableCell>{price.currency}</TableCell>
                 <TableCell>{dayjs(price.effectiveDate).format('DD.MM.YYYY')}</TableCell>
                 <TableCell>{price.expireDate ? dayjs(price.expireDate).format('DD.MM.YYYY') : '—'}</TableCell>
+                <TableCell>{formatPeriod(price.periodYear, price.periodQuarter)}</TableCell>
                 <TableCell>
                   <PriceStatusChip status={price.status} />
                 </TableCell>

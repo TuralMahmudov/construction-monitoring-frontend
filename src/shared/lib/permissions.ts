@@ -36,6 +36,7 @@ export const PERMISSIONS = {
   DOCUMENT_UPLOAD: 'DOCUMENT_UPLOAD',
   DOCUMENT_REVIEW: 'DOCUMENT_REVIEW',
   COST_WRITE: 'COST_WRITE',
+  COST_READ: 'COST_READ',
   VIEW_ALL_ORGANIZATION_RESOURCES: 'VIEW_ALL_ORGANIZATION_RESOURCES',
 } as const;
 
@@ -64,4 +65,28 @@ export function canProcessDocuments(user: AuthUser | null): boolean {
     hasPermission(user, PERMISSIONS.COST_WRITE) &&
     hasPermission(user, PERMISSIONS.VIEW_ALL_ORGANIZATION_RESOURCES)
   );
+}
+
+// Hesabatlar module (FRONTEND_AI_PROMPT_REPORTS.md § 3) — same gate as the
+// live/period averages endpoints (FRONTEND_AI_PROMPT_ADMIN_PANEL.md § 6):
+// any COST_READ user, deliberately not restricted to isCentralAdmin.
+export function canReadCosts(user: AuthUser | null): boolean {
+  return hasPermission(user, PERMISSIONS.COST_READ);
+}
+
+// "Təqdim Edilmiş Qiymətlər" report (FRONTEND_AI_PROMPT_SUBMITTED_PRICES.md §
+// "İcazə") — stricter than the other reports: raw per-submission data across
+// every organization, so needs COST_READ AND VIEW_ALL_ORGANIZATION_RESOURCES
+// together (central-only), not just COST_READ.
+export function canViewSubmittedPricesReport(user: AuthUser | null): boolean {
+  return canReadCosts(user) && hasPermission(user, PERMISSIONS.VIEW_ALL_ORGANIZATION_RESOURCES);
+}
+
+// Top-level gate for the "Hesabatlar" sidebar link/landing page — broader
+// than any single report's own gate (canReadCosts alone would hide the
+// Sənəd/İdxal report from a DOCUMENT_REVIEW-only user who has no COST_READ,
+// and the live market-comparison report from a non-central-admin COST_READ
+// user). Individual report cards still filter by their own, narrower gate.
+export function canViewAnyReport(user: AuthUser | null): boolean {
+  return canReadCosts(user) || isCentralAdmin(user?.roles ?? []) || canReviewDocuments(user);
 }
