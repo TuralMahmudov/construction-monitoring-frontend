@@ -8,6 +8,7 @@ import CardContent from '@mui/material/CardContent';
 import { DataGrid, GridActionsCellItem, type GridColDef } from '@mui/x-data-grid';
 import { PageContainer, PageHeader } from '../../../shared/components';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
+import { azGridLocaleText } from '../../../theme/dataGridLocaleText';
 import type { ReferenceDataHooks } from '../hooks/createReferenceDataHooks';
 import type { BaseReferenceItem, ReferenceDataSearchParams } from '../types/referenceData.types';
 import { ReferenceDataFilters } from './ReferenceDataFilters';
@@ -138,6 +139,7 @@ export function ReferenceDataListPage<TItem extends BaseReferenceItem>({
           pageSizeOptions={[10, 25, 50]}
           disableRowSelectionOnClick
           localeText={{
+            ...azGridLocaleText,
             noRowsLabel: `Hələ heç bir ${entityLabelSingular} yoxdur — "Yeni" düyməsi ilə əlavə edin.`,
           }}
           sx={{

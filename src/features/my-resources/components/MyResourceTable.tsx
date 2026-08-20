@@ -10,6 +10,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { DataGrid, type GridColDef, type GridSortModel } from '@mui/x-data-grid';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
+import { azGridLocaleText } from '../../../theme/dataGridLocaleText';
 import { useMyResources } from '../hooks/useMyResources';
 import type { MyResource, MyResourceSearchParams } from '../types/myResource.types';
 import { StatusChip } from './StatusChip';
@@ -133,7 +134,7 @@ export function MyResourceTable({ params, onParamsChange, onView, onManagePrice 
       pageSizeOptions={[10, 25, 50]}
       disableRowSelectionOnClick
       getRowHeight={() => 'auto'}
-      localeText={{ noRowsLabel: 'Nəticə tapılmadı' }}
+      localeText={{ ...azGridLocaleText, noRowsLabel: 'Nəticə tapılmadı' }}
       sx={{
         borderRadius: 2,
         bgcolor: 'background.paper',

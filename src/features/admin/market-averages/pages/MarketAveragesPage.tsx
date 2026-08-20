@@ -23,6 +23,7 @@ import { PageContainer, PageHeader } from '../../../../shared/components';
 import { exportToExcel } from '../../../../shared/lib/exportToExcel';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
 import { isCentralAdmin } from '../../../../shared/lib/permissions';
+import { azGridLocaleText } from '../../../../theme/dataGridLocaleText';
 import { useDebouncedValue } from '../../../resources/hooks/useDebouncedValue';
 import { CategoryTreeFilterPicker } from '../../../resource-categories/components/CategoryTreeFilterPicker';
 import { getProductById } from '../../../products/api/productsApi';
@@ -402,7 +403,7 @@ export function MarketAveragesPage() {
             pageSizeOptions={[10, 25, 50]}
             getRowHeight={() => 56}
             disableRowSelectionOnClick
-            localeText={{ noRowsLabel: 'Uyğun bazar statistikası tapılmadı.' }}
+            localeText={{ ...azGridLocaleText, noRowsLabel: 'Uyğun bazar statistikası tapılmadı.' }}
           />
         </Card>
       )}

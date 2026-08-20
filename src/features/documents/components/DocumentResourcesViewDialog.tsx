@@ -16,6 +16,7 @@ import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { useAuth } from '../../../hooks/useAuth';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
 import { ignoreBackdropClose } from '../../../shared/lib/ignoreBackdropClose';
+import { azGridLocaleText } from '../../../theme/dataGridLocaleText';
 import { canWrite } from '../../../shared/lib/permissions';
 import { searchResources } from '../../resources/api/resourcesApi';
 import { resourceKeys } from '../../resources/hooks/queryKeys';
@@ -112,7 +113,7 @@ export function DocumentResourcesViewDialog({ document, onClose }: DocumentResou
               columns={columns}
               loading={searchQuery.isFetching}
               disableRowSelectionOnClick
-              localeText={{ noRowsLabel: 'Bu sənəddən hələ resurs yaradılmayıb.' }}
+              localeText={{ ...azGridLocaleText, noRowsLabel: 'Bu sənəddən hələ resurs yaradılmayıb.' }}
             />
           )}
         </DialogContent>

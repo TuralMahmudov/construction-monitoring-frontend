@@ -16,6 +16,7 @@ import { useAuth } from '../../../../hooks/useAuth';
 import { PageContainer, PageHeader, StatusBadge } from '../../../../shared/components';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
 import { canWrite, isCentralAdmin } from '../../../../shared/lib/permissions';
+import { azGridLocaleText } from '../../../../theme/dataGridLocaleText';
 import { useUnitLookup } from '../../../resources/hooks/useLookups';
 import { AttributeDefinitionFormDialog } from '../components/AttributeDefinitionFormDialog';
 import { AttributeEnumValuesDialog } from '../components/AttributeEnumValuesDialog';
@@ -232,7 +233,10 @@ export function AttributeDefinitionsPage() {
           }}
           pageSizeOptions={[10, 25, 50]}
           disableRowSelectionOnClick
-          localeText={{ noRowsLabel: 'Hələ heç bir xüsusiyyət növü yoxdur — "Yeni xüsusiyyət növü" ilə əlavə edin.' }}
+          localeText={{
+            ...azGridLocaleText,
+            noRowsLabel: 'Hələ heç bir xüsusiyyət növü yoxdur — "Yeni xüsusiyyət növü" ilə əlavə edin.',
+          }}
         />
       </Card>
 

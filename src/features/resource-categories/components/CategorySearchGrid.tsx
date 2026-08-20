@@ -5,6 +5,7 @@ import Alert from '@mui/material/Alert';
 import { DataGrid, GridActionsCellItem, type GridColDef, type GridSortModel } from '@mui/x-data-grid';
 import { StatusBadge } from '../../../shared/components';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
+import { azGridLocaleText } from '../../../theme/dataGridLocaleText';
 import type { ResolvedCategorySearchParams } from '../hooks/useCategorySearchParams';
 import { useCategorySearch } from '../hooks/useCategorySearch';
 import { useCategoryUiStore } from '../store/categoryUiStore';
@@ -93,7 +94,7 @@ export function CategorySearchGrid({ params, onParamsChange }: CategorySearchGri
       }}
       pageSizeOptions={[10, 25, 50]}
       disableRowSelectionOnClick
-      localeText={{ noRowsLabel: 'Nəticə tapılmadı' }}
+      localeText={{ ...azGridLocaleText, noRowsLabel: 'Nəticə tapılmadı' }}
     />
   );
 }

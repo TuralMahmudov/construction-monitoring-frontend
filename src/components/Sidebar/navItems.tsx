@@ -6,14 +6,14 @@ import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
 import CompareArrowsRoundedIcon from '@mui/icons-material/CompareArrowsRounded';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
+import InventoryRoundedIcon from '@mui/icons-material/InventoryRounded';
 import PersonPinCircleRoundedIcon from '@mui/icons-material/PersonPinCircleRounded';
 import PublicRoundedIcon from '@mui/icons-material/PublicRounded';
-import SellRoundedIcon from '@mui/icons-material/SellRounded';
 import QueryStatsRoundedIcon from '@mui/icons-material/QueryStatsRounded';
+import RequestQuoteRoundedIcon from '@mui/icons-material/RequestQuoteRounded';
 import StraightenRoundedIcon from '@mui/icons-material/StraightenRounded';
 import SummarizeRoundedIcon from '@mui/icons-material/SummarizeRounded';
 import UploadFileRoundedIcon from '@mui/icons-material/UploadFileRounded';
-import ViewInArRoundedIcon from '@mui/icons-material/ViewInArRounded';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import type { NavItem, NavSection } from '../../types/navigation';
 
@@ -62,8 +62,8 @@ export const navSections: NavSection[] = [
         requiresDocumentReview: true,
         badgeKey: 'pendingDocuments',
       },
-      { label: 'Məhsullar', path: '/products', icon: <ViewInArRoundedIcon />, hideForOrganization: true },
-      { label: 'Resurslar (Elanlar)', path: '/resources', icon: <SellRoundedIcon />, hideForOrganization: true },
+      { label: 'Məhsullar', path: '/products', icon: <InventoryRoundedIcon />, hideForOrganization: true },
+      { label: 'Resurslar (Elanlar)', path: '/resources', icon: <RequestQuoteRoundedIcon />, hideForOrganization: true },
     ],
   },
   {

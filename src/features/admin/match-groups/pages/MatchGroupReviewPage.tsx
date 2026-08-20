@@ -9,6 +9,7 @@ import { useAuth } from '../../../../hooks/useAuth';
 import { PageContainer, PageHeader } from '../../../../shared/components';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
 import { isCentralAdmin } from '../../../../shared/lib/permissions';
+import { azGridLocaleText } from '../../../../theme/dataGridLocaleText';
 import { useCategoryNameLookup } from '../../../resources/hooks/useLookups';
 import { useConfirmMatchGroup, useMatchGroupsPendingReview } from '../hooks/useMatchGroups';
 import type { MatchGroupReviewResponse } from '../types/matchGroup.types';
@@ -144,7 +145,7 @@ export function MatchGroupReviewPage() {
           }}
           pageSizeOptions={[10, 25, 50]}
           disableRowSelectionOnClick
-          localeText={{ noRowsLabel: 'Nəzərdən keçirilməli yeni qruplaşdırma yoxdur.' }}
+          localeText={{ ...azGridLocaleText, noRowsLabel: 'Nəzərdən keçirilməli yeni qruplaşdırma yoxdur.' }}
         />
       </Card>
     </PageContainer>

@@ -13,6 +13,7 @@ import { StatusBadge } from '../../../shared/components';
 import { useEntityView } from '../../../shared/entity-view/EntityViewProvider';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
 import { canWrite } from '../../../shared/lib/permissions';
+import { azGridLocaleText } from '../../../theme/dataGridLocaleText';
 import type { OrganizationType } from '../../admin/organizations/types/organization.types';
 import { ResourcePriceQuickDialog } from '../prices/components/ResourcePriceQuickDialog';
 import type { ResolvedResourceSearchParams } from '../hooks/useResourceSearchParams';
@@ -161,7 +162,7 @@ export function ResourceSearchGrid({ params, onParamsChange }: ResourceSearchGri
         }}
         pageSizeOptions={[10, 25, 50]}
         disableRowSelectionOnClick
-        localeText={{ noRowsLabel: 'Nəticə tapılmadı' }}
+        localeText={{ ...azGridLocaleText, noRowsLabel: 'Nəticə tapılmadı' }}
         sx={{ '& .MuiDataGrid-cell': { alignItems: 'center', py: 1.5 } }}
       />
 

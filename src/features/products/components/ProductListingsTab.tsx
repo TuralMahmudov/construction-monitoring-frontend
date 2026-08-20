@@ -4,6 +4,7 @@ import { DataGrid, GridActionsCellItem, type GridColDef } from '@mui/x-data-grid
 import { StatusBadge } from '../../../shared/components';
 import { useEntityView } from '../../../shared/entity-view/EntityViewProvider';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
+import { azGridLocaleText } from '../../../theme/dataGridLocaleText';
 import type { OrganizationType } from '../../admin/organizations/types/organization.types';
 import { OrganizationChip } from '../../resources/components/OrganizationChip';
 import { useResourceSearch } from '../../resources/hooks/useResourceSearch';
@@ -95,7 +96,7 @@ export function ProductListingsTab({ productId }: ProductListingsTabProps) {
       columns={columns}
       hideFooter={(listingsQuery.data?.totalElements ?? 0) <= 50}
       disableRowSelectionOnClick
-      localeText={{ noRowsLabel: 'Bu məhsulu elan edən təşkilat yoxdur.' }}
+      localeText={{ ...azGridLocaleText, noRowsLabel: 'Bu məhsulu elan edən təşkilat yoxdur.' }}
     />
   );
 }

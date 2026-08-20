@@ -10,6 +10,7 @@ import { useAuth } from '../../../../hooks/useAuth';
 import { PageContainer, PageHeader } from '../../../../shared/components';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
 import { isCentralAdmin } from '../../../../shared/lib/permissions';
+import { azGridLocaleText } from '../../../../theme/dataGridLocaleText';
 import { useResourceLookup } from '../../../resources/hooks/useResourceLookup';
 import { useRegionLookup } from '../../../resources/prices/hooks/useRegionLookup';
 import { useApproveFlaggedPrice, useFlaggedPrices, useRejectFlaggedPrice } from '../hooks/useFlaggedPrices';
@@ -186,7 +187,7 @@ export function FlaggedPricesPage() {
           }}
           pageSizeOptions={[10, 25, 50]}
           disableRowSelectionOnClick
-          localeText={{ noRowsLabel: 'Hazırda kənar dəyər kimi işarələnmiş qiymət yoxdur.' }}
+          localeText={{ ...azGridLocaleText, noRowsLabel: 'Hazırda kənar dəyər kimi işarələnmiş qiymət yoxdur.' }}
         />
       </Card>
     </PageContainer>

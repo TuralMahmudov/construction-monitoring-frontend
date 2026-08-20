@@ -13,6 +13,7 @@ import { useAuth } from '../../../../hooks/useAuth';
 import { PageContainer, PageHeader } from '../../../../shared/components';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
 import { isCentralAdmin } from '../../../../shared/lib/permissions';
+import { azGridLocaleText } from '../../../../theme/dataGridLocaleText';
 import { OrganizationCreateDialog } from '../components/OrganizationCreateDialog';
 import { OrganizationEditDialog } from '../components/OrganizationEditDialog';
 import { OrganizationStatusChip } from '../components/OrganizationStatusChip';
@@ -120,7 +121,6 @@ export function OrganizationsPage() {
     <PageContainer>
       <PageHeader
         title="Təşkilatlar"
-        subtitle="Vendor/təchizatçı təşkilatlar — hər birinin bir giriş hesabı olur"
         actions={
           <Button startIcon={<AddRoundedIcon />} variant="contained" onClick={() => setCreateOpen(true)}>
             Yeni təşkilat
@@ -210,7 +210,10 @@ export function OrganizationsPage() {
           }}
           pageSizeOptions={[10, 25, 50]}
           disableRowSelectionOnClick
-          localeText={{ noRowsLabel: 'Hələ heç bir təşkilat yoxdur — "Yeni təşkilat" ilə əlavə edin.' }}
+          localeText={{
+            ...azGridLocaleText,
+            noRowsLabel: 'Hələ heç bir təşkilat yoxdur — "Yeni təşkilat" ilə əlavə edin.',
+          }}
         />
       </Card>
 

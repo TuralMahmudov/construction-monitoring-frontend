@@ -17,7 +17,7 @@ import { useDocumentOrganizationOptions } from '../hooks/useDocumentOrganization
 import { useDownloadDocument, useProcessDocument, useRejectDocument } from '../hooks/useDocuments';
 import { DOCUMENT_STATUS, DOCUMENT_STATUS_LABELS, type CcmsDocument, type DocumentSearchParams, type DocumentStatus } from '../types/document.types';
 
-const DEFAULT_PARAMS = { page: 0, size: 10 } satisfies DocumentSearchParams;
+const DEFAULT_PARAMS = { page: 0, size: 10, sort: 'createdAt,desc' } satisfies DocumentSearchParams;
 const STATUS_OPTIONS = Object.values(DOCUMENT_STATUS) as DocumentStatus[];
 
 export function DocumentsAdminPage() {

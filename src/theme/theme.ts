@@ -5,6 +5,7 @@ import { createTheme, responsiveFontSizes, type Theme } from '@mui/material/styl
 import type {} from '@mui/x-data-grid/themeAugmentation';
 // Same reasoning for `MuiTreeItem` (category tree, category pickers).
 import type {} from '@mui/x-tree-view/themeAugmentation';
+import { azGridLocaleText } from './dataGridLocaleText';
 import { darkPalette, lightPalette } from './palette';
 
 export type ThemeMode = 'light' | 'dark';
@@ -87,6 +88,11 @@ export function createAppTheme(mode: ThemeMode): Theme {
           // the built-in column-header 3-dot menu (filter/sort/hide-column)
           // is redundant and was never wired to those custom filters anyway.
           disableColumnMenu: true,
+          // Only takes effect for a DataGrid that passes no `localeText` at
+          // all — every current usage does pass one (bax dataGridLocaleText.ts
+          // şərhi), so this is a safety net for new tables more than a fix
+          // for existing ones.
+          localeText: azGridLocaleText,
         },
         styleOverrides: {
           root: {

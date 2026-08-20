@@ -11,6 +11,7 @@ import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import { DataGrid, type GridColDef, type GridSortModel } from '@mui/x-data-grid';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
+import { azGridLocaleText } from '../../../theme/dataGridLocaleText';
 import { useDocumentResourceCounts } from '../hooks/useDocumentResourceCounts';
 import { useDocuments } from '../hooks/useDocuments';
 import { DOCUMENT_STATUS, type CcmsDocument, type DocumentSearchParams } from '../types/document.types';
@@ -207,7 +208,7 @@ export function DocumentsAdminTable({
       }}
       pageSizeOptions={[10, 25, 50]}
       disableRowSelectionOnClick
-      localeText={{ noRowsLabel: 'Sənəd tapılmadı.' }}
+      localeText={{ ...azGridLocaleText, noRowsLabel: 'Sənəd tapılmadı.' }}
       sx={{
         borderRadius: 2,
         bgcolor: 'background.paper',

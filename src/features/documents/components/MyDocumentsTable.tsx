@@ -6,6 +6,7 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { DataGrid, type GridColDef, type GridSortModel } from '@mui/x-data-grid';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
+import { azGridLocaleText } from '../../../theme/dataGridLocaleText';
 import { useMyDocuments } from '../hooks/useDocuments';
 import type { CcmsDocument, DocumentSearchParams } from '../types/document.types';
 import { DOCUMENT_STATUS } from '../types/document.types';
@@ -107,7 +108,7 @@ export function MyDocumentsTable({ params, onParamsChange, onDownload }: MyDocum
       }}
       pageSizeOptions={[10, 25, 50]}
       disableRowSelectionOnClick
-      localeText={{ noRowsLabel: 'Hələ heç bir sənəd yüklənməyib.' }}
+      localeText={{ ...azGridLocaleText, noRowsLabel: 'Hələ heç bir sənəd yüklənməyib.' }}
       sx={{
         borderRadius: 2,
         bgcolor: 'background.paper',

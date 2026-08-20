@@ -13,6 +13,7 @@ import { useAuth } from '../../../../hooks/useAuth';
 import { PageContainer, PageHeader, StatusBadge } from '../../../../shared/components';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
 import { isCentralAdmin } from '../../../../shared/lib/permissions';
+import { azGridLocaleText } from '../../../../theme/dataGridLocaleText';
 import { UserCreateDialog } from '../components/UserCreateDialog';
 import { UserEditDialog } from '../components/UserEditDialog';
 import { useCreateUser, useUpdateUser, useUsersList } from '../hooks/useUsers';
@@ -108,7 +109,6 @@ export function UsersPage() {
     <PageContainer>
       <PageHeader
         title="İstifadəçilər"
-        subtitle="Mərkəzi heyət — vendor giriş hesabları burada göstərilmir, onlar Təşkilatlar bölməsindədir"
         actions={
           <Button startIcon={<AddRoundedIcon />} variant="contained" onClick={() => setCreateOpen(true)}>
             Yeni istifadəçi
@@ -175,7 +175,10 @@ export function UsersPage() {
           }}
           pageSizeOptions={[10, 25, 50]}
           disableRowSelectionOnClick
-          localeText={{ noRowsLabel: 'Hələ heç bir mərkəzi istifadəçi yoxdur — "Yeni istifadəçi" ilə əlavə edin.' }}
+          localeText={{
+            ...azGridLocaleText,
+            noRowsLabel: 'Hələ heç bir mərkəzi istifadəçi yoxdur — "Yeni istifadəçi" ilə əlavə edin.',
+          }}
         />
       </Card>
 

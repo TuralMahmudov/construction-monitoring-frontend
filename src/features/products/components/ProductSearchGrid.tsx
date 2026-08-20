@@ -6,6 +6,7 @@ import { DataGrid, GridActionsCellItem, type GridColDef } from '@mui/x-data-grid
 import { StatusBadge } from '../../../shared/components';
 import { useEntityView } from '../../../shared/entity-view/EntityViewProvider';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
+import { azGridLocaleText } from '../../../theme/dataGridLocaleText';
 import { useAllUnits } from '../../reference-data/hooks/useReferenceOptions';
 import { useProducts } from '../hooks/useProducts';
 import type { ResolvedProductSearchParams } from '../hooks/useProductSearchParams';
@@ -104,7 +105,7 @@ export function ProductSearchGrid({ params, onParamsChange }: ProductSearchGridP
       onPaginationModelChange={(model) => onParamsChange({ page: model.page, size: model.pageSize })}
       pageSizeOptions={[10, 25, 50]}
       disableRowSelectionOnClick
-      localeText={{ noRowsLabel: 'Nəticə tapılmadı' }}
+      localeText={{ ...azGridLocaleText, noRowsLabel: 'Nəticə tapılmadı' }}
     />
   );
 }
