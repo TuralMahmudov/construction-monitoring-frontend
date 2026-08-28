@@ -88,27 +88,3 @@ export interface ProductSearchParams {
   sort?: string;
 }
 
-// GET /api/products/pending-review row (§ 7) — the old MatchGroupReview
-// `resources[]` (code+name per row) became `listings[]` (id+organizationId
-// only), since the product itself now carries code/name once at the top.
-export interface ProductReviewListing {
-  id: string;
-  organizationId: string | null;
-}
-
-export interface ProductReviewResponse {
-  id: string;
-  categoryId: string;
-  code: string;
-  name: string;
-  matchKey: string;
-  createdDate: string;
-  reviewStatus: ProductReviewStatus;
-  listings: ProductReviewListing[];
-}
-
-export interface ProductReviewSearchParams {
-  page?: number;
-  size?: number;
-  sort?: string;
-}

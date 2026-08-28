@@ -157,7 +157,7 @@ export function AttributeDefinitionsPage() {
     <PageContainer>
       <PageHeader
         title="Xüsusiyyət Növləri"
-        subtitle="Resurslara bağlana bilən xüsusiyyətlərin qlobal siyahısı (Diametr, Marka, Material və s.)"
+        subtitle="Resurslara bağlana bilən xüsusiyyətlərin siyahısı (Diametr, Marka, Material və s.)"
         actions={
           canEdit ? (
             <Button

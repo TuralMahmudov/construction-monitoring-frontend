@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -8,11 +9,10 @@ import dayjs from 'dayjs';
 import { DataGrid, GridActionsCellItem, type GridColDef } from '@mui/x-data-grid';
 import { useAuth } from '../../../../hooks/useAuth';
 import { PageContainer, PageHeader } from '../../../../shared/components';
+import { useEntityView } from '../../../../shared/entity-view/EntityViewProvider';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
 import { isCentralAdmin } from '../../../../shared/lib/permissions';
 import { azGridLocaleText } from '../../../../theme/dataGridLocaleText';
-import { useResourceLookup } from '../../../resources/hooks/useResourceLookup';
-import { useRegionLookup } from '../../../resources/prices/hooks/useRegionLookup';
 import { useApproveFlaggedPrice, useFlaggedPrices, useRejectFlaggedPrice } from '../hooks/useFlaggedPrices';
 import type { FlaggedPriceReviewResponse } from '../types/flaggedPrice.types';
 
@@ -38,14 +38,9 @@ export function FlaggedPricesPage() {
   });
   const approveMutation = useApproveFlaggedPrice();
   const rejectMutation = useRejectFlaggedPrice();
+  const { openResource } = useEntityView();
 
   const rows = listQuery.data?.content ?? [];
-  const resourceIds = useMemo(
-    () => (listQuery.data?.content ?? []).map((row) => row.resourceId),
-    [listQuery.data],
-  );
-  const resourceLookup = useResourceLookup(resourceIds);
-  const regionNames = useRegionLookup();
 
   if (!canAccess) {
     return (
@@ -62,18 +57,14 @@ export function FlaggedPricesPage() {
       flex: 1,
       minWidth: 200,
       sortable: false,
-      valueGetter: (_value, row) => {
-        const resource = resourceLookup.get(row.resourceId);
-        if (!resource) return row.resourceId;
-        return `${resource.product.code} — ${resource.product.description || resource.product.name}`;
-      },
+      valueGetter: (_value, row) => `${row.productCode} — ${row.productName}`,
     },
     {
       field: 'regionId',
       headerName: 'Region',
       width: 140,
       sortable: false,
-      valueGetter: (_value, row) => regionNames.get(row.regionId) ?? '—',
+      valueGetter: (_value, row) => row.regionName,
     },
     {
       field: 'organizationId',
@@ -132,8 +123,14 @@ export function FlaggedPricesPage() {
       field: 'actions',
       type: 'actions',
       headerName: 'Əməliyyatlar',
-      width: 110,
+      width: 150,
       getActions: (params) => [
+        <GridActionsCellItem
+          key="view"
+          icon={<VisibilityRoundedIcon />}
+          label="Resursa bax"
+          onClick={() => openResource(params.row.resourceId)}
+        />,
         <GridActionsCellItem
           key="approve"
           icon={<CheckRoundedIcon color="success" />}

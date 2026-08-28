@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
@@ -22,12 +23,14 @@ import {
   CategoryProductTreePicker,
   type CategoryProductPickerValue,
 } from '../../resource-categories/components/CategoryProductTreePicker';
+import { useCategory } from '../../resource-categories/hooks/useCategory';
 import { useCategoryAttributes } from '../../resource-categories/hooks/useCategoryAttributeDefinitions';
 import type { CategoryAttributeDefinition } from '../../resource-categories/types/categoryAttributeDefinition.types';
 import { useCompleteDocument, useCreateDocumentResources } from '../hooks/useDocuments';
 import type { BulkResourceRowRequest, CcmsDocument } from '../types/document.types';
 import { BulkResourceRow } from './BulkResourceRow';
 import { DocumentPeriodPicker } from './DocumentPeriodPicker';
+import { DocumentPreviewPanel } from './DocumentPreviewPanel';
 import { makeExistingRow, makeNewRow, type RowState } from './bulkRowState';
 
 export interface BulkResourceFormDialogProps {
@@ -35,11 +38,23 @@ export interface BulkResourceFormDialogProps {
   onClose: () => void;
 }
 
-function rowHasRequiredFields(row: RowState, attributeLinks: CategoryAttributeDefinition[]): string | null {
-  if (!row.manufacturer.trim()) {
+function rowHasRequiredFields(
+  row: RowState,
+  attributeLinks: CategoryAttributeDefinition[],
+  requireManufacturer: boolean,
+): string | null {
+  if (requireManufacturer && !row.manufacturer.trim()) {
     return 'İstehsalçı məcburidir.';
   }
   if (row.kind === 'new') {
+    // Tural 2026-08-26: same rule as ResourceFormDialog/MyResourceFormDialog
+    // — a category with zero xüsusiyyət növü can only ever have one
+    // meaningful product (matchKey constant/empty), so a "new" row here is a
+    // conceptual mismatch, blocked outright. Fix belongs in category admin
+    // (bax CategoryAttributesPanel warning), not this flow.
+    if (attributeLinks.length === 0) {
+      return 'Bu kateqoriyaya heç bir xüsusiyyət növü bağlanmayıb, yeni məhsul yaradıla bilməz.';
+    }
     if (!row.name.trim() || !row.unitId) {
       return 'Yeni məhsul üçün ad və vahid məcburidir.';
     }
@@ -48,6 +63,12 @@ function rowHasRequiredFields(row: RowState, attributeLinks: CategoryAttributeDe
     );
     if (missingAttribute) {
       return `Məcburi xüsusiyyət doldurulmayıb: ${missingAttribute.attributeName}`;
+    }
+    // FRONTEND_AI_PROMPT_STATUS_CLEANUP.md § 2 — a category with attribute
+    // fields at all rejects an empty attributes[] with a 400; pre-check here
+    // instead of waiting for that round trip.
+    if (attributeLinks.length > 0 && attributeLinks.every((link) => !(row.attributeValues[link.id] ?? '').trim())) {
+      return 'Ən azı bir xüsusiyyət doldurulmalıdır.';
     }
   }
   if (row.price.enabled) {
@@ -58,11 +79,11 @@ function rowHasRequiredFields(row: RowState, attributeLinks: CategoryAttributeDe
   return null;
 }
 
-function toRowRequest(row: RowState): BulkResourceRowRequest {
+function toRowRequest(row: RowState, includeManufacturerFields: boolean): BulkResourceRowRequest {
   const base: BulkResourceRowRequest = {
-    manufacturer: row.manufacturer.trim(),
-    brand: row.brand.trim() || undefined,
-    model: row.model.trim() || undefined,
+    manufacturer: includeManufacturerFields ? row.manufacturer.trim() : undefined,
+    brand: includeManufacturerFields ? row.brand.trim() || undefined : undefined,
+    model: includeManufacturerFields ? row.model.trim() || undefined : undefined,
     specification: row.specification.trim() || undefined,
     price: row.price.enabled
       ? {
@@ -112,6 +133,13 @@ export function BulkResourceFormDialog({ document, onClose }: BulkResourceFormDi
   const productsQuery = useProductsWithAttributeSummary(categoryId, Boolean(document && categoryId));
   const attributesQuery = useCategoryAttributes(categoryId || null);
   const attributeLinks = (attributesQuery.data ?? []).filter((link) => link.visible).sort((a, b) => a.sortOrder - b.sortOrder);
+  const categoryDetailQuery = useCategory(categoryId || null);
+
+  const categoryHasNoAttributes = Boolean(categoryId) && !attributesQuery.isLoading && attributeLinks.length === 0;
+  // Tural, 2026-08-26: İşçi qüvvəsi (category type 3) has no "İstehsalçı"
+  // concept — a worker isn't manufactured, and it's redundant with the
+  // listing Təşkilat. Bax BACKEND_REQUEST_MANUFACTURER_OPTIONAL_FOR_LABOR_CATEGORY.md.
+  const isLaborCategory = categoryDetailQuery.data?.type === 3;
 
   const createMutation = useCreateDocumentResources();
   const completeMutation = useCompleteDocument();
@@ -169,7 +197,7 @@ export function BulkResourceFormDialog({ document, onClose }: BulkResourceFormDi
 
     const validationErrors = new Map<string, string>();
     pending.forEach((row) => {
-      const error = rowHasRequiredFields(row, attributeLinks);
+      const error = rowHasRequiredFields(row, attributeLinks, !isLaborCategory);
       if (error) {
         validationErrors.set(row.key, error);
       }
@@ -190,7 +218,7 @@ export function BulkResourceFormDialog({ document, onClose }: BulkResourceFormDi
     try {
       const response = await createMutation.mutateAsync({
         documentId: document.id,
-        payload: { rows: pending.map(toRowRequest) },
+        payload: { rows: pending.map((row) => toRowRequest(row, !isLaborCategory)) },
       });
 
       const resultByKey = new Map(response.results.map((result) => [submittedKeys[result.index], result]));
@@ -222,7 +250,13 @@ export function BulkResourceFormDialog({ document, onClose }: BulkResourceFormDi
   const unfinishedCount = rows.filter((row) => row.result?.success !== true).length;
 
   return (
-    <Dialog open={document !== null} onClose={ignoreBackdropClose(onClose)} maxWidth="lg" fullWidth>
+    <Dialog
+      open={document !== null}
+      onClose={ignoreBackdropClose(onClose)}
+      maxWidth="xl"
+      fullWidth
+      sx={{ '& .MuiDialog-paper': { height: '92vh' } }}
+    >
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         {document ? `Emal et: ${document.originalFilename}` : ''}
         <IconButton
@@ -234,64 +268,93 @@ export function BulkResourceFormDialog({ document, onClose }: BulkResourceFormDi
           <CloseRoundedIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
-      <DialogContent>
-        <Stack spacing={2.5} sx={{ pt: 1 }}>
-          {formError && <Alert severity="error">{formError}</Alert>}
+      <DialogContent sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, p: 0, overflow: 'hidden' }}>
+        <Box sx={{ flex: { xs: 'none', md: '1 1 58%' }, minWidth: 0, overflowY: 'auto', p: 3 }}>
+          <Stack spacing={2.5}>
+            {formError && <Alert severity="error">{formError}</Alert>}
 
-          {document && <DocumentPeriodPicker document={document} />}
+            {document && <DocumentPeriodPicker document={document} />}
 
-          <CategoryProductTreePicker
-            label="Kateqoriya"
-            value={categoryValue}
-            // Clicking a product node also carries its categoryId — either
-            // click is treated the same here, only the leaf category matters
-            // for loading this dialog's product list (bax § 3.1).
-            onChange={(value) => setCategoryValue({ type: 'category', categoryId: value.categoryId, label: value.label })}
-          />
+            <CategoryProductTreePicker
+              label="Kateqoriya"
+              value={categoryValue}
+              // Clicking a product node also carries its categoryId — either
+              // click is treated the same here, only the leaf category matters
+              // for loading this dialog's product list (bax § 3.1).
+              onChange={(value) => setCategoryValue({ type: 'category', categoryId: value.categoryId, label: value.label })}
+            />
 
-          {!categoryId && (
-            <Typography color="text.secondary" variant="body2">
-              Emal etmək üçün əvvəlcə kateqoriya seçin. Kateqoriyaya bağlı mövcud məhsullar avtomatik siyahıya gələcək.
+            {!categoryId && (
+              <Typography color="text.secondary" variant="body2">
+                Emal etmək üçün əvvəlcə kateqoriya seçin. Kateqoriyaya bağlı mövcud məhsullar avtomatik siyahıya gələcək.
+              </Typography>
+            )}
+
+            {categoryId && productsQuery.isLoading && (
+              <Stack sx={{ alignItems: 'center', py: 3 }}>
+                <CircularProgress size={28} />
+              </Stack>
+            )}
+
+            {categoryId && !productsQuery.isLoading && (
+              <Stack spacing={2}>
+                {rows.map((row) => (
+                  <BulkResourceRow
+                    key={row.key}
+                    row={row}
+                    attributeLinks={row.kind === 'new' ? attributeLinks : []}
+                    disabled={createMutation.isPending || completeMutation.isPending}
+                    hideManufacturerFields={isLaborCategory}
+                    onChange={(patch) => updateRow(row.key, patch)}
+                    onAttributeChange={(attrId, value) => updateAttribute(row.key, attrId, value)}
+                    onRemove={() => removeRow(row.key)}
+                  />
+                ))}
+
+                {categoryHasNoAttributes && (
+                  <Alert severity="warning">
+                    Bu kateqoriyaya heç bir xüsusiyyət növü bağlanmayıb, ona görə yeni məhsul yaradıla bilməz. Əvvəlcə
+                    "Resurs Kataloqu"nda kateqoriyaya ən azı bir xüsusiyyət növü bağlayın, ya da yuxarıdakı mövcud
+                    məhsullardan istifadə edin.
+                  </Alert>
+                )}
+
+                <Button
+                  startIcon={<AddRoundedIcon />}
+                  onClick={addNewProductRow}
+                  disabled={createMutation.isPending || completeMutation.isPending || categoryHasNoAttributes}
+                  sx={{ alignSelf: 'flex-start' }}
+                >
+                  Yeni product əlavə et
+                </Button>
+              </Stack>
+            )}
+
+            <Divider />
+            <Typography variant="caption" color="text.secondary">
+              Bu addımı fərqli kateqoriyalarla təkrarlaya bilərsiniz. Sənəddəki bütün lazımi kateqoriyaları emal
+              etdikdən sonra "Emalı bitir"ə basın.
             </Typography>
-          )}
+          </Stack>
+        </Box>
 
-          {categoryId && productsQuery.isLoading && (
-            <Stack sx={{ alignItems: 'center', py: 3 }}>
-              <CircularProgress size={28} />
-            </Stack>
-          )}
+        <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', md: 'block' } }} />
 
-          {categoryId && !productsQuery.isLoading && (
-            <Stack spacing={2}>
-              {rows.map((row) => (
-                <BulkResourceRow
-                  key={row.key}
-                  row={row}
-                  attributeLinks={row.kind === 'new' ? attributeLinks : []}
-                  disabled={createMutation.isPending || completeMutation.isPending}
-                  onChange={(patch) => updateRow(row.key, patch)}
-                  onAttributeChange={(attrId, value) => updateAttribute(row.key, attrId, value)}
-                  onRemove={() => removeRow(row.key)}
-                />
-              ))}
-
-              <Button
-                startIcon={<AddRoundedIcon />}
-                onClick={addNewProductRow}
-                disabled={createMutation.isPending || completeMutation.isPending}
-                sx={{ alignSelf: 'flex-start' }}
-              >
-                Yeni product əlavə et
-              </Button>
-            </Stack>
-          )}
-
-          <Divider />
-          <Typography variant="caption" color="text.secondary">
-            Bu addımı fərqli kateqoriyalarla təkrarlaya bilərsiniz. Sənəddəki bütün lazımi kateqoriyaları emal
-            etdikdən sonra "Emalı bitir"ə basın.
-          </Typography>
-        </Stack>
+        <Box
+          sx={{
+            flex: { xs: '1 1 auto', md: '1 1 42%' },
+            minWidth: 0,
+            minHeight: { xs: 360, md: 0 },
+            borderTop: { xs: 1, md: 0 },
+            borderColor: 'divider',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            '& > *': { flex: 1, minHeight: 0 },
+          }}
+        >
+          {document && <DocumentPreviewPanel document={document} />}
+        </Box>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={onClose} disabled={createMutation.isPending || completeMutation.isPending}>

@@ -6,6 +6,7 @@ export interface SubmittedPricesReportParams {
   periodQuarter: number;
   organizationId?: string;
   productId?: string;
+  categoryId?: string;
   regionId?: string;
   status?: number;
 }

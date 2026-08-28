@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { useDocuments } from '../../features/documents/hooks/useDocuments';
 import { DOCUMENT_STATUS } from '../../features/documents/types/document.types';
 import { useFlaggedPrices } from '../../features/admin/flagged-prices/hooks/useFlaggedPrices';
-import { useMatchGroupsPendingReview } from '../../features/admin/match-groups/hooks/useMatchGroups';
 import type { NavBadgeKey } from '../../types/navigation';
 
 // One totalElements-only page (size:1) per counter — each list endpoint
@@ -17,17 +16,12 @@ export function useNavBadgeCounts(options: { canReviewDocuments: boolean; canAcc
     { page: 0, size: 1 },
     { enabled: options.canAccessAdmin },
   );
-  const matchGroupsQuery = useMatchGroupsPendingReview(
-    { page: 0, size: 1 },
-    { enabled: options.canAccessAdmin },
-  );
 
   return useMemo<Partial<Record<NavBadgeKey, number>>>(
     () => ({
       pendingDocuments: documentsQuery.data?.totalElements,
       flaggedPrices: flaggedQuery.data?.totalElements,
-      pendingMatchGroups: matchGroupsQuery.data?.totalElements,
     }),
-    [documentsQuery.data, flaggedQuery.data, matchGroupsQuery.data],
+    [documentsQuery.data, flaggedQuery.data],
   );
 }

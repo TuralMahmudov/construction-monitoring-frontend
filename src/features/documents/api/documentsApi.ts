@@ -49,6 +49,14 @@ export async function downloadDocument(id: string, filename: string): Promise<vo
   URL.revokeObjectURL(url);
 }
 
+// Same stream as downloadDocument, minus the save-as trigger — used by
+// DocumentPreviewPanel to get an in-app object URL / ArrayBuffer instead of
+// pushing the file to disk.
+export async function fetchDocumentBlob(id: string): Promise<Blob> {
+  const response = await httpClient.get<Blob>(`${BASE_URL}/${id}/download`, { responseType: 'blob' });
+  return response.data;
+}
+
 // PATCH /api/documents/{id}/process (§ 2.2) — no body, idempotent while the
 // lock is already yours; 409 (someone else's lock, or already terminal) is
 // left for the caller to catch and show as a toast.

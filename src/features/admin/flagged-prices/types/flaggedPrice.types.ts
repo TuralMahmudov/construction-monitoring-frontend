@@ -1,7 +1,12 @@
 export interface FlaggedPriceReviewResponse {
   id: string;
   resourceId: string;
+  // Added FRONTEND_AI_PROMPT_STATUS_CLEANUP.md § 3 — no more per-row
+  // GET /api/resources/{id} to resolve these.
+  productCode: string;
+  productName: string;
   regionId: string;
+  regionName: string;
   organizationId: string;
   // Added 2026-08-04 (FRONTEND_AI_PROMPT_ORG_TYPE_AND_PRICE_OWNERSHIP.md § 7.2, bonus)
   organizationName: string;

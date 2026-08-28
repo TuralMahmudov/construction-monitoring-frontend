@@ -5,8 +5,6 @@ import type {
   ProductAttribute,
   ProductCreateRequest,
   ProductFindOrCreateResponse,
-  ProductReviewResponse,
-  ProductReviewSearchParams,
   ProductSearchParams,
   ProductUpdateRequest,
 } from '../types/product.types';
@@ -42,14 +40,4 @@ export function enableProduct(id: string): Promise<void> {
 
 export function disableProduct(id: string): Promise<void> {
   return apiPatch<void>(`${BASE_URL}/${id}/disable`);
-}
-
-export function getPendingReviewProducts(
-  params: ProductReviewSearchParams,
-): Promise<PageResponse<ProductReviewResponse>> {
-  return apiGet<PageResponse<ProductReviewResponse>>(`${BASE_URL}/pending-review`, { ...params });
-}
-
-export function confirmProduct(id: string): Promise<ProductReviewResponse> {
-  return apiPatch<ProductReviewResponse>(`${BASE_URL}/${id}/confirm`);
 }

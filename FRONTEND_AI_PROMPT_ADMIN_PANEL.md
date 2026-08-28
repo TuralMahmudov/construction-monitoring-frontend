@@ -117,12 +117,16 @@ const canEdit = (price.status === 1 || price.status === 4)
 
 ## 4. `GET /api/resource-prices/flagged` — Flagged Prices review queue (`COST_APPROVE`)
 
+> ⚠️ **2026-08-04: `supplierId` → `organizationId` oldu, `/api/suppliers` silinib.** Bax
+> **`FRONTEND_AI_PROMPT_ORG_TYPE_AND_PRICE_OWNERSHIP.md`** bölmə 4/5 — ad üçün indi
+> `/api/organizations` istifadə edin, `/api/suppliers` deyil.
+
 Query params: `page`/`size`/`sort` (defolt sıra `createdDate` — ən əvvəl flag olunan əvvəl).
 
 Response `data`: `PageResponse<FlaggedPriceReviewResponse>`:
 ```json
 {
-  "id": "uuid", "resourceId": "uuid", "regionId": "uuid", "supplierId": "uuid",
+  "id": "uuid", "resourceId": "uuid", "regionId": "uuid", "organizationId": "uuid",
   "price": 9999.0000, "vat": 18.0000, "currency": "AZN",
   "effectiveDate": "2026-07-27", "expireDate": null, "status": 4,
   "createdBy": "uuid", "createdDate": "2026-07-27T14:39:35.78",
@@ -133,7 +137,7 @@ Response `data`: `PageResponse<FlaggedPriceReviewResponse>`:
 ```
 - `currentMedianPrice`/`sampleCount`: `null`/`0` ola bilər (əgər bu, həmin bazar üçün ilk qiymətdirsə — nəzəri olaraq nadir, çünki flag olmaq üçün əvvəlcədən median lazımdır, amma dəfensiv kod yazın).
 - `deviationPercent`: **işarəli** faiz (müsbət = median-dan yuxarı, mənfi = aşağı). `+2400.00%` kimi göstərin, böyük mütləq dəyərləri (məs. `> 100%`) qırmızı/qalın vurğulayın.
-- `resourceId`/`regionId`/`supplierId` — yenə xam UUID-lər, ad yoxdur. **Bu ekranda ad göstərmək üçün**: səhifə açılanda görünən sətirlərin unikal `resourceId`-lərini toplayıb, hər biri üçün `GET /api/resources/{id}` çağırıb (və ya artıq yüklənmiş Resources siyahısından lookup map) `code`/`name` göstərin; eyni şəkildə `regionId`→`/api/regions`, `supplierId`→`/api/suppliers` lookup map-ları (bunlar adətən kiçikdir, tam siyahını bir dəfə yükləyib saxlaya bilərsiniz).
+- `resourceId`/`regionId`/`organizationId` — yenə xam UUID-lər, ad yoxdur. **Bu ekranda ad göstərmək üçün**: səhifə açılanda görünən sətirlərin unikal `resourceId`-lərini toplayıb, hər biri üçün `GET /api/resources/{id}` çağırıb (və ya artıq yüklənmiş Resources siyahısından lookup map) `code`/`name` göstərin; eyni şəkildə `regionId`→`/api/regions`, `organizationId`→`/api/organizations` lookup map-ları (bunlar adətən kiçikdir, tam siyahını bir dəfə yükləyib saxlaya bilərsiniz).
 
 **Ekran:** yeni "Admin Panel" menyusunun altında "Kənar Dəyər Qiymətlər" (Flagged Prices) səhifəsi. `DataGrid`: Resurs (kod+ad), Region, Təchizatçı, Qiymət, Bazar Medianı, Fərq (%), Yaradılma tarixi, Actions (Approve/Reject — eyni `PATCH .../approve` və `/reject`, bax `FRONTEND_AI_PROMPT.md` 6.3/6.4, dəyişməyib). Approve/Reject-dən sonra siyahını yenidən yükləyin (təsdiq/rədd edilən sətir siyahıdan yox olur).
 
@@ -180,6 +184,8 @@ Body yoxdur. Cavab: yenilənmiş `MatchGroupReviewResponse` (`reviewStatus: 1`).
 
 ## 6. `GET /api/resource-prices/averages` — Bazar Qiymət Müqayisəsi (`COST_READ`, **təşkilat-filtrsiz**)
 
+> ⚠️ **2026-08-14: yeni `resourceCount` sahəsi əlavə olundu.** `sampleCount` "neçə TƏŞKİLAT iştirak edir" deməkdir (bir təşkilat neçə resurs yaratsa da, bazar statistikasında 1 səs sayılır — manipulyasiyanın qarşısını almaq üçün qəsdən belədir). `resourceCount` isə "neçə RESURS (xam qiymət təklifi)" hesablamaya daxil olub, kolleksiya edilmədən əvvəlki say. İkisi fərqli ola bilər (məs. 1 org 3 resurs + 1 org 1 resurs → `sampleCount=2`, `resourceCount=4`) — bu, bug deyil. **Hər ikisini göstərin**, tək `sampleCount`-u "nümunə sayı" kimi göstərmək istifadəçini "məlumat itib" düşünməyə vadar edir; məs. "2 təşkilat (4 resurs)" formatı.
+
 > ⚠️ **2026-07-30: query param və cavab sahəsi adı dəyişdi.** `matchGroupId` → `productId` (məna eynidir). `resource.matchGroupId` `null` ola biləcəyi qeydi (§ 6, "İstifadə nöqtəsi 1") **artıq etibarsızdır** — `resource.productId` heç vaxt `null` deyil. § 6-nın son abzasındakı "qrup üçün ad/kod yoxdur" məhdudiyyəti də **aradan qalxıb** (`resourceName`/`manufacturer` həmişə dolu gəlir). Bax **`FRONTEND_AI_PROMPT_PRODUCTS.md` § 8**.
 
 Query params (hər ikisi opsional) — **[köhnə, 2026-07-27 versiyası, indi `matchGroupId`→`productId`]**: `matchGroupId`, `regionId`, + `page`/`size`/`sort`.
@@ -194,12 +200,14 @@ Response `data`: `PageResponse<ResourcePriceAverageResponse>`:
   "minPrice": 200.0000,
   "maxPrice": 220.0000,
   "sampleCount": 2,
+  "resourceCount": 4,
   "calculatedAt": "2026-07-27T11:47:12.00Z"
 }
 ```
 - Bu, **yalnız təsdiqlənmiş (`APPROVED`) və hazırda aktiv** qiymətlərdən hesablanır — `FLAGGED`/`PENDING`/`REJECTED` heç vaxt daxil deyil.
 - **Diqqət:** bu endpoint `organizationId`-ə görə **filtrlənmir** — bütün təşkilatların qiymətləri aqreqat şəkildə görünür (hansı təşkilatın nə göndərdiyi göstərilmir, yalnız statistika). Bu, **qəsdəndir** (kross-vendor bazar müqayisəsinin bütün mənası budur) — istənilən `COST_READ` istifadəçisi görə bilər, `isCentralAdmin` şərti lazım deyil.
 - `avgPrice` sadə orta DEYİL — kənar dəyərlərə qarşı davamlı "trimmed mean"-dir (median-a yaxın olmalıdır adətən); `medianPrice` əsl mediandır. İkisini yan-yana göstərin, fərqli olduqları halda (böyük fərq = qrupda hələ də kənar dəyər riski ola bilər) bir işarə (ⓘ) əlavə edə bilərsiniz.
+- `sampleCount` vs `resourceCount` — yuxarıdakı 2026-08-14 qeydinə bax. İkisi eyni ola bilər (hər təşkilatın 1 resursu varsa) və ya fərqli (bir təşkilat çox resurs yaratmışsa).
 - Nəticə boş ola bilər (`totalElements: 0`) — hələ heç bir təsdiqlənmiş qiymət yoxdursa. Normal haldır.
 
 ### İstifadə nöqtəsi 1: Resource Detail → yeni "Bazar Qiyməti" tab-ı
@@ -238,7 +246,7 @@ Sidebar:
 │       ├── Attributes
 │       ├── Prices (mövcud, indi FLAGGED statusu + createdBy-əsaslı edit qaydası ilə)
 │       └── Bazar Qiyməti  ← YENİ tab (bölmə 6)
-├── Reference Data (mövcud: Units/Regions/Suppliers)
+├── Reference Data (mövcud: Units/Regions — **Suppliers 2026-08-04-də silinib, menyudan çıxarın**)
 └── Admin Panel  ← YENİ menyu, YALNIZ isCentralAdmin (SUPER_ADMIN/ADMIN) üçün görünsün
     ├── Kənar Dəyər Qiymətlər (Flagged Prices)   — bölmə 4
     ├── Uyğunlaşdırma Baxışı (Match Group Review) — bölmə 5

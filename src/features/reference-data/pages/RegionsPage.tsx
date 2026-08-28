@@ -62,7 +62,6 @@ export function RegionsPage() {
     <>
       <ReferenceDataListPage
         title="Regionlar"
-        subtitle="Qiymətləndirmə üçün coğrafi regionlar"
         entityLabelSingular="region"
         columns={columns}
         hooks={regionsHooks}

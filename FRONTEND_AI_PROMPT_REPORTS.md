@@ -2,6 +2,8 @@
 
 > Bu faylı olduğu kimi kopyalayıb frontend-i yazan AI alətinə verin.
 > Bu, **`FRONTEND_AI_PROMPT.md`** (əsas modullar), **`FRONTEND_AI_PROMPT_ADMIN_PANEL.md`** və **`FRONTEND_AI_PROMPT_PERIOD_AND_SUPERSEDED.md`**-nin **davamıdır** — konvensiyalar (unified response envelope, `PageResponse<T>`, auth axını, MUI stack) təkrarlanmır, birbaşa istinad edilir.
+>
+> **Qeyd (2026-08-25, kod dəyişikliyi tələb ETMİR):** `GET /api/resource-prices/period-averages`-in özündə (bu sənədin əsas mövzusu) backend-də sırf DAXİLİ bir dublikat-hesablama bug-ı düzəldildi — bir təşkilat eyni rübdə qiymətini bir neçə dəfə düzəltmişdisə, əvvəllər hamısı ayrı-ayrı sətir kimi median-a qatılırdı (rəqəm süni şəkildə şişirdi/azalırdı), indi yalnız sonuncu sayılır. Cavabın **strukturu/sahələri dəyişməyib** — sadəcə bəzi məhsul/region/rüb kombinasiyalarının `avgPrice`/`medianPrice`/`previousAvgPrice`/`periodOverPeriodChangePct` dəyərləri (və bunlara bağlı "Dəyişmə %" sütunu) sözügedən pattern-ə uyğun gələn hallarda əvvəlki ekran görüntülərinizdən fərqli ola bilər — bu, real düzəlişdir, reqressiya deyil.
 
 **Base URL (dev):** `http://localhost:8181` (dəyişməyib)
 

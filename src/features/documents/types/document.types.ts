@@ -86,7 +86,9 @@ export interface BulkResourceNewProductInput {
 export interface BulkResourceRowRequest {
   productId?: string;
   newProduct?: BulkResourceNewProductInput;
-  manufacturer: string;
+  // Optional per Tural, 2026-08-26: omitted entirely for İşçi qüvvəsi
+  // (category type 3) rows — bax BACKEND_REQUEST_MANUFACTURER_OPTIONAL_FOR_LABOR_CATEGORY.md.
+  manufacturer?: string;
   brand?: string;
   model?: string;
   specification?: string;

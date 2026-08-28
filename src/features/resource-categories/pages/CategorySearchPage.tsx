@@ -10,7 +10,7 @@ export function CategorySearchPage() {
 
   return (
     <PageContainer>
-      <PageHeader title="Resurs Kataloqu" subtitle="Bütün kateqoriyalar üzrə axtarış" />
+      <PageHeader title="Resurs Kataloqu" />
 
       <Card sx={{ mb: 3 }}>
         <CardContent>

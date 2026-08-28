@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
@@ -289,7 +290,14 @@ export function MarketAveragesPage() {
     <PageContainer>
       <PageHeader
         title="Bazar Qiymətləri Analitikası"
-        subtitle="Bütün təşkilatların təsdiqlənmiş qiymətlərindən hesablanmış region üzrə bazar statistikası"
+        subtitle={
+          <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+            <span>Regionlar üzrə bazar statistikası</span>
+            <Tooltip title="Bütün təşkilatların təsdiqlənmiş qiymətlərindən hesablanmış region üzrə bazar statistikası">
+              <InfoOutlinedIcon fontSize="inherit" sx={{ cursor: 'help' }} />
+            </Tooltip>
+          </Stack>
+        }
         actions={
           <Button
             variant="contained"

@@ -29,6 +29,9 @@ export interface BulkResourceRowProps {
   row: RowState;
   attributeLinks: CategoryAttributeDefinition[];
   disabled: boolean;
+  // İşçi qüvvəsi (category type 3) — İstehsalçı/Brend/Model resource-level
+  // fields don't apply to labor, bax BulkResourceFormDialog's isLaborCategory.
+  hideManufacturerFields?: boolean;
   onChange: (patch: Partial<RowState>) => void;
   onAttributeChange: (attributeDefinitionId: string, value: string) => void;
   onRemove: () => void;
@@ -50,7 +53,15 @@ function ResultBadge({ result }: { result: BulkResourceRowResult | null }) {
   );
 }
 
-export function BulkResourceRow({ row, attributeLinks, disabled, onChange, onAttributeChange, onRemove }: BulkResourceRowProps) {
+export function BulkResourceRow({
+  row,
+  attributeLinks,
+  disabled,
+  hideManufacturerFields = false,
+  onChange,
+  onAttributeChange,
+  onRemove,
+}: BulkResourceRowProps) {
   const regionOptions = useRegionOptions();
   const unitOptions = useUnitOptions();
   const allUnitsQuery = useAllUnits();
@@ -164,27 +175,31 @@ export function BulkResourceRow({ row, attributeLinks, disabled, onChange, onAtt
           )}
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <TextField
-              label="İstehsalçı *"
-              fullWidth
-              value={row.manufacturer}
-              onChange={(event) => onChange({ manufacturer: event.target.value })}
-              disabled={rowDisabled}
-            />
-            <TextField
-              label="Brend"
-              fullWidth
-              value={row.brand}
-              onChange={(event) => onChange({ brand: event.target.value })}
-              disabled={rowDisabled}
-            />
-            <TextField
-              label="Model"
-              fullWidth
-              value={row.model}
-              onChange={(event) => onChange({ model: event.target.value })}
-              disabled={rowDisabled}
-            />
+            {!hideManufacturerFields && (
+              <>
+                <TextField
+                  label="İstehsalçı *"
+                  fullWidth
+                  value={row.manufacturer}
+                  onChange={(event) => onChange({ manufacturer: event.target.value })}
+                  disabled={rowDisabled}
+                />
+                <TextField
+                  label="Brend"
+                  fullWidth
+                  value={row.brand}
+                  onChange={(event) => onChange({ brand: event.target.value })}
+                  disabled={rowDisabled}
+                />
+                <TextField
+                  label="Model"
+                  fullWidth
+                  value={row.model}
+                  onChange={(event) => onChange({ model: event.target.value })}
+                  disabled={rowDisabled}
+                />
+              </>
+            )}
             <TextField
               label="Spesifikasiya"
               fullWidth

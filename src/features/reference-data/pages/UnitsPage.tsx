@@ -64,7 +64,6 @@ export function UnitsPage() {
     <>
       <ReferenceDataListPage
         title="Vahidlər"
-        subtitle="Resurslar üçün ölçü vahidləri"
         entityLabelSingular="vahid"
         columns={columns}
         hooks={unitsHooks}

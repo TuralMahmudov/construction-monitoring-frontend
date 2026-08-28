@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 // Which live count (bax useNavBadgeCounts) a nav item's badge should show —
 // keeps navItems.tsx declarative (no fetching logic in the data file itself).
-export type NavBadgeKey = 'pendingDocuments' | 'flaggedPrices' | 'pendingMatchGroups';
+export type NavBadgeKey = 'pendingDocuments' | 'flaggedPrices';
 
 export interface NavItem {
   label: string;

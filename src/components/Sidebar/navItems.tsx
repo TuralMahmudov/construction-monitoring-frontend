@@ -3,7 +3,6 @@ import AdminPanelSettingsRoundedIcon from '@mui/icons-material/AdminPanelSetting
 import ApartmentRoundedIcon from '@mui/icons-material/ApartmentRounded';
 import BarChartRoundedIcon from '@mui/icons-material/BarChartRounded';
 import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
-import CompareArrowsRoundedIcon from '@mui/icons-material/CompareArrowsRounded';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import InventoryRoundedIcon from '@mui/icons-material/InventoryRounded';
@@ -77,12 +76,6 @@ export const navSections: NavSection[] = [
         path: '/admin/flagged-prices',
         icon: <WarningAmberRoundedIcon />,
         badgeKey: 'flaggedPrices',
-      },
-      {
-        label: 'Uyğunlaşdırma Baxışı',
-        path: '/admin/match-groups',
-        icon: <CompareArrowsRoundedIcon />,
-        badgeKey: 'pendingMatchGroups',
       },
     ],
   },

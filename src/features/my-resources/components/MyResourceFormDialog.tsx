@@ -123,6 +123,14 @@ export function MyResourceFormDialog({ open, isSubmitting, onClose, onSubmit }: 
     [categoryAttributesQuery.data],
   );
 
+  // Same rule as ResourceFormDialog (Tural 2026-08-26): a category with zero
+  // xüsusiyyət növü can only ever have one meaningful product (matchKey is
+  // constant/empty) — blocked outright, no bootstrap exception. Fix belongs
+  // in category admin (bax CategoryAttributesPanel warning), not this flow.
+  const categoryHasNoAttributes =
+    !lockedProduct && Boolean(categoryId) && !categoryAttributesQuery.isLoading && attributeLinks.length === 0;
+  const newProductBlocked = categoryHasNoAttributes;
+
   useEffect(() => {
     if (!open) {
       return;
@@ -190,6 +198,13 @@ export function MyResourceFormDialog({ open, isSubmitting, onClose, onSubmit }: 
       return;
     }
 
+    if (newProductBlocked) {
+      setFormError(
+        'Bu kateqoriyaya heç bir xüsusiyyət növü bağlanmayıb, ona görə yeni məhsul yaradıla bilməz. Yuxarıdan mövcud məhsulu seçin.',
+      );
+      return;
+    }
+
     const productValid = await triggerProduct();
     if (!productValid) {
       return;
@@ -202,6 +217,14 @@ export function MyResourceFormDialog({ open, isSubmitting, onClose, onSubmit }: 
       setFormError(
         `Məcburi xüsusiyyətlər doldurulmayıb: ${missingRequired.map((link) => link.attributeName).join(', ')}`,
       );
+      return;
+    }
+
+    // FRONTEND_AI_PROMPT_STATUS_CLEANUP.md § 2 — a category with attribute
+    // fields at all rejects an empty attributes[] with a 400; pre-check here
+    // instead of waiting for that round trip.
+    if (attributeLinks.length > 0 && attributeLinks.every((link) => !(attributeValues[link.id] ?? '').trim())) {
+      setFormError('Ən azı bir xüsusiyyət doldurulmalıdır.');
       return;
     }
 
@@ -255,10 +278,18 @@ export function MyResourceFormDialog({ open, isSubmitting, onClose, onSubmit }: 
                   </Stack>
                 )}
 
-                {categoryId && !categoryAttributesQuery.isLoading && attributeLinks.length === 0 && (
+                {categoryId && !categoryAttributesQuery.isLoading && attributeLinks.length === 0 && !newProductBlocked && (
                   <Typography color="text.secondary" variant="body2">
                     Bu kateqoriya üçün xüsusiyyət tərtib edilməyib.
                   </Typography>
+                )}
+
+                {newProductBlocked && (
+                  <Alert severity="warning">
+                    Bu kateqoriyaya heç bir xüsusiyyət növü bağlanmayıb, ona görə yeni məhsul yaradıla bilməz.
+                    Əvvəlcə "Resurs Kataloqu"nda kateqoriyaya ən azı bir xüsusiyyət növü bağlanmalıdır, ya da
+                    yuxarıdan mövcud məhsulu seçin.
+                  </Alert>
                 )}
 
                 <Stack spacing={2.5}>

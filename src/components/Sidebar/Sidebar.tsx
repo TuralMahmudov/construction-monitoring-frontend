@@ -42,8 +42,8 @@ function NavBadge({ count }: { count: number | undefined }) {
     return null;
   }
   // Neutral notification pill (bax tqms-frontend-brief.md §2.3 + Tural
-  // 2026-08-20: hər üç badge — Daxil olanlar/Kənar Dəyər/Uyğunlaşdırma
-  // Baxışı — eyni neytral rəngdə, qırmızı/status rəngləri işlədilmir).
+  // 2026-08-20: hər iki badge — Daxil olanlar/Kənar Dəyər — eyni neytral
+  // rəngdə, qırmızı/status rəngləri işlədilmir).
   return (
     <Chip
       size="small"

@@ -161,7 +161,7 @@ export function QuarterlyMarketPricesPage() {
       }));
 
       const yearSegment = year || 'Butun';
-      const quarterSegment = quarter ? `Q${quarter}` : 'Butun';
+      const quarterSegment = quarter ? quarterToRoman(quarter) : 'Butun';
       exportToExcel(exportRows, `Rublük_Bazar_Qiymeti_${yearSegment}_${quarterSegment}.xlsx`);
     } catch (error) {
       enqueueSnackbar(getApiErrorMessage(error), { variant: 'error' });
@@ -267,7 +267,7 @@ export function QuarterlyMarketPricesPage() {
     <PageContainer>
       <PageHeader
         title="Rüblük Bazar Qiyməti"
-        subtitle="Kataloqdakı hər məhsul üçün (bütün təşkilatların elanları birgə) rüblərarası bazar qiymət trendi — region və kateqoriyaya görə filtrlənə bilər"
+        subtitle="Rüblərarası qiymət gedişatı"
         actions={
           <Stack direction="row" spacing={1.5}>
             <Button component={RouterLink} to="/reports" startIcon={<ArrowBackRoundedIcon />}>

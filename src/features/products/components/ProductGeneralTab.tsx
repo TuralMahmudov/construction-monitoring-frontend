@@ -3,7 +3,6 @@ import type { ReactNode } from 'react';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -13,7 +12,7 @@ import { canWrite } from '../../../shared/lib/permissions';
 import { useCategoryNameLookup, useUnitLookup } from '../../resources/hooks/useLookups';
 import { useProductActiveToggle } from '../hooks/useProductActiveToggle';
 import { useUpdateProduct } from '../hooks/useUpdateProduct';
-import { PRODUCT_REVIEW_STATUS, type Product } from '../types/product.types';
+import type { Product } from '../types/product.types';
 import { ProductEditDialog } from './ProductEditDialog';
 
 function DetailRow({ label, value }: { label: string; value: ReactNode }) {
@@ -69,9 +68,6 @@ export function ProductGeneralTab({ product }: ProductGeneralTabProps) {
 
       <Stack direction="row" spacing={1}>
         <StatusBadge active={product.active} />
-        {product.reviewStatus === PRODUCT_REVIEW_STATUS.PENDING_REVIEW && (
-          <Chip size="small" color="warning" label="Baxış gözləyir" />
-        )}
       </Stack>
 
       <Divider sx={{ my: 2 }} />

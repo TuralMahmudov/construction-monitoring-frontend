@@ -36,7 +36,6 @@ export function MyDocumentsPage() {
     <PageContainer>
       <PageHeader
         title="Sənəd İdxalı"
-        subtitle="Qiymət siyahınızı yükləyin, mərkəzi işçi baxıb sistemə daxil edəcək"
         actions={
           <Button startIcon={<AddRoundedIcon />} variant="contained" onClick={() => setUploadOpen(true)}>
             Yeni sənəd yüklə

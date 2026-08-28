@@ -5,6 +5,7 @@ import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
 import {
   createDocumentResources,
   downloadDocument,
+  fetchDocumentBlob,
   getDocuments,
   getMyDocuments,
   processDocument,
@@ -66,6 +67,20 @@ export function useDownloadDocument() {
   return useMutation({
     mutationFn: ({ id, filename }: { id: string; filename: string }) => downloadDocument(id, filename),
     onError: (error) => enqueueSnackbar(getApiErrorMessage(error), { variant: 'error' }),
+  });
+}
+
+// Backs DocumentPreviewPanel — the blob doesn't change while a document is
+// being processed, so it's fetched once per document and kept (staleTime:
+// Infinity avoids a refetch every time the panel remounts, e.g. switching
+// categories in BulkResourceFormDialog doesn't touch this).
+export function useDocumentPreviewBlob(documentId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: documentKeys.preview(documentId),
+    queryFn: () => fetchDocumentBlob(documentId),
+    enabled: enabled && Boolean(documentId),
+    staleTime: Infinity,
+    gcTime: 5 * 60 * 1000,
   });
 }
 

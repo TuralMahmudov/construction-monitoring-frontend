@@ -70,7 +70,6 @@ export function MyResourcesPage() {
     <PageContainer>
       <PageHeader
         title="Mənim Resurslarım"
-        subtitle="İstehsalçı və təchizatçı təşkilatların təqdim etdiyi resurslar"
         actions={
           <Button startIcon={<AddRoundedIcon />} variant="contained" onClick={() => setCreateOpen(true)}>
             Yeni Resurs

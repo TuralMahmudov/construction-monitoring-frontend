@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 
 export interface PageHeaderProps {
   title: string;
-  subtitle?: string;
+  subtitle?: ReactNode;
   actions?: ReactNode;
 }
 
@@ -21,7 +21,7 @@ export function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
           {title}
         </Typography>
         {subtitle && (
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          <Typography component="div" variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
             {subtitle}
           </Typography>
         )}

@@ -19,8 +19,10 @@ import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
 import { canViewSubmittedPricesReport } from '../../../shared/lib/permissions';
 import { currentQuarter, quarterToRoman } from '../../../shared/lib/period';
 import { useOrganizationLookup } from '../../admin/organizations/hooks/useOrganizations';
-import { ProductAutocomplete } from '../../products/components/ProductAutocomplete';
-import type { Product } from '../../products/types/product.types';
+import {
+  CategoryProductTreePicker,
+  type CategoryProductPickerValue,
+} from '../../resource-categories/components/CategoryProductTreePicker';
 import { useAllRegions } from '../../reference-data/hooks/useReferenceOptions';
 import { PRICE_STATUS_LABELS, type PriceStatus } from '../../resources/prices/types/resourcePrice.types';
 import { downloadSubmittedPricesReport } from '../api/submittedPricesReportApi';
@@ -36,7 +38,7 @@ export function SubmittedPricesReportPage() {
   const [year, setYear] = useState<number | ''>(new Date().getFullYear());
   const [quarter, setQuarter] = useState<number | ''>(currentQuarter());
   const [organizationId, setOrganizationId] = useState<string | null>(null);
-  const [product, setProduct] = useState<Product | null>(null);
+  const [selection, setSelection] = useState<CategoryProductPickerValue | null>(null);
   const [regionId, setRegionId] = useState('');
   const [status, setStatus] = useState<PriceStatus | ''>('');
   const [isDownloading, setIsDownloading] = useState(false);
@@ -63,7 +65,8 @@ export function SubmittedPricesReportPage() {
         periodYear: year,
         periodQuarter: quarter,
         organizationId: organizationId || undefined,
-        productId: product?.id,
+        productId: selection?.type === 'product' ? selection.product.id : undefined,
+        categoryId: selection?.type === 'category' ? selection.categoryId : undefined,
         regionId: regionId || undefined,
         status: status || undefined,
       });
@@ -78,7 +81,7 @@ export function SubmittedPricesReportPage() {
     <PageContainer>
       <PageHeader
         title="Təqdim Edilmiş Qiymətlər"
-        subtitle="Seçilmiş rübdə hansı təşkilat hansı məhsula, hansı regionda, hansı qiymət təqdim edib — hər təqdimat üçün ayrı sətir"
+        subtitle="Seçilmiş rübdə təşkilatların məhsul və regionlar üzrə təqdim etdiyi qiymətlər"
         actions={
           <Button component={RouterLink} to="/reports" startIcon={<ArrowBackRoundedIcon />}>
             Hesabatlara qayıt
@@ -123,7 +126,7 @@ export function SubmittedPricesReportPage() {
               renderInput={(params) => <TextField {...params} label="Təşkilat" placeholder="Hamısı" />}
             />
 
-            <ProductAutocomplete value={product} onChange={setProduct} />
+            <CategoryProductTreePicker value={selection} onChange={setSelection} />
 
             <TextField
               select

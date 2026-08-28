@@ -25,7 +25,7 @@ export function ProductListPage() {
 
   return (
     <PageContainer>
-      <PageHeader title="Məhsullar" subtitle="Kataloq — hər məhsulun öz kodu, xüsusiyyətləri və vahidi" />
+      <PageHeader title="Məhsullar" />
 
       <Card sx={{ mb: 3 }}>
         <CardContent>

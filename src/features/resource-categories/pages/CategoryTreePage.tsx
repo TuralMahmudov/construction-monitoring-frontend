@@ -66,7 +66,6 @@ export function CategoryTreePage() {
     <PageContainer>
       <PageHeader
         title="Resurs Kataloqu"
-        subtitle="Kateqoriyalar və onlara bağlı məhsul kataloqu"
         actions={
           <Button
             component={RouterLink}

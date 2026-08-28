@@ -130,6 +130,17 @@ export function ResourceFormDialog({ open, isSubmitting, onClose, onSubmit }: Re
     [categoryAttributesQuery.data],
   );
 
+  // Tural, 2026-08-26: a category with zero xüsusiyyət növü has no way to
+  // tell one "new" product from another (matchKey is constant/empty for
+  // it) — there can only ever be one meaningful product per such category,
+  // and it isn't this flow's job to create it. Block "Yeni məhsul yarat"
+  // outright (no bootstrap exception); the fix belongs in category admin
+  // (bax CategoryAttributesPanel warning) — bind at least one xüsusiyyət
+  // növü before the category is usable here.
+  const categoryHasNoAttributes =
+    Boolean(categoryId) && !categoryAttributesQuery.isLoading && attributeLinks.length === 0;
+  const newProductBlocked = categoryHasNoAttributes;
+
   useEffect(() => {
     if (!open) {
       return;
@@ -154,6 +165,12 @@ export function ResourceFormDialog({ open, isSubmitting, onClose, onSubmit }: Re
     setProductValue('name', categoryName);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryId]);
+
+  useEffect(() => {
+    if (newProductBlocked) {
+      setSelectionMode('existing');
+    }
+  }, [newProductBlocked]);
 
   function handleApiError(error: unknown) {
     if (error instanceof ApiError) {
@@ -216,6 +233,14 @@ export function ResourceFormDialog({ open, isSubmitting, onClose, onSubmit }: Re
       return;
     }
 
+    // FRONTEND_AI_PROMPT_STATUS_CLEANUP.md § 2 — a category with attribute
+    // fields at all rejects an empty attributes[] with a 400; pre-check here
+    // instead of waiting for that round trip.
+    if (attributeLinks.length > 0 && attributeLinks.every((link) => !(attributeValues[link.id] ?? '').trim())) {
+      setFormError('Ən azı bir xüsusiyyət doldurulmalıdır.');
+      return;
+    }
+
     const attributes = attributeLinks
       .filter((link) => (attributeValues[link.id] ?? '').trim() !== '')
       .map((link) => ({ categoryAttributeDefinitionId: link.id, value: attributeValues[link.id] }));
@@ -265,8 +290,19 @@ export function ResourceFormDialog({ open, isSubmitting, onClose, onSubmit }: Re
             onChange={(event) => setSelectionMode(event.target.value as SelectionMode)}
           >
             <FormControlLabel value="existing" control={<Radio />} label="Mövcud məhsul seç" disabled={submitting} />
-            <FormControlLabel value="new" control={<Radio />} label="Yeni məhsul yarat" disabled={submitting} />
+            <FormControlLabel
+              value="new"
+              control={<Radio />}
+              label="Yeni məhsul yarat"
+              disabled={submitting || newProductBlocked}
+            />
           </RadioGroup>
+          {newProductBlocked && (
+            <Alert severity="warning">
+              Bu kateqoriyaya heç bir xüsusiyyət növü bağlanmayıb, ona görə yeni məhsul yaradıla bilməz. Əvvəlcə
+              "Resurs Kataloqu"nda kateqoriyaya ən azı bir xüsusiyyət növü bağlayın, ya da mövcud məhsulu seçin.
+            </Alert>
+          )}
 
           {selectionMode === 'existing' && (
             <>

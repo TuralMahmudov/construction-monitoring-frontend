@@ -167,7 +167,6 @@ export function DocumentImportReportPage() {
     <PageContainer>
       <PageHeader
         title="Sənəd/İdxal Hesabatı"
-        subtitle="Hansı təşkilat hansı rübdə nə göndərib, statusu nədir — nəzarət hesabatı"
         actions={
           <Stack direction="row" spacing={1.5}>
             <Button component={RouterLink} to="/reports" startIcon={<ArrowBackRoundedIcon />}>

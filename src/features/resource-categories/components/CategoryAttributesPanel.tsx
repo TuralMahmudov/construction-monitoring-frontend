@@ -104,9 +104,10 @@ export function CategoryAttributesPanel({ categoryId, canEdit }: CategoryAttribu
       </Stack>
 
       {links.length === 0 ? (
-        <Typography color="text.secondary" variant="body2" sx={{ py: 1 }}>
-          Bu kateqoriyaya hələ heç bir xüsusiyyət növü bağlanmayıb.
-        </Typography>
+        <Alert severity="warning" sx={{ my: 1 }}>
+          Bu kateqoriyaya hələ heç bir xüsusiyyət növü bağlanmayıb — bu kateqoriyada yeni məhsul yaradıla bilməz.
+          İstifadəyə açmaq üçün ən azı bir xüsusiyyət növü bağlayın.
+        </Alert>
       ) : (
         <TableContainer>
           <Table size="small">

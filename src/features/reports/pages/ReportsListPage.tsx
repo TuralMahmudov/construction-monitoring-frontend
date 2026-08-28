@@ -76,7 +76,7 @@ export function ReportsListPage() {
 
   return (
     <PageContainer>
-      <PageHeader title="Hesabatlar" subtitle="Sabit, əvvəlcədən müəyyən edilmiş biznes hesabat formaları" />
+      <PageHeader title="Hesabatlar" />
 
       <Card>
         <List disablePadding>

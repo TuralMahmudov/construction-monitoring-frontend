@@ -3,7 +3,6 @@ import { MainLayout } from '../layouts/MainLayout';
 import { AttributeDefinitionsPage } from '../features/admin/attribute-definitions/pages/AttributeDefinitionsPage';
 import { FlaggedPricesPage } from '../features/admin/flagged-prices/pages/FlaggedPricesPage';
 import { MarketAveragesPage } from '../features/admin/market-averages/pages/MarketAveragesPage';
-import { MatchGroupReviewPage } from '../features/admin/match-groups/pages/MatchGroupReviewPage';
 import { OrganizationsPage } from '../features/admin/organizations/pages/OrganizationsPage';
 import { UsersPage } from '../features/admin/users/pages/UsersPage';
 import { DocumentsAdminPage } from '../features/documents/pages/DocumentsAdminPage';
@@ -62,7 +61,6 @@ export const router = createBrowserRouter([
       { path: 'admin/users', element: <UsersPage /> },
       { path: 'admin/attribute-definitions', element: <AttributeDefinitionsPage /> },
       { path: 'admin/flagged-prices', element: <FlaggedPricesPage /> },
-      { path: 'admin/match-groups', element: <MatchGroupReviewPage /> },
       { path: 'admin/market-averages', element: <MarketAveragesPage /> },
       { path: 'reports', element: <ReportsListPage /> },
       { path: 'reports/quarterly-market-prices', element: <QuarterlyMarketPricesPage /> },
