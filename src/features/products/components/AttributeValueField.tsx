@@ -4,6 +4,8 @@ import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import { NumberField } from '../../../shared/components';
 import { useAllUnits } from '../../reference-data/hooks/useReferenceOptions';
+import { ResourceFieldAutocomplete } from '../../resources/components/ResourceFieldAutocomplete';
+import { useBrandOptions } from '../../resources/hooks/useResourceFieldOptions';
 import {
   ATTRIBUTE_DATA_TYPE,
   type AttributeDataType,
@@ -49,6 +51,27 @@ export function AttributeValueField({
   const unitDecimals = defaultUnitId
     ? allUnitsQuery.data?.content.find((u) => u.id === defaultUnitId)?.decimalPrecision
     : undefined;
+  // Called unconditionally (hooks rule) but gated via `enabled` so only an
+  // actual Brend field fires /api/brands — bax useBrandOptions's own comment.
+  const brandOptions = useBrandOptions(value, dataType === ATTRIBUTE_DATA_TYPE.BRAND);
+
+  if (dataType === ATTRIBUTE_DATA_TYPE.BRAND) {
+    // Free text + typeahead over the shared brand catalog, NOT a closed
+    // dropdown like ENUM — bax FRONTEND_AI_PROMPT_BRAND_IDENTITY.md § 3. An
+    // unlisted value is still valid; the backend finds-or-creates it.
+    return (
+      <ResourceFieldAutocomplete
+        label={displayLabel}
+        value={value}
+        onChange={onChange}
+        options={brandOptions.data ?? []}
+        loading={brandOptions.isFetching}
+        error={error}
+        helperText={helperText}
+        disabled={disabled}
+      />
+    );
+  }
 
   if (dataType === ATTRIBUTE_DATA_TYPE.BOOLEAN) {
     return (

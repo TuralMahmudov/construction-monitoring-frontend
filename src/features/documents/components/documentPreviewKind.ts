@@ -1,8 +1,13 @@
-export type DocumentPreviewKind = 'pdf' | 'image' | 'excel' | 'unsupported';
+export type DocumentPreviewKind = 'pdf' | 'image' | 'excel' | 'word' | 'unsupported';
 
 const EXCEL_CONTENT_TYPES = [
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
   'application/vnd.ms-excel', // .xls
+];
+
+const WORD_CONTENT_TYPES = [
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+  'application/msword', // .doc
 ];
 
 // contentType is the primary signal; the filename extension is only a
@@ -18,6 +23,12 @@ export function getDocumentPreviewKind(contentType: string, filename: string): D
   }
   if (EXCEL_CONTENT_TYPES.includes(contentType) || /\.xlsx?$/i.test(filename)) {
     return 'excel';
+  }
+  // Unlike excel (parsed client-side, bax DocumentPreviewPanel), word has no
+  // in-browser renderer available — this kind always goes through the
+  // backend's converted-PDF endpoint (bax FRONTEND_AI_PROMPT_DOCUMENT_PREVIEW.md).
+  if (WORD_CONTENT_TYPES.includes(contentType) || /\.docx?$/i.test(filename)) {
+    return 'word';
   }
   return 'unsupported';
 }

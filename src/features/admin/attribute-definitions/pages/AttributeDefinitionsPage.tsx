@@ -32,6 +32,7 @@ import {
   type AttributeDataType,
   type AttributeDefinition,
   type AttributeDefinitionFormValues,
+  type CreatableAttributeDataType,
 } from '../types/attributeDefinition.types';
 
 export function AttributeDefinitionsPage() {
@@ -138,14 +139,21 @@ export function AttributeDefinitionsPage() {
       type: 'actions',
       headerName: 'Əməliyyatlar',
       width: 60,
-      getActions: (params) => [
-        <GridActionsCellItem
-          key="edit"
-          icon={<EditRoundedIcon />}
-          label="Redaktə et"
-          onClick={() => setDialog({ open: true, mode: 'edit', item: params.row })}
-        />,
-      ],
+      // "Brend" (dataType: BRAND) is a single, system-managed row (bax
+      // FRONTEND_AI_PROMPT_BRAND_IDENTITY.md § 0) — no Edit action for it,
+      // the create/edit form's dataType select doesn't even offer BRAND as
+      // an option so editing it would show a blank/mismatched selection.
+      getActions: (params) =>
+        params.row.dataType === ATTRIBUTE_DATA_TYPE.BRAND
+          ? []
+          : [
+              <GridActionsCellItem
+                key="edit"
+                icon={<EditRoundedIcon />}
+                label="Redaktə et"
+                onClick={() => setDialog({ open: true, mode: 'edit', item: params.row })}
+              />,
+            ],
     },
   ];
 
@@ -248,7 +256,10 @@ export function AttributeDefinitionsPage() {
             dialog.item
               ? {
                   name: dialog.item.name,
-                  dataType: dialog.item.dataType,
+                  // Safe: the BRAND row never reaches edit mode (getActions
+                  // above hides its Edit action), so dataType here is always
+                  // one of the actually-creatable 1-5 values at runtime.
+                  dataType: dialog.item.dataType as CreatableAttributeDataType,
                   defaultUnitId: dialog.item.defaultUnitId ?? null,
                   active: dialog.item.active,
                 }

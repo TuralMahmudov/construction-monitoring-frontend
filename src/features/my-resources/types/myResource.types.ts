@@ -40,7 +40,6 @@ export interface MyResource {
   unitId: string;
   specification: string | null;
   manufacturer: string;
-  brand: string | null;
   model: string | null;
   status: ResourceStatus;
   statusLabel: string;
@@ -93,6 +92,5 @@ export interface CreateMyResourceRequest {
   attributes?: ProductAttributeInput[];
   specification: string;
   manufacturer: string;
-  brand: string;
   model: string;
 }

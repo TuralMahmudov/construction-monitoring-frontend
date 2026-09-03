@@ -82,7 +82,6 @@ function rowHasRequiredFields(
 function toRowRequest(row: RowState, includeManufacturerFields: boolean): BulkResourceRowRequest {
   const base: BulkResourceRowRequest = {
     manufacturer: includeManufacturerFields ? row.manufacturer.trim() : undefined,
-    brand: includeManufacturerFields ? row.brand.trim() || undefined : undefined,
     model: includeManufacturerFields ? row.model.trim() || undefined : undefined,
     specification: row.specification.trim() || undefined,
     price: row.price.enabled

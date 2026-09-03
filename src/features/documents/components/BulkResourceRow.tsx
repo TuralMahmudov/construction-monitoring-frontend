@@ -9,6 +9,7 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Checkbox from '@mui/material/Checkbox';
+import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
@@ -29,7 +30,7 @@ export interface BulkResourceRowProps {
   row: RowState;
   attributeLinks: CategoryAttributeDefinition[];
   disabled: boolean;
-  // İşçi qüvvəsi (category type 3) — İstehsalçı/Brend/Model resource-level
+  // İşçi qüvvəsi (category type 3) — İstehsalçı/Model resource-level
   // fields don't apply to labor, bax BulkResourceFormDialog's isLaborCategory.
   hideManufacturerFields?: boolean;
   onChange: (patch: Partial<RowState>) => void;
@@ -147,7 +148,7 @@ export function BulkResourceRow({
           {row.kind === 'new' && attributeLinks.length > 0 && (
             <Stack spacing={2}>
               <Typography variant="caption" color="text.secondary">
-                Xüsusiyyətlər
+                Məhsulu müəyyən edən xüsusiyyətlər
               </Typography>
               <Box
                 sx={{
@@ -174,39 +175,38 @@ export function BulkResourceRow({
             </Stack>
           )}
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            {!hideManufacturerFields && (
-              <>
-                <TextField
-                  label="İstehsalçı *"
-                  fullWidth
-                  value={row.manufacturer}
-                  onChange={(event) => onChange({ manufacturer: event.target.value })}
-                  disabled={rowDisabled}
-                />
-                <TextField
-                  label="Brend"
-                  fullWidth
-                  value={row.brand}
-                  onChange={(event) => onChange({ brand: event.target.value })}
-                  disabled={rowDisabled}
-                />
-                <TextField
-                  label="Model"
-                  fullWidth
-                  value={row.model}
-                  onChange={(event) => onChange({ model: event.target.value })}
-                  disabled={rowDisabled}
-                />
-              </>
-            )}
-            <TextField
-              label="Spesifikasiya"
-              fullWidth
-              value={row.specification}
-              onChange={(event) => onChange({ specification: event.target.value })}
-              disabled={rowDisabled}
-            />
+          <Stack spacing={1.5}>
+            <Divider />
+            <Typography variant="caption" color="text.secondary">
+              Elana aid məlumatlar
+            </Typography>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+              {!hideManufacturerFields && (
+                <>
+                  <TextField
+                    label="İstehsalçı *"
+                    fullWidth
+                    value={row.manufacturer}
+                    onChange={(event) => onChange({ manufacturer: event.target.value })}
+                    disabled={rowDisabled}
+                  />
+                  <TextField
+                    label="Model"
+                    fullWidth
+                    value={row.model}
+                    onChange={(event) => onChange({ model: event.target.value })}
+                    disabled={rowDisabled}
+                  />
+                </>
+              )}
+              <TextField
+                label="Spesifikasiya"
+                fullWidth
+                value={row.specification}
+                onChange={(event) => onChange({ specification: event.target.value })}
+                disabled={rowDisabled}
+              />
+            </Stack>
           </Stack>
 
           {/* Switch (not Checkbox) deliberately — this toggles the whole price

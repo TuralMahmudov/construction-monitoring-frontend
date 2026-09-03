@@ -45,13 +45,6 @@ export function ProductListingsTab({ productId }: ProductListingsTabProps) {
       valueGetter: (_value, row) => row.manufacturer ?? '—',
     },
     {
-      field: 'brand',
-      headerName: 'Brend',
-      width: 140,
-      sortable: false,
-      valueGetter: (_value, row) => row.brand ?? '—',
-    },
-    {
       field: 'model',
       headerName: 'Model',
       width: 140,

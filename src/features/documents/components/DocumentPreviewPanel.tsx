@@ -9,8 +9,13 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
-import { useDownloadDocument, useDocumentPreviewBlob } from '../hooks/useDocuments';
-import type { CcmsDocument } from '../types/document.types';
+import {
+  useDownloadDocument,
+  useDocumentPreviewBlob,
+  useDocumentPreviewFile,
+  useDocumentPreviewStatusPoll,
+} from '../hooks/useDocuments';
+import { DOCUMENT_PREVIEW_STATUS, type CcmsDocument } from '../types/document.types';
 import { getDocumentPreviewKind } from './documentPreviewKind';
 
 export interface DocumentPreviewPanelProps {
@@ -26,6 +31,33 @@ const tableSx = {
   '& table': { borderCollapse: 'collapse', width: 'max-content', minWidth: '100%' },
   '& td': { border: '1px solid', borderColor: 'divider', px: 1, py: 0.5, fontSize: '0.8rem', whiteSpace: 'nowrap' },
 } as const;
+
+function DownloadFallback({
+  message,
+  onDownload,
+  downloading,
+}: {
+  message: string;
+  onDownload: () => void;
+  downloading: boolean;
+}) {
+  return (
+    <Stack spacing={2} sx={{ alignItems: 'center', textAlign: 'center', py: 4, px: 2 }}>
+      <Typography color="text.secondary" variant="body2">
+        {message}
+      </Typography>
+      <Button
+        variant="outlined"
+        size="small"
+        startIcon={<DownloadRoundedIcon fontSize="small" />}
+        onClick={onDownload}
+        disabled={downloading}
+      >
+        Yüklə
+      </Button>
+    </Stack>
+  );
+}
 
 function ExcelPreview({ blob }: { blob: Blob }) {
   const [sheets, setSheets] = useState<{ name: string; html: string }[] | null>(null);
@@ -91,13 +123,27 @@ export function DocumentPreviewPanel({ document }: DocumentPreviewPanelProps) {
     () => getDocumentPreviewKind(document.contentType, document.originalFilename),
     [document.contentType, document.originalFilename],
   );
-  const blobQuery = useDocumentPreviewBlob(document.id, kind !== 'unsupported');
+  // pdf/image/excel all read the ORIGINAL file via /download (blobQuery) —
+  // word instead goes through the backend's converted-PDF /preview endpoint
+  // below, gated on previewStatus (bax FRONTEND_AI_PROMPT_DOCUMENT_PREVIEW.md).
+  const blobQuery = useDocumentPreviewBlob(document.id, kind === 'excel' || kind === 'pdf' || kind === 'image');
   const downloadMutation = useDownloadDocument();
 
+  // Only meaningful for 'word' — passing null for every other kind keeps
+  // this inert (enabled: false) without an extra conditional-hook violation.
+  const statusPoll = useDocumentPreviewStatusPoll(kind === 'word' ? document : null);
+  const liveDocument = statusPoll.data ?? document;
+  const wordConversionDone =
+    liveDocument.previewStatus === DOCUMENT_PREVIEW_STATUS.NOT_APPLICABLE ||
+    liveDocument.previewStatus === DOCUMENT_PREVIEW_STATUS.READY;
+  const wordConversionFailed = liveDocument.previewStatus === DOCUMENT_PREVIEW_STATUS.FAILED;
+  const previewFileQuery = useDocumentPreviewFile(document.id, kind === 'word' && wordConversionDone);
+
+  const pdfBlob = kind === 'word' ? previewFileQuery.data : blobQuery.data;
   const objectUrl = useMemo(() => {
-    if (!blobQuery.data || (kind !== 'pdf' && kind !== 'image')) return null;
-    return URL.createObjectURL(blobQuery.data);
-  }, [blobQuery.data, kind]);
+    if (!pdfBlob || (kind !== 'pdf' && kind !== 'image' && kind !== 'word')) return null;
+    return URL.createObjectURL(pdfBlob);
+  }, [pdfBlob, kind]);
 
   useEffect(() => {
     return () => {
@@ -111,21 +157,52 @@ export function DocumentPreviewPanel({ document }: DocumentPreviewPanelProps) {
 
   if (kind === 'unsupported') {
     return (
-      <Stack spacing={2} sx={{ alignItems: 'center', textAlign: 'center', py: 4, px: 2 }}>
-        <Typography color="text.secondary" variant="body2">
-          Bu fayl formatı ({document.originalFilename.split('.').pop()}) üçün önizləmə dəstəklənmir. Baxmaq üçün
-          yükləyin.
-        </Typography>
-        <Button
-          variant="outlined"
-          size="small"
-          startIcon={<DownloadRoundedIcon fontSize="small" />}
-          onClick={handleDownload}
-          disabled={downloadMutation.isPending}
-        >
-          Yüklə
-        </Button>
-      </Stack>
+      <DownloadFallback
+        message={`Bu fayl formatı (${document.originalFilename.split('.').pop()}) üçün önizləmə dəstəklənmir. Baxmaq üçün yükləyin.`}
+        onDownload={handleDownload}
+        downloading={downloadMutation.isPending}
+      />
+    );
+  }
+
+  if (kind === 'word') {
+    if (wordConversionFailed) {
+      return (
+        <DownloadFallback
+          message="Sənəd PDF-ə çevrilə bilmədi. Baxmaq üçün yükləyin."
+          onDownload={handleDownload}
+          downloading={downloadMutation.isPending}
+        />
+      );
+    }
+    if (!wordConversionDone) {
+      return (
+        <Stack spacing={1.5} sx={{ alignItems: 'center', py: 4 }}>
+          <CircularProgress size={28} />
+          <Typography color="text.secondary" variant="body2">
+            Hazırlanır...
+          </Typography>
+        </Stack>
+      );
+    }
+    if (previewFileQuery.isLoading) {
+      return (
+        <Stack sx={{ alignItems: 'center', py: 4 }}>
+          <CircularProgress size={28} />
+        </Stack>
+      );
+    }
+    if (previewFileQuery.isError) {
+      return <Alert severity="error">{getApiErrorMessage(previewFileQuery.error)}</Alert>;
+    }
+    if (!previewFileQuery.data) return null;
+    return (
+      <Box
+        component="iframe"
+        src={objectUrl ?? undefined}
+        title={document.originalFilename}
+        sx={{ width: '100%', height: '100%', border: 'none' }}
+      />
     );
   }
 

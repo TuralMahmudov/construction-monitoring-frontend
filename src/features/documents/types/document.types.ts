@@ -19,6 +19,21 @@ export const DOCUMENT_STATUS_LABELS: Record<DocumentStatus, string> = {
   4: 'Rədd edildi',
 };
 
+// Added per FRONTEND_AI_PROMPT_DOCUMENT_PREVIEW.md § 1 — Excel/Word are
+// converted to PDF in the background (Gotenberg/LibreOffice), this tracks
+// that conversion. PDF/image uploads come back NOT_APPLICABLE immediately
+// (nothing to convert); xlsx/xls/doc/docx come back PENDING first, flip to
+// READY a few seconds later — NOT in the upload response itself, only on a
+// later re-fetch (bax useDocumentPreviewStatusPoll).
+export const DOCUMENT_PREVIEW_STATUS = {
+  NOT_APPLICABLE: 1,
+  PENDING: 2,
+  READY: 3,
+  FAILED: 4,
+} as const;
+
+export type DocumentPreviewStatus = (typeof DOCUMENT_PREVIEW_STATUS)[keyof typeof DOCUMENT_PREVIEW_STATUS];
+
 export interface CcmsDocument {
   id: string;
   organizationId: string;
@@ -29,6 +44,7 @@ export interface CcmsDocument {
   contentType: string;
   fileSize: number;
   status: DocumentStatus;
+  previewStatus: DocumentPreviewStatus;
   description: string | null;
   createdAt: string;
   // Only populated once IN_PROGRESS/COMPLETED (§ 2.1/§ 2.2).
@@ -89,7 +105,6 @@ export interface BulkResourceRowRequest {
   // Optional per Tural, 2026-08-26: omitted entirely for İşçi qüvvəsi
   // (category type 3) rows — bax BACKEND_REQUEST_MANUFACTURER_OPTIONAL_FOR_LABOR_CATEGORY.md.
   manufacturer?: string;
-  brand?: string;
   model?: string;
   specification?: string;
   price?: BulkResourcePriceInput;

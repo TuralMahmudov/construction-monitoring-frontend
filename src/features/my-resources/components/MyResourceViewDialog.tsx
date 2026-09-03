@@ -71,7 +71,6 @@ export function MyResourceViewDialog({ open, resourceId, onClose }: MyResourceVi
                     <Field label="Ad" value={resource.name} />
                     <Field label="Vahid" value={unitSymbols.get(resource.unitId) ?? '—'} />
                     <Field label="İstehsalçı" value={resource.manufacturer} />
-                    <Field label="Brend" value={resource.brand ?? ''} />
                     <Field label="Model" value={resource.model ?? ''} />
                     <Field label="Yaradılma tarixi" value={dayjs(resource.createdDate).format('DD.MM.YYYY')} />
                     <Grid size={12}>

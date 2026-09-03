@@ -36,9 +36,9 @@ import { ProductPicker } from '../../products/components/ProductPicker';
 import { useFindOrCreateProduct } from '../../products/hooks/useFindOrCreateProduct';
 import type { Product } from '../../products/types/product.types';
 import { productFormSchema, type ProductFormSchema } from '../../products/utils/productForm.schema';
-import { useBrandOptions, useManufacturerOptions, useModelOptions } from '../hooks/useResourceFieldOptions';
+import { useManufacturerOptions, useModelOptions } from '../hooks/useResourceFieldOptions';
 import type { ResourceCreateRequest } from '../types/resource.types';
-import { resourceBrandFieldsSchema, type ResourceBrandFieldsSchema } from '../utils/resourceListingForm.schema';
+import { resourceListingFieldsSchema, type ResourceListingFieldsSchema } from '../utils/resourceListingForm.schema';
 import { CategoryPathAutocomplete } from './CategoryPathAutocomplete';
 import { ResourceFieldAutocomplete } from './ResourceFieldAutocomplete';
 
@@ -50,9 +50,8 @@ const DEFAULT_PRODUCT_VALUES: ProductFormSchema = {
   unitId: null,
 };
 
-const DEFAULT_LISTING_VALUES: ResourceBrandFieldsSchema = {
+const DEFAULT_LISTING_VALUES: ResourceListingFieldsSchema = {
   manufacturer: '',
-  brand: '',
   model: '',
   specification: '',
 };
@@ -66,9 +65,11 @@ export interface ResourceFormDialogProps {
 
 // § 6 "Elan Yarat" — two branches under one dialog: attach a listing to an
 // existing product (§ 6.1), or resolve/create one via find-or-create then
-// attach (§ 6.2). Manufacturer/brand/model/specification are always shown
-// and always go to POST /api/resources regardless of branch (2026-07-31 —
-// these are listing-specific, not product identity). Editing an existing
+// attach (§ 6.2). Manufacturer/model/specification are always shown and
+// always go to POST /api/resources regardless of branch (2026-07-31 — these
+// are listing-specific, not product identity; `brand` moved to the product's
+// own attributes, bax FRONTEND_AI_PROMPT_BRAND_IDENTITY.md, and is rendered
+// inside the xüsusiyyətlər section below instead). Editing an existing
 // listing isn't handled here — bax ResourceEditDialog.
 export function ResourceFormDialog({ open, isSubmitting, onClose, onSubmit }: ResourceFormDialogProps) {
   const [formError, setFormError] = useState<string | null>(null);
@@ -108,17 +109,15 @@ export function ResourceFormDialog({ open, isSubmitting, onClose, onSubmit }: Re
     trigger: triggerListing,
     getValues: getListingValues,
     formState: { errors: listingErrors },
-  } = useForm<ResourceBrandFieldsSchema>({
-    resolver: zodResolver(resourceBrandFieldsSchema),
+  } = useForm<ResourceListingFieldsSchema>({
+    resolver: zodResolver(resourceListingFieldsSchema),
     defaultValues: DEFAULT_LISTING_VALUES,
   });
 
   const categoryId = watchProduct('categoryId');
   const manufacturerInput = watchListing('manufacturer');
-  const brandInput = watchListing('brand');
   const modelInput = watchListing('model');
   const manufacturerOptions = useManufacturerOptions(manufacturerInput);
-  const brandOptions = useBrandOptions(brandInput);
   const modelOptions = useModelOptions(modelInput);
 
   const categoryAttributesQuery = useCategoryAttributes(categoryId || null);
@@ -182,7 +181,7 @@ export function ResourceFormDialog({ open, isSubmitting, onClose, onSubmit }: Re
             setProductError(field as keyof ProductFormSchema, { type: 'server', message });
             matched += 1;
           } else if (field in DEFAULT_LISTING_VALUES) {
-            setListingError(field as keyof ResourceBrandFieldsSchema, { type: 'server', message });
+            setListingError(field as keyof ResourceListingFieldsSchema, { type: 'server', message });
             matched += 1;
           }
         });
@@ -412,22 +411,6 @@ export function ResourceFormDialog({ open, isSubmitting, onClose, onSubmit }: Re
                   loading={manufacturerOptions.isFetching}
                   error={!!listingErrors.manufacturer}
                   helperText={listingErrors.manufacturer?.message}
-                  disabled={submitting}
-                />
-              )}
-            />
-            <Controller
-              name="brand"
-              control={listingControl}
-              render={({ field }) => (
-                <ResourceFieldAutocomplete
-                  label="Brend"
-                  value={field.value}
-                  onChange={field.onChange}
-                  options={brandOptions.data ?? []}
-                  loading={brandOptions.isFetching}
-                  error={!!listingErrors.brand}
-                  helperText={listingErrors.brand?.message}
                   disabled={submitting}
                 />
               )}

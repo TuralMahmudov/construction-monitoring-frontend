@@ -1,13 +1,16 @@
 // `resourceName` — the product's own name (bax FRONTEND_AI_PROMPT_PRODUCTS.md
 // § 8: query param and field renamed matchGroupId → productId). As of
-// 2026-07-31, manufacturer/brand/model are REMOVED from this response —
-// this averages (productId, regionId) across potentially several orgs, each
-// with its own brand, so no single manufacturer/brand/model correctly
-// describes the group. Per-listing brand data lives on
-// GET /api/resources?product={productId} instead (bax
-// ProductListingsTab). `avgPrice` intentionally dropped from display
-// everywhere in this feature — median is the only central-tendency figure
-// shown (user decision).
+// 2026-07-31, manufacturer/model are REMOVED from this response — this
+// averages (productId, regionId) across potentially several orgs, each with
+// its own manufacturer, so no single manufacturer/model correctly describes
+// the group. Per-listing manufacturer/model data lives on
+// GET /api/resources?product={productId} instead (bax ProductListingsTab).
+// `brand`, unlike manufacturer/model, DOES still describe the group — since
+// FRONTEND_AI_PROMPT_BRAND_IDENTITY.md it's baked into productId itself
+// (different brand = different product/row), so it never needed its own
+// column here; it shows up indirectly via `resourceName`/product code.
+// `avgPrice` intentionally dropped from display everywhere in this feature —
+// median is the only central-tendency figure shown (user decision).
 export interface ResourcePriceAverageResponse {
   productId: string;
   categoryId: string;

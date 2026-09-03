@@ -10,19 +10,18 @@ import { useUnitOptions } from '../../reference-data/hooks/useReferenceOptions';
 import type { Product } from '../../products/types/product.types';
 import type { CategoryProductPickerValue } from '../../resource-categories/components/CategoryProductTreePicker';
 import { CategoryProductTreePicker } from '../../resource-categories/components/CategoryProductTreePicker';
-import { useBrandOptions, useManufacturerOptions, useModelOptions } from '../../resources/hooks/useResourceFieldOptions';
+import { useManufacturerOptions, useModelOptions } from '../../resources/hooks/useResourceFieldOptions';
 import { useUnitLookup } from '../../resources/hooks/useLookups';
 import { ResourceFieldAutocomplete } from '../../resources/components/ResourceFieldAutocomplete';
-import type { ResourceBrandFieldsSchema } from '../../resources/utils/resourceListingForm.schema';
+import type { ResourceListingFieldsSchema } from '../../resources/utils/resourceListingForm.schema';
 import type { MyResourceProductFormSchema } from '../utils/myResourceForm.schema';
 
 export interface BasicInfoSectionProps {
   productControl: Control<MyResourceProductFormSchema>;
   productErrors: FieldErrors<MyResourceProductFormSchema>;
-  listingControl: Control<ResourceBrandFieldsSchema>;
-  listingErrors: FieldErrors<ResourceBrandFieldsSchema>;
+  listingControl: Control<ResourceListingFieldsSchema>;
+  listingErrors: FieldErrors<ResourceListingFieldsSchema>;
   manufacturerInput: string;
-  brandInput: string;
   modelInput: string;
   categoryPickerValue: CategoryProductPickerValue | null;
   onCategoryPickerChange: (value: CategoryProductPickerValue) => void;
@@ -39,7 +38,6 @@ export function BasicInfoSection({
   listingControl,
   listingErrors,
   manufacturerInput,
-  brandInput,
   modelInput,
   categoryPickerValue,
   onCategoryPickerChange,
@@ -49,7 +47,6 @@ export function BasicInfoSection({
   const unitOptions = useUnitOptions();
   const unitSymbols = useUnitLookup();
   const manufacturerOptions = useManufacturerOptions(manufacturerInput);
-  const brandOptions = useBrandOptions(brandInput);
   const modelOptions = useModelOptions(modelInput);
 
   return (
@@ -71,7 +68,7 @@ export function BasicInfoSection({
               Mövcud məhsul seçilib: <strong>{lockedProduct.code} — {lockedProduct.name}</strong>.
               {' '}Təsvir: {lockedProduct.description || '—'}. Vahid:{' '}
               {lockedProduct.unitId ? (unitSymbols.get(lockedProduct.unitId) ?? '—') : '—'}.
-              {' '}İstehsalçı/Brend/Model/Spesifikasiya aşağıda hər zaman doldurula bilər — bu elana aiddir.
+              {' '}İstehsalçı/Model/Spesifikasiya aşağıda hər zaman doldurula bilər — bu elana aiddir.
             </Alert>
           ) : (
             <>
@@ -150,22 +147,6 @@ export function BasicInfoSection({
                   loading={manufacturerOptions.isFetching}
                   error={!!listingErrors.manufacturer}
                   helperText={listingErrors.manufacturer?.message}
-                  disabled={disabled}
-                />
-              )}
-            />
-            <Controller
-              name="brand"
-              control={listingControl}
-              render={({ field }) => (
-                <ResourceFieldAutocomplete
-                  label="Brend"
-                  value={field.value}
-                  onChange={field.onChange}
-                  options={brandOptions.data ?? []}
-                  loading={brandOptions.isFetching}
-                  error={!!listingErrors.brand}
-                  helperText={listingErrors.brand?.message}
                   disabled={disabled}
                 />
               )}

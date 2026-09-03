@@ -55,7 +55,10 @@ export interface ProductAttributeInput {
 // POST /api/products body (§ 2) — find-or-create. name/unitId are only
 // honored when a new product actually gets created; an existing match
 // silently ignores them. No description (server-generated) and no
-// specification/manufacturer/brand/model (those go to POST /api/resources).
+// specification/manufacturer/model (those go to POST /api/resources) —
+// `brand`, when the category links it, is just another entry in
+// `attributes[]` below (bax FRONTEND_AI_PROMPT_BRAND_IDENTITY.md), not a
+// separate field here.
 export interface ProductCreateRequest {
   categoryId: string;
   name: string;

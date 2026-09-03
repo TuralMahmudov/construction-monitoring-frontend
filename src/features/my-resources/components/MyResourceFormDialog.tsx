@@ -22,8 +22,8 @@ import type { ProductAttributeInput } from '../../products/types/product.types';
 import type { CategoryProductPickerValue } from '../../resource-categories/components/CategoryProductTreePicker';
 import { useCategoryAttributes } from '../../resource-categories/hooks/useCategoryAttributeDefinitions';
 import {
-  resourceBrandFieldsSchema,
-  type ResourceBrandFieldsSchema,
+  resourceListingFieldsSchema,
+  type ResourceListingFieldsSchema,
 } from '../../resources/utils/resourceListingForm.schema';
 import type { CreateMyResourceRequest } from '../types/myResource.types';
 import type { MyResourcePriceFormValues } from '../types/price.types';
@@ -37,10 +37,9 @@ const DEFAULT_PRODUCT_VALUES: MyResourceProductFormSchema = {
   unitId: '',
 };
 
-const DEFAULT_LISTING_VALUES: ResourceBrandFieldsSchema = {
+const DEFAULT_LISTING_VALUES: ResourceListingFieldsSchema = {
   specification: '',
   manufacturer: '',
-  brand: '',
   model: '',
 };
 
@@ -68,10 +67,12 @@ export interface MyResourceFormDialogProps {
 }
 
 // § 4/§ 6 "Yeni Resurs" — Yol A (existing product picked from the tree):
-// only productId + brand fields are sent. Yol B (category/new combination):
+// only productId + listing fields are sent. Yol B (category/new combination):
 // categoryId/name/unitId/attributes are sent instead, backend resolves-or-
-// creates the product. manufacturer/brand/model/specification are always
-// shown and always go straight to the resource, regardless of path.
+// creates the product. manufacturer/model/specification are always shown and
+// always go straight to the resource, regardless of path. `brand`, when the
+// category links it, is one of the attributes above instead (bax
+// FRONTEND_AI_PROMPT_BRAND_IDENTITY.md) — no longer a listing field.
 export function MyResourceFormDialog({ open, isSubmitting, onClose, onSubmit }: MyResourceFormDialogProps) {
   const [formError, setFormError] = useState<string | null>(null);
   const [attributeValues, setAttributeValues] = useState<Record<string, string>>({});
@@ -99,14 +100,13 @@ export function MyResourceFormDialog({ open, isSubmitting, onClose, onSubmit }: 
     trigger: triggerListing,
     getValues: getListingValues,
     formState: { errors: listingErrors },
-  } = useForm<ResourceBrandFieldsSchema>({
-    resolver: zodResolver(resourceBrandFieldsSchema),
+  } = useForm<ResourceListingFieldsSchema>({
+    resolver: zodResolver(resourceListingFieldsSchema),
     defaultValues: DEFAULT_LISTING_VALUES,
   });
 
   const categoryId = categoryPickerValue?.categoryId ?? '';
   const manufacturerInput = watchListing('manufacturer');
-  const brandInput = watchListing('brand');
   const modelInput = watchListing('model');
 
   // Same source the general Resurslar creation dialog uses
@@ -165,7 +165,7 @@ export function MyResourceFormDialog({ open, isSubmitting, onClose, onSubmit }: 
           setProductError(field as keyof MyResourceProductFormSchema, { type: 'server', message });
           matched += 1;
         } else if (field in DEFAULT_LISTING_VALUES) {
-          setListingError(field as keyof ResourceBrandFieldsSchema, { type: 'server', message });
+          setListingError(field as keyof ResourceListingFieldsSchema, { type: 'server', message });
           matched += 1;
         }
       });
@@ -251,7 +251,6 @@ export function MyResourceFormDialog({ open, isSubmitting, onClose, onSubmit }: 
             listingControl={listingControl}
             listingErrors={listingErrors}
             manufacturerInput={manufacturerInput}
-            brandInput={brandInput}
             modelInput={modelInput}
             categoryPickerValue={categoryPickerValue}
             onCategoryPickerChange={handleCategoryPickerChange}

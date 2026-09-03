@@ -10,6 +10,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import { PageContainer, PageHeader } from '../../../shared/components';
 import { canReviewDocuments } from '../../../shared/lib/permissions';
 import { BulkResourceFormDialog } from '../components/BulkResourceFormDialog';
+import { DocumentPreviewDialog } from '../components/DocumentPreviewDialog';
 import { DocumentRejectDialog } from '../components/DocumentRejectDialog';
 import { DocumentResourcesViewDialog } from '../components/DocumentResourcesViewDialog';
 import { DocumentsAdminTable } from '../components/DocumentsAdminTable';
@@ -26,6 +27,7 @@ export function DocumentsAdminPage() {
   const [params, setParams] = useState<DocumentSearchParams>(DEFAULT_PARAMS);
   const [processingDocument, setProcessingDocument] = useState<CcmsDocument | null>(null);
   const [viewingDocument, setViewingDocument] = useState<CcmsDocument | null>(null);
+  const [previewingDocument, setPreviewingDocument] = useState<CcmsDocument | null>(null);
   const [rejectingDocument, setRejectingDocument] = useState<CcmsDocument | null>(null);
 
   const orgOptions = useDocumentOrganizationOptions(canAccess);
@@ -108,6 +110,7 @@ export function DocumentsAdminPage() {
           onParamsChange={(patch) => setParams((prev) => ({ ...prev, ...patch }))}
           currentUserId={user?.id ?? ''}
           onDownload={handleDownload}
+          onPreview={setPreviewingDocument}
           onProcess={handleProcess}
           onViewResources={setViewingDocument}
           onReject={setRejectingDocument}
@@ -117,6 +120,8 @@ export function DocumentsAdminPage() {
       <BulkResourceFormDialog document={processingDocument} onClose={() => setProcessingDocument(null)} />
 
       <DocumentResourcesViewDialog document={viewingDocument} onClose={() => setViewingDocument(null)} />
+
+      <DocumentPreviewDialog document={previewingDocument} onClose={() => setPreviewingDocument(null)} />
 
       <DocumentRejectDialog
         document={rejectingDocument}

@@ -27,8 +27,10 @@ export interface ResourceSearchGridProps {
 }
 
 // § 3.2 — code/name/description read from resource.product.*, but
-// specification/manufacturer/brand read directly from resource.* (2026-07-31
-// — these are listing-specific, not product identity). Category/unit columns
+// specification/manufacturer read directly from resource.* (2026-07-31 —
+// these are listing-specific, not product identity; `brand` moved to the
+// product's own attributes, bax FRONTEND_AI_PROMPT_BRAND_IDENTITY.md).
+// Category/unit columns
 // dropped: category duplicated "Ad" for how this catalog is actually
 // categorized, unit replaced by specification (more useful per-listing).
 export function ResourceSearchGrid({ params, onParamsChange }: ResourceSearchGridProps) {

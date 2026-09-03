@@ -34,6 +34,13 @@ export function getDocuments(params: DocumentSearchParams): Promise<PageResponse
   return apiGet<PageResponse<CcmsDocument>>(BASE_URL, { ...params });
 }
 
+// Used to poll a single document's previewStatus while PENDING (bax
+// useDocumentPreviewStatusPoll) — the list/mine endpoints would also work
+// but re-fetching one row by id is cheaper than re-running a whole search.
+export function getDocument(id: string): Promise<CcmsDocument> {
+  return apiGet<CcmsDocument>(`${BASE_URL}/${id}`);
+}
+
 // Auth-protected stream (§ 1.3) — a plain <a href> can't attach the JWT
 // header, so this fetches the blob through httpClient (which does) and
 // triggers the save via a throwaway <a download>.
@@ -54,6 +61,16 @@ export async function downloadDocument(id: string, filename: string): Promise<vo
 // pushing the file to disk.
 export async function fetchDocumentBlob(id: string): Promise<Blob> {
   const response = await httpClient.get<Blob>(`${BASE_URL}/${id}/download`, { responseType: 'blob' });
+  return response.data;
+}
+
+// GET /{id}/preview (FRONTEND_AI_PROMPT_DOCUMENT_PREVIEW.md § 2) — ALWAYS a
+// PDF (converted for Excel/Word, the original bytes as-is for PDF/image),
+// unlike fetchDocumentBlob above which is always the original file. Caller
+// must check previewStatus first (NOT_APPLICABLE/READY) — PENDING/FAILED
+// 409s here.
+export async function fetchDocumentPreviewFile(id: string): Promise<Blob> {
+  const response = await httpClient.get<Blob>(`${BASE_URL}/${id}/preview`, { responseType: 'blob' });
   return response.data;
 }
 

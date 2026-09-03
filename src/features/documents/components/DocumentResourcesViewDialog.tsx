@@ -54,15 +54,14 @@ export function DocumentResourcesViewDialog({ document, onClose }: DocumentResou
       field: 'name',
       headerName: 'Ad',
       flex: 1,
-      minWidth: 220,
-      // description (kateqoriya + atribut xülasəsi) daha ətraflıdır, `name`
-      // adətən yalnız kateqoriya adını təkrarlayır (bax MyResourceTable-dakı
-      // eyni qərar).
+      minWidth: 320,
+      // description (kateqoriya + atribut xülasəsi, indi Brend bağlıdırsa
+      // onu da ehtiva edir) daha ətraflıdır, `name` adətən yalnız kateqoriya
+      // adını təkrarlayır (bax MyResourceTable-dakı eyni qərar). İstehsalçı/
+      // Model sütunları bilərəkdən çıxarılıb (Tural, 2026-08-31) — description
+      // artıq tam görünsün deyə, ayrıca dar sütunlara ehtiyac qalmadı.
       valueGetter: (_value, row) => row.product.description || row.product.name,
     },
-    { field: 'manufacturer', headerName: 'İstehsalçı', width: 160, valueGetter: (_value, row) => row.manufacturer ?? '—' },
-    { field: 'brand', headerName: 'Brend', width: 130, valueGetter: (_value, row) => row.brand ?? '—' },
-    { field: 'model', headerName: 'Model', width: 100, valueGetter: (_value, row) => row.model ?? '—' },
     {
       field: 'hasPrice',
       headerName: 'Qiymət',

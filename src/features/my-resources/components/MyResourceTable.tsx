@@ -50,7 +50,6 @@ export function MyResourceTable({ params, onParamsChange, onView, onManagePrice 
       ),
     },
     { field: 'manufacturer', headerName: 'İstehsalçı', width: 160 },
-    { field: 'brand', headerName: 'Brend', width: 140, valueGetter: (_value, row) => row.brand ?? '—' },
     { field: 'model', headerName: 'Model', width: 100, valueGetter: (_value, row) => row.model ?? '—' },
     {
       field: 'specification',

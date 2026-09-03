@@ -6,6 +6,8 @@ import {
   createDocumentResources,
   downloadDocument,
   fetchDocumentBlob,
+  fetchDocumentPreviewFile,
+  getDocument,
   getDocuments,
   getMyDocuments,
   processDocument,
@@ -13,12 +15,13 @@ import {
   updateDocumentStatus,
   uploadDocument,
 } from '../api/documentsApi';
-import type {
-  CreateDocumentResourcesRequest,
-  DocumentSearchParams,
-  UpdateDocumentPeriodRequest,
-  UpdateDocumentStatusRequest,
-  UploadDocumentRequest,
+import {
+  DOCUMENT_PREVIEW_STATUS,
+  type CreateDocumentResourcesRequest,
+  type DocumentSearchParams,
+  type UpdateDocumentPeriodRequest,
+  type UpdateDocumentStatusRequest,
+  type UploadDocumentRequest,
 } from '../types/document.types';
 import { documentKeys } from './queryKeys';
 
@@ -78,6 +81,38 @@ export function useDocumentPreviewBlob(documentId: string, enabled: boolean) {
   return useQuery({
     queryKey: documentKeys.preview(documentId),
     queryFn: () => fetchDocumentBlob(documentId),
+    enabled: enabled && Boolean(documentId),
+    staleTime: Infinity,
+    gcTime: 5 * 60 * 1000,
+  });
+}
+
+// Word (doc/docx) preview — re-fetches the document itself every few seconds
+// while previewStatus is PENDING (background conversion in progress), stops
+// once it flips to READY/FAILED. Only meaningful for 'word' kind; other
+// kinds never sit in PENDING long enough to matter and don't call this.
+//
+// `refetchInterval` as a FUNCTION (not a flat 3000) matters here — it's
+// re-evaluated against each fetch's own freshly-returned previewStatus, so
+// polling actually stops once conversion finishes. `enabled` alone can't do
+// this: it's derived from the `document` prop, which the caller doesn't
+// update mid-poll, so a flat interval would keep firing forever.
+export function useDocumentPreviewStatusPoll(document: { id: string; previewStatus: number } | null) {
+  return useQuery({
+    queryKey: documentKeys.detail(document?.id ?? ''),
+    queryFn: () => getDocument(document!.id),
+    enabled: document !== null && document.previewStatus === DOCUMENT_PREVIEW_STATUS.PENDING,
+    refetchInterval: (query) => (query.state.data?.previewStatus === DOCUMENT_PREVIEW_STATUS.PENDING ? 3000 : false),
+  });
+}
+
+// The converted PDF bytes from GET /{id}/preview — only call once
+// previewStatus is NOT_APPLICABLE/READY (bax fetchDocumentPreviewFile's own
+// comment), staleTime: Infinity for the same reason as useDocumentPreviewBlob.
+export function useDocumentPreviewFile(documentId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: documentKeys.previewFile(documentId),
+    queryFn: () => fetchDocumentPreviewFile(documentId),
     enabled: enabled && Boolean(documentId),
     staleTime: Infinity,
     gcTime: 5 * 60 * 1000,

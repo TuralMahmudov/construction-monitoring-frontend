@@ -14,7 +14,7 @@ import TextField from '@mui/material/TextField';
 import { ApiError } from '../../../services/httpClient';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
 import { ignoreBackdropClose } from '../../../shared/lib/ignoreBackdropClose';
-import { useBrandOptions, useManufacturerOptions, useModelOptions } from '../hooks/useResourceFieldOptions';
+import { useManufacturerOptions, useModelOptions } from '../hooks/useResourceFieldOptions';
 import type { Resource, ResourceUpdateRequest } from '../types/resource.types';
 import { resourceUpdateFormSchema, type ResourceUpdateFormSchema } from '../utils/resourceListingForm.schema';
 import { ResourceFieldAutocomplete } from './ResourceFieldAutocomplete';
@@ -27,9 +27,11 @@ export interface ResourceEditDialogProps {
   onSubmit: (values: ResourceUpdateRequest, onError: (error: unknown) => void) => void;
 }
 
-// § 3.3 — only the brand fields + active are editable here; productId/
-// category/attributes/unit are immutable (a different listing is needed
-// for those, bax ResourceFormDialog).
+// § 3.3 — only the listing fields (manufacturer/model/specification) +
+// active are editable here; productId/category/attributes/unit are
+// immutable (a different listing is needed for those, bax
+// ResourceFormDialog). `brand` is no longer edited here — it's a product
+// attribute now, bax FRONTEND_AI_PROMPT_BRAND_IDENTITY.md.
 export function ResourceEditDialog({ open, resource, isSubmitting, onClose, onSubmit }: ResourceEditDialogProps) {
   const [formError, setFormError] = useState<string | null>(null);
   const {
@@ -44,17 +46,14 @@ export function ResourceEditDialog({ open, resource, isSubmitting, onClose, onSu
     defaultValues: {
       specification: '',
       manufacturer: '',
-      brand: '',
       model: '',
       active: true,
     },
   });
 
   const manufacturerInput = watch('manufacturer');
-  const brandInput = watch('brand');
   const modelInput = watch('model');
   const manufacturerOptions = useManufacturerOptions(manufacturerInput);
-  const brandOptions = useBrandOptions(brandInput);
   const modelOptions = useModelOptions(modelInput);
 
   useEffect(() => {
@@ -65,7 +64,6 @@ export function ResourceEditDialog({ open, resource, isSubmitting, onClose, onSu
     reset({
       specification: resource.specification ?? '',
       manufacturer: resource.manufacturer ?? '',
-      brand: resource.brand ?? '',
       model: resource.model ?? '',
       active: resource.active,
     });
@@ -132,22 +130,6 @@ export function ResourceEditDialog({ open, resource, isSubmitting, onClose, onSu
                   loading={manufacturerOptions.isFetching}
                   error={!!errors.manufacturer}
                   helperText={errors.manufacturer?.message}
-                  disabled={isSubmitting}
-                />
-              )}
-            />
-            <Controller
-              name="brand"
-              control={control}
-              render={({ field }) => (
-                <ResourceFieldAutocomplete
-                  label="Brend"
-                  value={field.value}
-                  onChange={field.onChange}
-                  options={brandOptions.data ?? []}
-                  loading={brandOptions.isFetching}
-                  error={!!errors.brand}
-                  helperText={errors.brand?.message}
                   disabled={isSubmitting}
                 />
               )}

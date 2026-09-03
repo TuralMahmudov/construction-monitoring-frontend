@@ -98,6 +98,19 @@ export const navSections: NavSection[] = [
   },
   {
     // "Hesabatlar" — qrupsuz, başlıqsız, ən aşağıda (FRONTEND_AI_PROMPT_REPORTS.md).
-    items: [{ label: 'Hesabatlar', path: '/reports', icon: <SummarizeRoundedIcon />, requiresReportsAccess: true }],
+    // hideForOrganization, 2026-08-31 (Tural) — canViewAnyReport bir COST_READ
+    // holder-i buraxır, vendor rollarında bu icazə ola bilər, amma bütün 3
+    // hesabat da mərkəzi/cross-org məzmundur (bax ReportsListPage-in REPORTS
+    // massivi) — vendor bu menyunu heç görməməlidir, "Bazar monitorinqi"
+    // bölməsi kimi (centralAdminOnly).
+    items: [
+      {
+        label: 'Hesabatlar',
+        path: '/reports',
+        icon: <SummarizeRoundedIcon />,
+        requiresReportsAccess: true,
+        hideForOrganization: true,
+      },
+    ],
   },
 ];

@@ -15,7 +15,6 @@ export interface BulkRowPriceState {
 interface BulkRowCommon {
   key: string;
   manufacturer: string;
-  brand: string;
   model: string;
   specification: string;
   price: BulkRowPriceState;
@@ -57,7 +56,6 @@ export function makeExistingRow(product: Product, summary: string): ExistingRowS
     product,
     summary,
     manufacturer: '',
-    brand: '',
     model: '',
     specification: '',
     price: makeDefaultPrice(),
@@ -74,7 +72,6 @@ export function makeNewRow(categoryId: string, defaultName: string): NewRowState
     unitId: '',
     attributeValues: {},
     manufacturer: '',
-    brand: '',
     model: '',
     specification: '',
     price: makeDefaultPrice(),

@@ -112,7 +112,6 @@ export function ResourceGeneralTab({ resource }: ResourceGeneralTabProps) {
       <DetailRow label="Təsvir" value={product.description || '—'} />
       <DetailRow label="Spesifikasiya" value={resource.specification || '—'} />
       <DetailRow label="İstehsalçı" value={resource.manufacturer || '—'} />
-      <DetailRow label="Brend" value={resource.brand || '—'} />
       <DetailRow label="Model" value={resource.model || '—'} />
 
       <Divider sx={{ my: 2 }} />

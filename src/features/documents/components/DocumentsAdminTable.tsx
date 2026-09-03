@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
+import ListAltRoundedIcon from '@mui/icons-material/ListAltRounded';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
@@ -23,6 +24,7 @@ export interface DocumentsAdminTableProps {
   onParamsChange: (patch: Partial<DocumentSearchParams>) => void;
   currentUserId: string;
   onDownload: (document: CcmsDocument) => void;
+  onPreview: (document: CcmsDocument) => void;
   onProcess: (document: CcmsDocument) => void;
   onViewResources: (document: CcmsDocument) => void;
   onReject: (document: CcmsDocument) => void;
@@ -33,6 +35,7 @@ export function DocumentsAdminTable({
   onParamsChange,
   currentUserId,
   onDownload,
+  onPreview,
   onProcess,
   onViewResources,
   onReject,
@@ -127,7 +130,7 @@ export function DocumentsAdminTable({
     {
       field: 'actions',
       headerName: 'Əməliyyatlar',
-      width: 170,
+      width: 210,
       sortable: false,
       filterable: false,
       renderCell: (cellParams) => {
@@ -149,13 +152,21 @@ export function DocumentsAdminTable({
               </IconButton>
             </Tooltip>
 
+            <Tooltip title="Sənədə bax">
+              <IconButton size="small" onClick={() => onPreview(row)}>
+                <VisibilityRoundedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+
             {row.status !== DOCUMENT_STATUS.NEW && (
               // IN_PROGRESS/REJECTED sənədlərin də (COMPLETED-dən əvvəl)
               // artıq yaratdığı resursları ola bilər — yalnız NEW-da hələ
-              // heç nə yaranmayıb, ona görə yalnız o istisna edilir.
+              // heç nə yaranmayıb, ona görə yalnız o istisna edilir. Fərqli
+              // ikon (göz deyil, qiymətlə əlaqəli ikon da deyil) bilərəkdən
+              // — "Sənədə bax" və qiymət əməliyyatları ilə qarışmasın.
               <Tooltip title="Yaranan resurslara bax">
                 <IconButton size="small" onClick={() => onViewResources(row)}>
-                  <VisibilityRoundedIcon fontSize="small" />
+                  <ListAltRoundedIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
             )}
