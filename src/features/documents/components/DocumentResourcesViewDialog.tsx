@@ -18,6 +18,7 @@ import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
 import { ignoreBackdropClose } from '../../../shared/lib/ignoreBackdropClose';
 import { azGridLocaleText } from '../../../theme/dataGridLocaleText';
 import { canWrite } from '../../../shared/lib/permissions';
+import { productDisplayLabel } from '../../../shared/lib/productLabel';
 import { searchResources } from '../../resources/api/resourcesApi';
 import { resourceKeys } from '../../resources/hooks/queryKeys';
 import { ResourcePriceQuickDialog } from '../../resources/prices/components/ResourcePriceQuickDialog';
@@ -55,12 +56,12 @@ export function DocumentResourcesViewDialog({ document, onClose }: DocumentResou
       headerName: 'Ad',
       flex: 1,
       minWidth: 320,
-      // description (kateqoriya + atribut xülasəsi, indi Brend bağlıdırsa
-      // onu da ehtiva edir) daha ətraflıdır, `name` adətən yalnız kateqoriya
-      // adını təkrarlayır (bax MyResourceTable-dakı eyni qərar). İstehsalçı/
-      // Model sütunları bilərəkdən çıxarılıb (Tural, 2026-08-31) — description
-      // artıq tam görünsün deyə, ayrıca dar sütunlara ehtiyac qalmadı.
-      valueGetter: (_value, row) => row.product.description || row.product.name,
+      // bax productDisplayLabel (shared/lib) — description only wins when it
+      // carries the attribute summary, not for a bare category-name
+      // description. İstehsalçı/Model sütunları bilərəkdən çıxarılıb (Tural,
+      // 2026-08-31) — description artıq tam görünsün deyə, ayrıca dar
+      // sütunlara ehtiyac qalmadı.
+      valueGetter: (_value, row) => productDisplayLabel(row.product.name, row.product.description),
     },
     {
       field: 'hasPrice',
@@ -124,7 +125,7 @@ export function DocumentResourcesViewDialog({ document, onClose }: DocumentResou
       <ResourcePriceQuickDialog
         open={priceTarget !== null}
         resourceId={priceTarget?.id ?? null}
-        resourceLabel={priceTarget ? `${priceTarget.product.code} — ${priceTarget.product.description || priceTarget.product.name}` : ''}
+        resourceLabel={priceTarget ? `${priceTarget.product.code} — ${productDisplayLabel(priceTarget.product.name, priceTarget.product.description)}` : ''}
         organizationId={priceTarget?.organizationId ?? null}
         onClose={() => setPriceTarget(null)}
       />

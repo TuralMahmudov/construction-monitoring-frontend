@@ -6,7 +6,6 @@ import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import Alert from '@mui/material/Alert';
-import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -21,7 +20,6 @@ import Typography from '@mui/material/Typography';
 import { ApiError } from '../../../../services/httpClient';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
 import { ignoreBackdropClose } from '../../../../shared/lib/ignoreBackdropClose';
-import { useRoles } from '../../roles/hooks/useRoles';
 import {
   ORGANIZATION_TYPE_ICONS,
   ORGANIZATION_TYPE_LABELS,
@@ -31,9 +29,13 @@ import {
 } from '../types/organization.types';
 import { organizationCreateFormSchema } from '../utils/organizationForm.schema';
 
-// OPERATOR is the day-to-day vendor role (bax FRONTEND_AI_PROMPT_ADMIN_ORG_USERS.md
-// nümunələri) — a sane default so admins aren't forced to remember which of
-// the six roles a fresh vendor account actually needs.
+// Tural, 2026-09-07: a vendor admin shouldn't have to think about roles at
+// all. FRONTEND_AI_PROMPT_CENTRAL_ORG_AND_ROLES.md § 1 (updated same day)
+// made `roleNames` fully optional on this endpoint — omit it and the backend
+// itself defaults every vendor login to OPERATOR (the one role that carries
+// DOCUMENT_UPLOAD, a vendor account's only real capability now that "Mənim
+// Resurslarım" is gone). So there's no field to fix client-side either: no
+// picker, no constant, `roleNames` just isn't part of this form anymore.
 const DEFAULT_VALUES: OrganizationCreateFormValues = {
   name: '',
   type: ORGANIZATION_TYPE_OPTIONS[0],
@@ -43,7 +45,6 @@ const DEFAULT_VALUES: OrganizationCreateFormValues = {
   username: '',
   password: '',
   confirmPassword: '',
-  roleNames: ['OPERATOR'],
 };
 
 export interface OrganizationCreateDialogProps {
@@ -72,7 +73,6 @@ export function OrganizationCreateDialog({
   const [formError, setFormError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const rolesQuery = useRoles();
 
   const {
     control,
@@ -133,8 +133,6 @@ export function OrganizationCreateDialog({
     setFormError(null);
     onSubmit(payload, handleApiError);
   });
-
-  const roleOptions = rolesQuery.data ?? [];
 
   return (
     <Dialog open={open} onClose={ignoreBackdropClose(onClose)} maxWidth="sm" fullWidth>
@@ -329,29 +327,6 @@ export function OrganizationCreateDialog({
                     ),
                   },
                 }}
-              />
-            )}
-          />
-
-          <Controller
-            name="roleNames"
-            control={control}
-            render={({ field }) => (
-              <Autocomplete
-                multiple
-                options={roleOptions.map((role) => role.name)}
-                value={field.value}
-                onChange={(_event, value) => field.onChange(value)}
-                loading={rolesQuery.isLoading}
-                disabled={isSubmitting}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Rollar *"
-                    error={!!errors.roleNames}
-                    helperText={errors.roleNames?.message}
-                  />
-                )}
               />
             )}
           />

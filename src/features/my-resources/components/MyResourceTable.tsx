@@ -10,6 +10,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { DataGrid, type GridColDef, type GridSortModel } from '@mui/x-data-grid';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
+import { productDisplayLabel } from '../../../shared/lib/productLabel';
 import { azGridLocaleText } from '../../../theme/dataGridLocaleText';
 import { useMyResources } from '../hooks/useMyResources';
 import type { MyResource, MyResourceSearchParams } from '../types/myResource.types';
@@ -39,13 +40,12 @@ export function MyResourceTable({ params, onParamsChange, onView, onManagePrice 
       headerName: 'Ad',
       flex: 1,
       minWidth: 240,
-      // `description` is server-generated as "{category name} — {attr: val,
-      // ...}" and `name` usually defaults to that same category name, so
-      // showing both stacked just repeated the same text twice — description
-      // alone already carries everything meaningful.
+      // bax productDisplayLabel — description only wins when it actually adds
+      // the attribute summary; a bare category-name description (attributeless
+      // categories) would otherwise hide the product's real, distinguishing name.
       renderCell: (cellParams) => (
         <Typography variant="body2" sx={{ py: 1.5 }}>
-          {cellParams.row.description || cellParams.row.name}
+          {productDisplayLabel(cellParams.row.name, cellParams.row.description)}
         </Typography>
       ),
     },

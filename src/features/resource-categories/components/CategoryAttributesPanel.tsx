@@ -104,9 +104,9 @@ export function CategoryAttributesPanel({ categoryId, canEdit }: CategoryAttribu
       </Stack>
 
       {links.length === 0 ? (
-        <Alert severity="warning" sx={{ my: 1 }}>
-          Bu kateqoriyaya hələ heç bir xüsusiyyət növü bağlanmayıb — bu kateqoriyada yeni məhsul yaradıla bilməz.
-          İstifadəyə açmaq üçün ən azı bir xüsusiyyət növü bağlayın.
+        <Alert severity="info" sx={{ my: 1 }}>
+          Bu kateqoriyaya hələ heç bir xüsusiyyət növü bağlanmayıb — məhsullar yalnız ada görə
+          uyğunlaşdırılacaq.
         </Alert>
       ) : (
         <TableContainer>

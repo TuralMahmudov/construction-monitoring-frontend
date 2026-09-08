@@ -10,6 +10,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import { DebouncedTextField } from '../../../shared/components';
 import { useUnitOptions } from '../../reference-data/hooks/useReferenceOptions';
 import { CategoryTreeFilterPicker } from '../../resource-categories/components/CategoryTreeFilterPicker';
 import type { ProductSearchParams } from '../types/product.types';
@@ -85,19 +86,19 @@ export function ProductSearchFilters({
           }}
         >
           <Stack spacing={2}>
-            <TextField
+            <DebouncedTextField
               label="Kod"
               fullWidth
               size="small"
               value={code ?? ''}
-              onChange={(event) => onChange({ code: event.target.value || undefined })}
+              onChange={(value) => onChange({ code: value || undefined })}
             />
-            <TextField
+            <DebouncedTextField
               label="Ad"
               fullWidth
               size="small"
               value={name ?? ''}
-              onChange={(event) => onChange({ name: event.target.value || undefined })}
+              onChange={(value) => onChange({ name: value || undefined })}
             />
           </Stack>
           <CategoryTreeFilterPicker

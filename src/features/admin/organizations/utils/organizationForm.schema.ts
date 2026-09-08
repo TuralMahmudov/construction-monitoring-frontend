@@ -24,7 +24,6 @@ export const organizationCreateFormSchema = z
     username: z.string().min(1, 'İstifadəçi adı daxil edin.'),
     password: z.string().min(8, 'Şifrə ən azı 8 simvol olmalıdır.'),
     confirmPassword: z.string().min(1, 'Şifrəni təkrar daxil edin.'),
-    roleNames: z.array(z.string()).min(1, 'Ən azı bir rol seçin.'),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Şifrələr uyğun gəlmir.',

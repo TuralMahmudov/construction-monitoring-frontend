@@ -1,6 +1,10 @@
 // FRONTEND_AI_PROMPT_ADMIN_ORG_USERS.md § 3 — this list is central staff
-// only (organizationId=NULL). Vendor login accounts never appear here, they
-// live under /api/organizations instead.
+// only. Vendor login accounts never appear here, they live under
+// /api/organizations instead. `organizationId` deliberately omitted: since
+// FRONTEND_AI_PROMPT_CENTRAL_ORG_AND_ROLES.md § 2 (2026-09-07) it's always
+// populated (points at the fixed "Mərkəz" org row) so it carries no signal
+// on this already-central-only list — don't add it back as a "Təşkilat"
+// column, it would always show the same value.
 export interface CentralUser {
   id: string;
   username: string;
@@ -13,7 +17,8 @@ export interface CentralUser {
 }
 
 // POST /api/users — no organizationId/actorType field: the server always
-// creates organizationId=null/actorType=INDIVIDUAL, sending them is ignored.
+// forces actorType=INDIVIDUAL and its own organizationId (the fixed
+// "Mərkəz" row since 2026-09-07, previously null), sending them is ignored.
 // `email` stays mandatory here (unlike Organization's — bax
 // FRONTEND_AI_PROMPT_ORGANIZATION_EMAIL.md § 5, this endpoint is explicitly
 // untouched by that change). `confirmPassword` is form-only.

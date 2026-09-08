@@ -2,6 +2,7 @@ import Grid from '@mui/material/Grid';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import { DebouncedTextField } from '../../../shared/components';
 import { useAllRegions } from '../../reference-data/hooks/useReferenceOptions';
 import {
   RESOURCE_STATUS,
@@ -63,23 +64,23 @@ export function MyResourceSearchFilters({
               </MenuItem>
             ))}
           </TextField>
-          <TextField
+          <DebouncedTextField
             label="Ad"
             fullWidth
             size="small"
             value={name ?? ''}
-            onChange={(event) => onChange({ name: event.target.value || undefined })}
+            onChange={(value) => onChange({ name: value || undefined })}
           />
         </Stack>
       </Grid>
       <Grid size={{ xs: 12, md: 4 }}>
         <Stack spacing={2}>
-          <TextField
+          <DebouncedTextField
             label="Kod"
             fullWidth
             size="small"
             value={code ?? ''}
-            onChange={(event) => onChange({ code: event.target.value || undefined })}
+            onChange={(value) => onChange({ code: value || undefined })}
           />
           <TextField
             select

@@ -6,7 +6,6 @@ import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import Alert from '@mui/material/Alert';
-import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -20,10 +19,19 @@ import Typography from '@mui/material/Typography';
 import { ApiError } from '../../../../services/httpClient';
 import { getApiErrorMessage } from '../../../../shared/lib/apiErrorMessage';
 import { ignoreBackdropClose } from '../../../../shared/lib/ignoreBackdropClose';
-import { useRoles } from '../../roles/hooks/useRoles';
 import type { UserCreateFormValues, UserCreatePayload } from '../types/user.types';
 import { userCreateFormSchema } from '../utils/userForm.schema';
 
+// Tural, 2026-09-07: same simplification as OrganizationCreateDialog — no
+// role picker on create, don't make an admin think about it up front.
+// Unlike the vendor-org case, `POST /api/users` still requires a non-empty
+// `roleNames` server-side (confirmed live via /v3/api-docs — no backend
+// contract has made it optional here yet, bax BACKEND_REQUEST_USER_ROLE_OPTIONAL.md),
+// so this can't just be omitted the way it was for organizations. Defaulting
+// to VIEWER — the lowest-privilege role — rather than something with real
+// write/admin access: a brand-new central account should fail safe and get
+// promoted deliberately via UserEditDialog (which keeps its role picker),
+// not end up with unintended access because nobody saw a field to fill in.
 const DEFAULT_VALUES: UserCreateFormValues = {
   username: '',
   email: '',
@@ -31,7 +39,7 @@ const DEFAULT_VALUES: UserCreateFormValues = {
   confirmPassword: '',
   firstName: '',
   lastName: '',
-  roleNames: [],
+  roleNames: ['VIEWER'],
 };
 
 export interface UserCreateDialogProps {
@@ -42,9 +50,10 @@ export interface UserCreateDialogProps {
 }
 
 // Only ever creates mərkəzi (central) individual staff — organizationId/
-// actorType aren't fields here, the server always sets them to null/
-// INDIVIDUAL (FRONTEND_AI_PROMPT_ADMIN_ORG_USERS.md § 3). Vendor accounts
-// are created via OrganizationCreateDialog instead.
+// actorType aren't fields here, the server always sets them to the fixed
+// "Mərkəz" org id (previously null, FRONTEND_AI_PROMPT_CENTRAL_ORG_AND_ROLES.md
+// § 2)/INDIVIDUAL (FRONTEND_AI_PROMPT_ADMIN_ORG_USERS.md § 3). Vendor
+// accounts are created via OrganizationCreateDialog instead.
 //
 // Unlike Organization's, `email` here is still a mandatory, validated
 // login-account field (FRONTEND_AI_PROMPT_ORGANIZATION_EMAIL.md § 5
@@ -55,7 +64,6 @@ export function UserCreateDialog({ open, isSubmitting, onClose, onSubmit }: User
   const [formError, setFormError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const rolesQuery = useRoles();
 
   const {
     control,
@@ -103,8 +111,6 @@ export function UserCreateDialog({ open, isSubmitting, onClose, onSubmit }: User
     setFormError(null);
     onSubmit(payload, handleApiError);
   });
-
-  const roleOptions = rolesQuery.data ?? [];
 
   return (
     <Dialog open={open} onClose={ignoreBackdropClose(onClose)} maxWidth="xs" fullWidth>
@@ -254,29 +260,6 @@ export function UserCreateDialog({ open, isSubmitting, onClose, onSubmit }: User
                     ),
                   },
                 }}
-              />
-            )}
-          />
-
-          <Controller
-            name="roleNames"
-            control={control}
-            render={({ field }) => (
-              <Autocomplete
-                multiple
-                options={roleOptions.map((role) => role.name)}
-                value={field.value}
-                onChange={(_event, value) => field.onChange(value)}
-                loading={rolesQuery.isLoading}
-                disabled={isSubmitting}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Rollar *"
-                    error={!!errors.roleNames}
-                    helperText={errors.roleNames?.message}
-                  />
-                )}
               />
             )}
           />

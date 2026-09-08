@@ -47,14 +47,6 @@ function rowHasRequiredFields(
     return 'İstehsalçı məcburidir.';
   }
   if (row.kind === 'new') {
-    // Tural 2026-08-26: same rule as ResourceFormDialog/MyResourceFormDialog
-    // — a category with zero xüsusiyyət növü can only ever have one
-    // meaningful product (matchKey constant/empty), so a "new" row here is a
-    // conceptual mismatch, blocked outright. Fix belongs in category admin
-    // (bax CategoryAttributesPanel warning), not this flow.
-    if (attributeLinks.length === 0) {
-      return 'Bu kateqoriyaya heç bir xüsusiyyət növü bağlanmayıb, yeni məhsul yaradıla bilməz.';
-    }
     if (!row.name.trim() || !row.unitId) {
       return 'Yeni məhsul üçün ad və vahid məcburidir.';
     }
@@ -134,7 +126,6 @@ export function BulkResourceFormDialog({ document, onClose }: BulkResourceFormDi
   const attributeLinks = (attributesQuery.data ?? []).filter((link) => link.visible).sort((a, b) => a.sortOrder - b.sortOrder);
   const categoryDetailQuery = useCategory(categoryId || null);
 
-  const categoryHasNoAttributes = Boolean(categoryId) && !attributesQuery.isLoading && attributeLinks.length === 0;
   // Tural, 2026-08-26: İşçi qüvvəsi (category type 3) has no "İstehsalçı"
   // concept — a worker isn't manufactured, and it's redundant with the
   // listing Təşkilat. Bax BACKEND_REQUEST_MANUFACTURER_OPTIONAL_FOR_LABOR_CATEGORY.md.
@@ -310,18 +301,10 @@ export function BulkResourceFormDialog({ document, onClose }: BulkResourceFormDi
                   />
                 ))}
 
-                {categoryHasNoAttributes && (
-                  <Alert severity="warning">
-                    Bu kateqoriyaya heç bir xüsusiyyət növü bağlanmayıb, ona görə yeni məhsul yaradıla bilməz. Əvvəlcə
-                    "Resurs Kataloqu"nda kateqoriyaya ən azı bir xüsusiyyət növü bağlayın, ya da yuxarıdakı mövcud
-                    məhsullardan istifadə edin.
-                  </Alert>
-                )}
-
                 <Button
                   startIcon={<AddRoundedIcon />}
                   onClick={addNewProductRow}
-                  disabled={createMutation.isPending || completeMutation.isPending || categoryHasNoAttributes}
+                  disabled={createMutation.isPending || completeMutation.isPending}
                   sx={{ alignSelf: 'flex-start' }}
                 >
                   Yeni product əlavə et

@@ -1,5 +1,7 @@
 export { ConfirmDialog } from './ConfirmDialog';
 export type { ConfirmDialogProps } from './ConfirmDialog';
+export { DebouncedTextField } from './DebouncedTextField';
+export type { DebouncedTextFieldProps } from './DebouncedTextField';
 export { NumberField } from './NumberField';
 export type { NumberFieldProps } from './NumberField';
 export { StatusBadge } from './StatusBadge';

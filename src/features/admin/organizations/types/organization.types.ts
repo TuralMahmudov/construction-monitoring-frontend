@@ -1,6 +1,8 @@
-// FRONTEND_AI_PROMPT_ADMIN_ORG_USERS.md § 2 — "Mərkəz" is not a DB row (it's
-// organizationId=NULL on users), so CENTRAL=1 is never returned by this
-// endpoint in practice, only documented for completeness.
+// FRONTEND_AI_PROMPT_CENTRAL_ORG_AND_ROLES.md § 2 (2026-09-07) — "Mərkəz" is
+// now a real fixed org row (every user's organizationId is always populated,
+// central users included) but it's still never returned by GET
+// /api/organizations — that endpoint stays vendor-only by design, so
+// CENTRAL=1 is only documented here for completeness.
 // FRONTEND_AI_PROMPT_ORG_TYPE_AND_PRICE_OWNERSHIP.md § 1 (2026-08-04) —
 // code 2 used to mean the single generic "VENDOR" type; it now means
 // MANUFACTURER specifically, alongside 3 new sibling types. Organizations
@@ -83,6 +85,12 @@ export interface Organization {
 // be a required, unique login credential; that's gone, only `username`/
 // `password` are the login account now. `confirmPassword` is form-only
 // (never sent to the API), checked against `password` in the zod schema.
+//
+// No `roleNames` field — FRONTEND_AI_PROMPT_CENTRAL_ORG_AND_ROLES.md § 1
+// (updated 2026-09-07) made it fully optional on this endpoint: omitted
+// entirely, the backend defaults every vendor login to OPERATOR itself
+// (17 of 18 real vendor logins already were, since a vendor account's only
+// real capability — document upload — needs it). No role picker in the UI.
 export interface OrganizationCreateFormValues {
   name: string;
   type: CreatableOrganizationType;
@@ -92,7 +100,6 @@ export interface OrganizationCreateFormValues {
   username: string;
   password: string;
   confirmPassword: string;
-  roleNames: string[];
 }
 
 // What actually goes over the wire — `confirmPassword` is form-only, the API

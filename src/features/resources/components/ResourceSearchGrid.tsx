@@ -13,6 +13,7 @@ import { StatusBadge } from '../../../shared/components';
 import { useEntityView } from '../../../shared/entity-view/EntityViewProvider';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
 import { canWrite } from '../../../shared/lib/permissions';
+import { productDisplayLabel } from '../../../shared/lib/productLabel';
 import { azGridLocaleText } from '../../../theme/dataGridLocaleText';
 import type { OrganizationType } from '../../admin/organizations/types/organization.types';
 import { ResourcePriceQuickDialog } from '../prices/components/ResourcePriceQuickDialog';
@@ -70,11 +71,10 @@ export function ResourceSearchGrid({ params, onParamsChange }: ResourceSearchGri
       flex: 1,
       minWidth: 240,
       sortable: false,
-      // `product.description` is server-generated as "{category name} —
-      // {attr: val, ...}" and `product.name` usually defaults to that same
-      // category name, so showing both stacked just repeated the same text
-      // twice — description alone already carries everything meaningful.
-      valueGetter: (_v, row) => row.product.description || row.product.name,
+      // bax productDisplayLabel — description only wins when it actually adds
+      // the attribute summary; a bare category-name description (attributeless
+      // categories) would otherwise hide the product's real, distinguishing name.
+      valueGetter: (_v, row) => productDisplayLabel(row.product.name, row.product.description),
     },
     {
       field: 'specification',
@@ -171,7 +171,7 @@ export function ResourceSearchGrid({ params, onParamsChange }: ResourceSearchGri
       <ResourcePriceQuickDialog
         open={priceTarget !== null}
         resourceId={priceTarget?.id ?? null}
-        resourceLabel={priceTarget ? `${priceTarget.product.code} — ${priceTarget.product.description || priceTarget.product.name}` : ''}
+        resourceLabel={priceTarget ? `${priceTarget.product.code} — ${productDisplayLabel(priceTarget.product.name, priceTarget.product.description)}` : ''}
         organizationId={priceTarget?.organizationId ?? null}
         onClose={() => setPriceTarget(null)}
       />

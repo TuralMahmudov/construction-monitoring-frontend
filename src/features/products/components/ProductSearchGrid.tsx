@@ -6,6 +6,7 @@ import { DataGrid, GridActionsCellItem, type GridColDef } from '@mui/x-data-grid
 import { StatusBadge } from '../../../shared/components';
 import { useEntityView } from '../../../shared/entity-view/EntityViewProvider';
 import { getApiErrorMessage } from '../../../shared/lib/apiErrorMessage';
+import { productDisplayLabel } from '../../../shared/lib/productLabel';
 import { azGridLocaleText } from '../../../theme/dataGridLocaleText';
 import { useAllUnits } from '../../reference-data/hooks/useReferenceOptions';
 import { useProducts } from '../hooks/useProducts';
@@ -49,12 +50,10 @@ export function ProductSearchGrid({ params, onParamsChange }: ProductSearchGridP
       flex: 1,
       minWidth: 240,
       sortable: false,
-      // `description` is server-generated as "{category name} — {attr: val, ...}"
-      // and `name` usually defaults to that same category name, so showing
-      // both stacked just repeated the same text twice — description alone
-      // already carries everything meaningful (falls back to name for the
-      // rare row without one).
-      renderCell: (cellParams) => <CellText>{cellParams.row.description || cellParams.row.name}</CellText>,
+      // bax productDisplayLabel — description only wins when it actually adds
+      // the attribute summary; a bare category-name description (attributeless
+      // categories) would otherwise hide the product's real, distinguishing name.
+      renderCell: (cellParams) => <CellText>{productDisplayLabel(cellParams.row.name, cellParams.row.description)}</CellText>,
     },
     {
       field: 'unitId',
@@ -103,7 +102,7 @@ export function ProductSearchGrid({ params, onParamsChange }: ProductSearchGridP
       paginationMode="server"
       paginationModel={{ page: params.page, pageSize: params.size }}
       onPaginationModelChange={(model) => onParamsChange({ page: model.page, size: model.pageSize })}
-      pageSizeOptions={[10, 25, 50]}
+      pageSizeOptions={[10, 25, 50, 100]}
       disableRowSelectionOnClick
       localeText={{ ...azGridLocaleText, noRowsLabel: 'Nəticə tapılmadı' }}
     />

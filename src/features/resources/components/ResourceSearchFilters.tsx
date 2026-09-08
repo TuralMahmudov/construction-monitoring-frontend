@@ -15,7 +15,7 @@ import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useAuth } from '../../../hooks/useAuth';
-import { NumberField } from '../../../shared/components';
+import { DebouncedTextField, NumberField } from '../../../shared/components';
 import { isCentralAdmin } from '../../../shared/lib/permissions';
 import { useOrganizationLookup } from '../../admin/organizations/hooks/useOrganizations';
 import { ORGANIZATION_TYPE_ICONS, ORGANIZATION_TYPE_LABELS } from '../../admin/organizations/types/organization.types';
@@ -86,19 +86,19 @@ export function ResourceSearchFilters({
         <Grid container spacing={2} sx={{ pb: 1 }}>
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Stack spacing={1}>
-              <TextField
+              <DebouncedTextField
                 label="Kod"
                 fullWidth
                 size="small"
                 value={code ?? ''}
-                onChange={(event) => onChange({ code: event.target.value || undefined })}
+                onChange={(value) => onChange({ code: value || undefined })}
               />
-              <TextField
+              <DebouncedTextField
                 label="Ad"
                 fullWidth
                 size="small"
                 value={name ?? ''}
-                onChange={(event) => onChange({ name: event.target.value || undefined })}
+                onChange={(value) => onChange({ name: value || undefined })}
               />
             </Stack>
           </Grid>

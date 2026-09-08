@@ -45,8 +45,8 @@ function hasPermission(user: AuthUser | null, permission: string): boolean {
 }
 
 // Vendor (organization) accounts uploading their own documents. A central
-// account (organizationId === null) never sees this, even with the
-// permission — backend 400s that combination (§0).
+// account (actorType 1, not 2) never sees this, even with the permission —
+// backend 400s that combination (§0).
 export function canUploadDocuments(user: AuthUser | null): boolean {
   return isOrganizationActor(user) && hasPermission(user, PERMISSIONS.DOCUMENT_UPLOAD);
 }

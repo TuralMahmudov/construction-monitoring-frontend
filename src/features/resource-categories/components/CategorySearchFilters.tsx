@@ -9,6 +9,7 @@ import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import { DebouncedTextField } from '../../../shared/components';
 import { CATEGORY_TYPES, getCategoryTypeLabel } from '../types/resourceCategory.types';
 import type { CategorySearchParams, CategoryStatusFilter } from '../types/resourceCategory.types';
 
@@ -54,12 +55,12 @@ export function CategorySearchFilters({
       <Collapse in={expanded || !isSmallScreen}>
         <Grid container spacing={2} sx={{ pb: 1 }}>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <TextField
+            <DebouncedTextField
               label="Ad"
               fullWidth
               size="small"
               value={name ?? ''}
-              onChange={(event) => onChange({ name: event.target.value || undefined })}
+              onChange={(value) => onChange({ name: value || undefined })}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
